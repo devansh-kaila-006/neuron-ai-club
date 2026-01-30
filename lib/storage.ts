@@ -56,7 +56,7 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 500): Pro
 
 async function atlasFetch(action: string, body: any) {
   if (!APP_ID || !API_KEY) {
-    console.warn("[Storage] Atlas Credentials missing. Operating in Local-Only mode.");
+    console.warn(`[Persistence] Missing Credentials: ${!APP_ID ? 'MONGODB_APP_ID ' : ''}${!API_KEY ? 'MONGODB_API_KEY' : ''}. Operating in local-cache mode.`);
     return null;
   }
   
