@@ -1,0 +1,84 @@
+
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Cpu, Menu, X } from 'lucide-react';
+
+const Navbar: React.FC = () => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const location = useLocation();
+
+  const navItems = [
+    { label: 'Home', path: '/' },
+    { label: 'TALOS Hackathon', path: '/hackathon' },
+    { label: 'Team', path: '/team' },
+    { label: 'Register', path: '/register' },
+    { label: 'Admin', path: '/admin' },
+  ];
+
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10 px-6 py-4">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <Link to="/" className="flex items-center gap-2 group">
+          <motion.div
+            whileHover={{ rotate: 180 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Cpu className="w-8 h-8 text-indigo-500" />
+          </motion.div>
+          <span className="text-2xl font-bold tracking-tighter bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent font-mono">
+            NEURØN
+          </span>
+        </Link>
+
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center gap-8">
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`text-sm font-medium transition-colors hover:text-indigo-400 ${
+                location.pathname === item.path ? 'text-indigo-500' : 'text-gray-400'
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+          <Link
+            to="/register"
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
+          >
+            Join TALOS
+          </Link>
+        </div>
+
+        {/* Mobile Toggle */}
+        <button className="md:hidden text-gray-400" onClick={() => setIsOpen(!isOpen)}>
+          {isOpen ? <X /> : <Menu />}
+        </button>
+      </div>
+
+      {/* Mobile Nav */}
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:hidden absolute top-full left-0 right-0 glass border-b border-white/10 p-6 flex flex-col gap-4"
+        >
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => setIsOpen(false)}
+              className="text-lg font-medium text-gray-300 hover:text-indigo-500"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </motion.div>
+      )}
+    </nav>
+  );
+};
+
+export default Navbar;

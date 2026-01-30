@@ -1,0 +1,8 @@
+{
+  "name": "NEURØN | Amrita AI Hub",
+  "description": "The official flagship platform for the NEURØN AI/ML Club at Amrita University. Features neural-grounded assistance, hackathon logistics, and squad deployment.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

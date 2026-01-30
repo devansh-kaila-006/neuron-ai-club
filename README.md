@@ -1,11 +1,26 @@
-<div align="center">
+# 🧠 NEURØN | Artificial Intelligence Club
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+NEURØN is the premier student-led AI community at **Amrita Vishwa Vidyapeetham**.
 
-  <h1>Built with AI Studio</h2>
+## 🚀 Key Features (Production Grade)
+- **Neural Assistant**: Gemini 3 Flash with real-time Google Search grounding.
+- **Production Persistence**: MongoDB Atlas Data API integration with **Exponential Backoff Retry** logic for high-latency environments.
+- **Hybrid Admin Terminal**: A responsive Executive Command Center that transforms into a card-based view for mobile operations.
+- **Hardened Security**: 
+  - Payment signature verification with mandatory HMAC validation.
+  - Environment-variable-locked administrative access.
+  - Skeleton loading systems for seamless data synchronization.
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## 🛠 Tech Stack
+- **React 19**
+- **Tailwind CSS**
+- **Framer Motion 11**
+- **Google Gemini API**
+- **MongoDB Atlas**
+- **Razorpay (Live Optimized)**
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
-
-</div>
+## 🏗 Consolidated Project Architecture
+- **/pages**: Main application views (Home, Register, Admin, etc.)
+- **/components**: Shared UI components (Skeleton, NeuralAssistant, Navbar).
+- **/services**: Logic providers (AI, Payments, Auth, Comms).
+- **/lib**: Infrastructure (Storage engine, Types, Validation).

@@ -1,0 +1,21 @@
+{
+  "name": "NEURØN | Amrita AI Hub",
+  "short_name": "NEURØN",
+  "description": "Amrita University AI/ML Hub & TALOS Hackathon Portal",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=192&h=192&fit=crop",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=512&h=512&fit=crop",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
