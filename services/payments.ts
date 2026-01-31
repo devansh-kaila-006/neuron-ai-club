@@ -22,8 +22,6 @@ export const paymentService = {
     return api.call(async () => {
       if (!RAZORPAY_KEY_ID) throw new Error("Payment Gateway Offline: Key ID missing.");
       
-      // Order ID generation can also be moved to backend for maximum security,
-      // but client-side initiation with backend verification is common.
       const order = {
         id: `order_${generateSecureID('', 12)}`,
         amount: 499 * 100,
@@ -66,12 +64,12 @@ export const paymentService = {
         body: { orderId, paymentId, signature, teamData }
       });
       
-      if (error) {
+      if (error || !data.success) {
         console.error("[Security Violation] Backend verification rejected the signature.");
-        throw new Error(error.message || "Security Breach: Neural payment verification failed.");
+        throw new Error(error?.message || "Security Breach: Neural payment verification failed.");
       }
 
-      return data as Team;
+      return data;
     });
   }
 };
