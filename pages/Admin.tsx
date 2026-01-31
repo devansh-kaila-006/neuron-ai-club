@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
@@ -208,6 +208,7 @@ const Admin: React.FC = () => {
       const res = await authService.signIn(password);
       if (res.success) { 
         setIsAuthenticated(true); 
+        setPassword(''); // Secure Wipe on Success
         fetchData(); 
         toast.success("Executive override successful.");
       } else {
@@ -245,6 +246,13 @@ const Admin: React.FC = () => {
     } else {
       addLog(`Invalid Sequence: ${teamID}`, 'warn');
     }
+  };
+
+  const handleLogout = async () => {
+    await authService.signOut();
+    setIsAuthenticated(false);
+    setPassword(''); // Secure Wipe on Logout
+    toast.info("Terminal session terminated.");
   };
 
   const filteredTeams = teams.filter(t => {
@@ -303,7 +311,7 @@ const Admin: React.FC = () => {
               <button onClick={() => fetchData()} className="p-3 glass border-white/10 rounded-xl hover:bg-white/5 transition-all text-indigo-400">
                 <RefreshCw className={isLoading ? 'animate-spin' : ''} size={20} />
               </button>
-              <button onClick={() => { authService.signOut(); setIsAuthenticated(false); }} className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl hover:bg-red-500/20 transition-all">
+              <button onClick={handleLogout} className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl hover:bg-red-500/20 transition-all">
                 <LogOut size={20} />
               </button>
             </div>
