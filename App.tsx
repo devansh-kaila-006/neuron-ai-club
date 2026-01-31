@@ -1,6 +1,6 @@
 
 import React, { useState, Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Navbar from './components/Navbar.tsx';
 import NeuralAssistant from './components/NeuralAssistant.tsx';
 import NeuralBackground from './components/NeuralBackground.tsx';
@@ -10,12 +10,12 @@ import ToastContainer from './components/ToastContainer.tsx';
 import { Shield, X, Scale, Lock, RefreshCcw, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Lazy loaded page components for optimal performance
-const Home = lazy(() => import('./pages/Home'));
-const Team = lazy(() => import('./pages/Team'));
-const Hackathon = lazy(() => import('./pages/Hackathon'));
-const Register = lazy(() => import('./pages/Register'));
-const Admin = lazy(() => import('./pages/Admin'));
+// Lazy loaded page components with explicit extensions for ESM compatibility
+const Home = lazy(() => import('./pages/Home.tsx'));
+const Team = lazy(() => import('./pages/Team.tsx'));
+const Hackathon = lazy(() => import('./pages/Hackathon.tsx'));
+const Register = lazy(() => import('./pages/Register.tsx'));
+const Admin = lazy(() => import('./pages/Admin.tsx'));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-[#050505]">

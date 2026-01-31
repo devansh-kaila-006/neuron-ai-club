@@ -73,6 +73,11 @@
     }
   </style>
 
+  <script>
+    // Universal Process Shim
+    window.process = window.process || { env: {} };
+  </script>
+
 <script type="importmap">
 {
   "imports": {
