@@ -74,19 +74,9 @@
   </style>
 
   <script>
-    window.process = window.process || {};
-    window.process.env = { 
-      API_KEY: "",
-      SUPABASE_URL: "",
-      SUPABASE_ANON_KEY: "",
-      ADMIN_ACCESS_KEY: "",
-      RAZORPAY_SECRET: "",
-      RAZORPAY_KEY_ID: "",
-      EMAILJS_PUBLIC_KEY: "",
-      EMAILJS_SERVICE_ID: "",
-      EMAILJS_TEMPLATE_ID: "",
-      ...(window.process.env || {})
-    };
+    // Robust environment shim that preserves existing values from Vercel/Vite
+    window.process = window.process || { env: {} };
+    window.process.env = window.process.env || {};
   </script>
 
 <script type="importmap">

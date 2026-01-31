@@ -1,6 +1,15 @@
 
 import { GoogleGenAI } from "@google/genai";
 
+const getEnv = (key: string): string | undefined => {
+  try {
+    return (window as any).process?.env?.[key] || 
+           (import.meta as any).env?.[`VITE_${key}`] || 
+           (import.meta as any).env?.[key] ||
+           (globalThis as any).process?.env?.[key];
+  } catch { return undefined; }
+};
+
 const SYSTEM_INSTRUCTION = `You are the NEURØN Neural Assistant for the Amrita AI/ML Club. 
 Your mission is to assist students with queries regarding the club and the TALOS Hackathon.
 
@@ -44,7 +53,10 @@ export interface MessageHistory {
 
 export const getNeuralResponse = async (prompt: string, history: MessageHistory[] = []): Promise<NeuralResponse> => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = getEnv("API_KEY");
+    if (!apiKey) throw new Error("Neural Uplink: API_KEY missing.");
+    
+    const ai = new GoogleGenAI({ apiKey });
     const contents = [...history, { role: 'user', parts: [{ text: prompt }] }];
     
     const response = await ai.models.generateContent({
