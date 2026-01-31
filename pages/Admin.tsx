@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -17,7 +18,8 @@ import {
   X,
   Terminal,
   ChevronRight,
-  Camera
+  Camera,
+  Flame
 } from 'lucide-react';
 import jsQR from 'jsqr';
 import { storage } from '../lib/storage.ts';
@@ -68,15 +70,34 @@ const Admin: React.FC = () => {
     }
   };
 
-  // Real-time Polling Logic (Elite #2)
   useEffect(() => {
     if (isAuthenticated) {
       const pollId = setInterval(() => {
         fetchData(true);
-      }, 15000); // Poll every 15 seconds
+      }, 15000);
       return () => clearInterval(pollId);
     }
   }, [isAuthenticated]);
+
+  const handlePurge = async () => {
+    const confirmed = window.confirm("WARNING: CRITICAL SYSTEM PURGE. This will permanently delete ALL cloud and local manifest data. Do you wish to proceed?");
+    if (!confirmed) return;
+
+    const doubleCheck = window.confirm("Final confirmation: This action is irreversible.");
+    if (!doubleCheck) return;
+
+    setIsLoading(true);
+    try {
+      await storage.clearAllData();
+      await fetchData();
+      addLog("System Purge Executed", 'warn');
+      toast.success("All data has been vaporized.");
+    } catch (err: any) {
+      toast.error(`Purge Failed: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const exportToCSV = () => {
     if (teams.length === 0) {
@@ -88,56 +109,30 @@ const Admin: React.FC = () => {
     addLog("Compiling CSV Manifest...", 'info');
     toast.info("Compiling manifest...");
     
-    const headers = [
-      "Team ID", 
-      "Squad Name", 
-      "Lead Email", 
-      "Member 1", 
-      "Member 2", 
-      "Member 3", 
-      "Member 4", 
-      "Payment Status", 
-      "Verified (Checked-in)", 
-      "Sync Date"
-    ];
-
+    const headers = ["Team ID", "Squad Name", "Lead Email", "Member 1", "Member 2", "Member 3", "Member 4", "Payment Status", "Verified (Checked-in)", "Sync Date"];
     const rows = teams.map(team => {
-      const m1 = team.members[0]?.name || '';
-      const m2 = team.members[1]?.name || '';
-      const m3 = team.members[2]?.name || '';
-      const m4 = team.members[3]?.name || '';
-      
       return [
         team.teamID,
         `"${team.teamName.replace(/"/g, '""')}"`,
         team.leadEmail,
-        `"${m1.replace(/"/g, '""')}"`,
-        `"${m2.replace(/"/g, '""')}"`,
-        `"${m3.replace(/"/g, '""')}"`,
-        `"${m4.replace(/"/g, '""')}"`,
+        `"${(team.members[0]?.name || '').replace(/"/g, '""')}"`,
+        `"${(team.members[1]?.name || '').replace(/"/g, '""')}"`,
+        `"${(team.members[2]?.name || '').replace(/"/g, '""')}"`,
+        `"${(team.members[3]?.name || '').replace(/"/g, '""')}"`,
         team.paymentStatus.toUpperCase(),
         team.checkedIn ? "YES" : "NO",
         new Date(team.registeredAt).toLocaleString()
       ];
     });
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(row => row.join(","))
-    ].join("\n");
-
+    const csvContent = [headers.join(","), ...rows.map(row => row.join(","))].join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute("download", `NEURON_TALOS_MANIFEST_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-    
-    addLog("Manifest Downloaded Successfully", 'success');
-    toast.success("CSV Download initiated.");
+    addLog("Manifest Exported", 'success');
   };
 
   useEffect(() => {
@@ -167,7 +162,6 @@ const Admin: React.FC = () => {
         videoRef.current.setAttribute("playsinline", "true");
         videoRef.current.play();
         requestRef.current = requestAnimationFrame(scanTick);
-        toast.info("Optical link established.");
       }
     } catch (err) {
       addLog("Optical link denied", 'warn');
@@ -218,7 +212,6 @@ const Admin: React.FC = () => {
         toast.success("Executive override successful.");
       } else {
         setLoginError(res.error || "Access Denied");
-        toast.error("Invalid security sequence.");
       }
     } catch (err: any) {
       setLoginError("Auth uplink failure");
@@ -234,7 +227,6 @@ const Admin: React.FC = () => {
       await fetchData(true);
       const team = teams.find(t => t.id === id);
       addLog(`Status Updated: ${team?.teamName}`, 'success');
-      toast.success(`${team?.teamName} verified.`);
     } finally {
       setActionLoading(null);
     }
@@ -243,17 +235,15 @@ const Admin: React.FC = () => {
   const handleScannerCheckIn = async (teamID: string) => {
     const team = teams.find(t => t.teamID === teamID);
     if (team) {
-      if (team.checkedIn) {
-        addLog(`Already Verified: ${team.teamName}`, 'info');
-        toast.info(`${team.teamName} already verified.`);
-      } else {
+      if (!team.checkedIn) {
         await handleCheckIn(team.id, true);
         addLog(`Verified: ${team.teamName}`, 'success');
+      } else {
+        addLog(`Already Verified: ${team.teamName}`, 'info');
       }
       setIsScannerOpen(false);
     } else {
       addLog(`Invalid Sequence: ${teamID}`, 'warn');
-      toast.error("Invalid QR Sequence.");
     }
   };
 
@@ -301,16 +291,19 @@ const Admin: React.FC = () => {
               <p className="text-gray-500 text-sm font-mono uppercase tracking-widest">Neural Grid Active</p>
             </div>
             <div className="flex flex-wrap gap-3">
+              <button onClick={handlePurge} className="flex items-center gap-2 px-6 py-3 border border-red-500/20 bg-red-500/5 rounded-xl text-xs font-bold hover:bg-red-500/10 transition-all text-red-400">
+                <Flame size={16} /> Purge System
+              </button>
               <button onClick={exportToCSV} className="flex items-center gap-2 px-6 py-3 border border-indigo-500/20 bg-indigo-500/5 rounded-xl text-xs font-bold hover:bg-indigo-500/10 transition-all text-indigo-400">
                 <Download size={16} /> Export CSV
               </button>
-              <button onClick={() => setIsScannerOpen(true)} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20">
+              <button onClick={() => setIsScannerOpen(true)} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-500 transition-all shadow-lg">
                 <Scan size={16} /> QR Scanner
               </button>
               <button onClick={() => fetchData()} className="p-3 glass border-white/10 rounded-xl hover:bg-white/5 transition-all text-indigo-400">
                 <RefreshCw className={isLoading ? 'animate-spin' : ''} size={20} />
               </button>
-              <button onClick={() => { authService.signOut(); setIsAuthenticated(false); toast.info("Link terminated."); }} className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl hover:bg-red-500/20 transition-all">
+              <button onClick={() => { authService.signOut(); setIsAuthenticated(false); }} className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl hover:bg-red-500/20 transition-all">
                 <LogOut size={20} />
               </button>
             </div>
@@ -394,7 +387,7 @@ const Admin: React.FC = () => {
         {isScannerOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-6">
              <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="glass w-full max-w-xl p-10 rounded-[3rem] text-center relative overflow-hidden">
-                <button onClick={() => { setIsScannerOpen(false); toast.info("Scanner standby."); }} className="absolute top-8 right-8 text-gray-500 hover:text-white"><X size={28} /></button>
+                <button onClick={() => setIsScannerOpen(false)} className="absolute top-8 right-8 text-gray-500 hover:text-white"><X size={28} /></button>
                 <div className="mb-8"><div className="w-16 h-16 bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-500 mx-auto mb-4"><Scan size={32} /></div><h2 className="text-2xl font-bold font-mono">SCANNER ACTIVE</h2><p className="text-gray-500 text-xs">Align TALOS ID within the tactical grid.</p></div>
                 <div className="aspect-video bg-black rounded-3xl relative overflow-hidden border-2 border-indigo-500/20">
                    <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover opacity-60 grayscale" />
