@@ -95,9 +95,10 @@ export const storage = {
   },
 
   async clearAllData(): Promise<void> {
-    // 1. Clear Local Cache
+    // 1. Clear Local Cache and Manifest Drafts
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem('neuron_draft_v3');
+    sessionStorage.removeItem('neuron_draft_v4');
     
     if (!supabase) return;
 
@@ -105,7 +106,7 @@ export const storage = {
     const { error } = await supabase
       .from(TABLE_NAME)
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000'); // Standard "Delete All" trick for Supabase
+      .neq('id', '00000000-0000-0000-0000-000000000000');
 
     if (error) throw new Error(`Purge Failure: ${error.message}`);
   },

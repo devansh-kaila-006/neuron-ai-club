@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  CheckCircle, CreditCard, Loader2, Plus, Trash2, Cpu, ArrowRight, Printer, Mail, RefreshCw, AlertTriangle, ShieldCheck, Search, Database, Save, X, Send, Phone
+  CheckCircle, CreditCard, Loader2, Plus, Trash2, Cpu, ArrowRight, Printer, Mail, RefreshCw, AlertTriangle, ShieldCheck, Search, Database, Save, X, Send, Phone, RotateCcw
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { z } from 'zod';
@@ -43,8 +43,9 @@ const Register: React.FC = () => {
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
 
+  // Use sessionStorage for drafts: survives reload, but clears on new session/tab close
   useEffect(() => {
-    const saved = localStorage.getItem('neuron_draft_v3');
+    const saved = sessionStorage.getItem('neuron_draft_v4');
     if (saved && !isUpdateMode) {
       try {
         const parsed = JSON.parse(saved);
@@ -55,7 +56,9 @@ const Register: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (step === 1 && !isUpdateMode) localStorage.setItem('neuron_draft_v3', JSON.stringify({ teamName, members }));
+    if (step === 1 && !isUpdateMode) {
+      sessionStorage.setItem('neuron_draft_v4', JSON.stringify({ teamName, members }));
+    }
   }, [teamName, members, step, isUpdateMode]);
 
   useEffect(() => {
@@ -74,6 +77,21 @@ const Register: React.FC = () => {
     const updated = [...members];
     updated[index] = { ...updated[index], [field]: value };
     setMembers(updated);
+  };
+
+  const handleReset = () => {
+    if (window.confirm("Purge local manifest draft and start fresh?")) {
+      sessionStorage.removeItem('neuron_draft_v4');
+      localStorage.removeItem('neuron_draft_v3'); // Clear legacy drafts too
+      setTeamName('');
+      setMembers([
+        { name: '', email: '', phone: '', role: 'Lead' },
+        { name: '', email: '', phone: '', role: 'Developer' },
+      ]);
+      setErrors({});
+      setNameAvailability('idle');
+      toast.info("Manifest draft purged. Terminal reset.");
+    }
   };
 
   const handleLookup = async () => {
@@ -182,6 +200,7 @@ const Register: React.FC = () => {
           if (verifyRes.success) {
             setRegisteredTeam(verifyRes.data!);
             setStep(3);
+            sessionStorage.removeItem('neuron_draft_v4');
             localStorage.removeItem('neuron_draft_v3');
             toast.success("Payment authorized.");
             
@@ -268,11 +287,22 @@ const Register: React.FC = () => {
                         {isUpdateMode && <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Editing: {registeredTeam?.teamID}</p>}
                       </div>
                     </div>
-                    {isUpdateMode && (
-                      <button onClick={cancelUpdate} className="p-2 glass rounded-lg text-gray-500 hover:text-white transition-colors">
-                        <X size={18} />
-                      </button>
-                    )}
+                    <div className="flex items-center gap-4">
+                      {!isUpdateMode && (
+                        <button 
+                          onClick={handleReset} 
+                          title="Purge Draft"
+                          className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-red-400 transition-colors px-3 py-2 glass rounded-xl border-white/5"
+                        >
+                          <RotateCcw size={14} /> Reset Terminal
+                        </button>
+                      )}
+                      {isUpdateMode && (
+                        <button onClick={cancelUpdate} className="p-2 glass rounded-lg text-gray-500 hover:text-white transition-colors">
+                          <X size={18} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="mb-10">
