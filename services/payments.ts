@@ -1,8 +1,8 @@
 
-import CryptoJS from 'crypto-js';
 import { api } from './api.ts';
-import { storage, generateSecureID } from '../lib/storage.ts';
-import { Team, PaymentStatus } from '../lib/types.ts';
+import { supabase, generateSecureID } from '../lib/storage.ts';
+import { Team } from '../lib/types.ts';
+import { getEnv } from '../lib/env.ts';
 
 declare global {
   interface Window {
@@ -10,13 +10,6 @@ declare global {
   }
 }
 
-const getEnv = (key: string): string | undefined => {
-  try {
-    return (window as any).process?.env?.[key] || (globalThis as any).process?.env?.[key];
-  } catch { return undefined; }
-};
-
-const RAZORPAY_SECRET = getEnv("RAZORPAY_SECRET");
 const RAZORPAY_KEY_ID = getEnv("RAZORPAY_KEY_ID");
 
 export const paymentService = {
@@ -29,10 +22,11 @@ export const paymentService = {
     return api.call(async () => {
       if (!RAZORPAY_KEY_ID) throw new Error("Payment Gateway Offline: Key ID missing.");
       
-      const amount = 499 * 100;
+      // Order ID generation can also be moved to backend for maximum security,
+      // but client-side initiation with backend verification is common.
       const order = {
         id: `order_${generateSecureID('', 12)}`,
-        amount: amount,
+        amount: 499 * 100,
         currency: "INR"
       };
 
@@ -50,12 +44,8 @@ export const paymentService = {
           email: options.email,
           contact: options.phone
         },
-        theme: {
-          color: "#4f46e5"
-        },
-        modal: {
-          ondismiss: () => console.log("Payment dismissed.")
-        }
+        theme: { color: "#4f46e5" },
+        modal: { ondismiss: () => console.log("Payment dismissed.") }
       };
 
       const rzp = new window.Razorpay(rzpOptions);
@@ -64,34 +54,24 @@ export const paymentService = {
     });
   },
 
+  /**
+   * Secure Backend Verification
+   * Calls the 'verify-payment' Supabase function which holds the RAZORPAY_SECRET.
+   */
   async verifyPayment(orderId: string, paymentId: string, signature: string, teamData: Partial<Team>) {
     return api.call(async () => {
-      if (!RAZORPAY_SECRET) throw new Error("Security Error: Secret verification key unavailable.");
+      if (!supabase) throw new Error("Neural Grid Offline.");
 
-      // Production HMAC Verification
-      const expectedSignature = CryptoJS.HmacSHA256(`${orderId}|${paymentId}`, RAZORPAY_SECRET).toString();
+      const { data, error } = await supabase.functions.invoke('verify-payment', {
+        body: { orderId, paymentId, signature, teamData }
+      });
       
-      // Enforced Security: No bypass allowed
-      if (signature !== expectedSignature) {
-        console.error("[Security Violation] Invalid Payment Signature Attempted");
-        throw new Error("Security Breach: Neural payment verification failed. This incident has been logged.");
+      if (error) {
+        console.error("[Security Violation] Backend verification rejected the signature.");
+        throw new Error(error.message || "Security Breach: Neural payment verification failed.");
       }
 
-      const newTeam: Team = {
-        id: generateSecureID('', 10),
-        teamName: teamData.teamName!,
-        teamID: generateSecureID('TALOS', 4),
-        members: teamData.members!,
-        leadEmail: teamData.leadEmail!,
-        paymentStatus: PaymentStatus.PAID,
-        razorpayOrderId: orderId,
-        razorpayPaymentId: paymentId,
-        checkedIn: false,
-        registeredAt: Date.now()
-      };
-
-      await storage.saveTeam(newTeam);
-      return newTeam;
+      return data as Team;
     });
   }
 };

@@ -1,54 +1,26 @@
 
 import { api } from './api.ts';
 import CryptoJS from 'crypto-js';
-
-/**
- * Universal environment variable retriever.
- */
-const getEnv = (key: string): string | undefined => {
-  try {
-    if (typeof window !== 'undefined' && (window as any).process?.env) {
-      const val = (window as any).process.env[key] || (window as any).process.env[`VITE_${key}`];
-      if (val) return val;
-    }
-
-    const metaEnv = (import.meta as any).env;
-    if (metaEnv) {
-      if (metaEnv[key]) return metaEnv[key];
-      if (metaEnv[`VITE_${key}`]) return metaEnv[`VITE_${key}`];
-    }
-
-    if (typeof process !== 'undefined' && process.env) {
-      const val = process.env[key] || process.env[`VITE_${key}`];
-      if (val) return val;
-    }
-
-    return undefined;
-  } catch (e) {
-    return undefined;
-  }
-};
+import { getEnv } from '../lib/env.ts';
 
 export const authService = {
   /**
    * Secure Hashed SignIn
    * Compares the SHA-256 hash of the input password with the hash stored in VITE_ADMIN_HASH.
-   * This ensures the plain-text password is never exposed in the source code.
    */
   async signIn(password: string) {
     return api.call(async () => {
-      // Look for the HASH, not the plain text key
+      // Look for the HASH in environment (VITE_ADMIN_HASH or ADMIN_HASH)
       const secureHash = getEnv("ADMIN_HASH");
       
       if (!secureHash) {
-        console.error("NEURØN Security: VITE_ADMIN_HASH is missing from environment. Authentication disabled.");
+        console.error("NEURØN Security: ADMIN_HASH is missing from environment.");
         throw { 
           status: 500, 
-          message: "CRITICAL: Security Grid Offline. ADMIN_HASH not detected in system environment." 
+          message: "CRITICAL: Security Grid Offline. ADMIN_HASH not detected." 
         };
       }
 
-      // Compute hash of user input
       const inputHash = CryptoJS.SHA256(password).toString();
 
       if (inputHash === secureHash) {
@@ -62,7 +34,7 @@ export const authService = {
         return { user: { name: 'Admin', role: 'ADMIN' }, token };
       }
       
-      throw { status: 401, message: "Invalid access sequence. Authentication denied." };
+      throw { status: 401, message: "Invalid access sequence. Denied." };
     });
   },
 
