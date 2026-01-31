@@ -23,10 +23,15 @@ const teamValidator = z.object({
 
 const getEnv = (key: string): string | undefined => {
   try {
-    return (window as any).process?.env?.[key] || (globalThis as any).process?.env?.[key];
-  } catch {
+    if (typeof window !== 'undefined' && (window as any).process?.env?.[key]) return (window as any).process.env[key];
+    const metaEnv = (import.meta as any).env;
+    if (metaEnv) {
+      if (metaEnv[`VITE_${key}`]) return metaEnv[`VITE_${key}`];
+      if (metaEnv[key]) return metaEnv[key];
+    }
+    if (typeof process !== 'undefined' && process.env?.[key]) return process.env[key];
     return undefined;
-  }
+  } catch { return undefined; }
 };
 
 const SUPABASE_URL = getEnv("SUPABASE_URL");
