@@ -1,3 +1,4 @@
+
 import { ApiResponse } from '../lib/types.ts';
 
 export const api = {
@@ -8,8 +9,13 @@ export const api = {
       const result = await handler();
       return { success: true, data: result, status: 200 };
     } catch (err: any) {
-      console.error("[Service Error]:", err);
-      return { success: false, error: err.message || "Internal Server Error", status: err.status || 500 };
+      // Better error logging for debugging complex objects
+      console.error("[Service Error]:", typeof err === 'object' ? JSON.stringify(err, null, 2) : err);
+      return { 
+        success: false, 
+        error: err.message || (typeof err === 'string' ? err : "Internal Server Error"), 
+        status: err.status || 500 
+      };
     }
   }
 };

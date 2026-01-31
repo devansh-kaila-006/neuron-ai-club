@@ -1,5 +1,6 @@
+
 import React, { useState, Suspense, lazy } from 'react';
-import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Navbar from './components/Navbar.tsx';
 import NeuralAssistant from './components/NeuralAssistant.tsx';
 import NeuralBackground from './components/NeuralBackground.tsx';

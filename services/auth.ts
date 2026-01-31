@@ -8,26 +8,22 @@ import { api } from './api.ts';
 const getEnv = (key: string): string | undefined => {
   try {
     // 1. Check window.process.env (standard browser shim)
-    if (typeof window !== 'undefined' && (window as any).process?.env?.[key]) {
-      return (window as any).process.env[key];
+    if (typeof window !== 'undefined' && (window as any).process?.env) {
+      const val = (window as any).process.env[key] || (window as any).process.env[`VITE_${key}`];
+      if (val) return val;
     }
 
     // 2. Check import.meta.env (Vite standard)
-    // We check both the raw key and the VITE_ prefixed version
     const metaEnv = (import.meta as any).env;
     if (metaEnv) {
-      if (metaEnv[`VITE_${key}`]) return metaEnv[`VITE_${key}`];
       if (metaEnv[key]) return metaEnv[key];
+      if (metaEnv[`VITE_${key}`]) return metaEnv[`VITE_${key}`];
     }
 
-    // 3. Check global process (Node-like environments or specific shims)
-    if (typeof process !== 'undefined' && process.env?.[key]) {
-      return process.env[key];
-    }
-
-    // 4. Check globalThis
-    if (typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.[key]) {
-      return (globalThis as any).process.env[key];
+    // 3. Check global process
+    if (typeof process !== 'undefined' && process.env) {
+      const val = process.env[key] || process.env[`VITE_${key}`];
+      if (val) return val;
     }
 
     return undefined;
@@ -39,15 +35,13 @@ const getEnv = (key: string): string | undefined => {
 export const authService = {
   async signIn(password: string) {
     return api.call(async () => {
-      // Priority 1: Check for VITE_ADMIN_ACCESS_KEY (Vite convention)
-      // Priority 2: Check for ADMIN_ACCESS_KEY (Vercel standard)
       const secureKey = getEnv("ADMIN_ACCESS_KEY");
       
       if (!secureKey) {
-        console.error("NEURØN Security: ADMIN_ACCESS_KEY is missing from the environment.");
+        console.error("NEURØN Security: ADMIN_ACCESS_KEY is missing from all detected environment objects.");
         throw { 
           status: 500, 
-          message: "SYSTEM ERROR: ADMIN_ACCESS_KEY is not configured. Please ensure it is set in the Vercel Dashboard (as either ADMIN_ACCESS_KEY or VITE_ADMIN_ACCESS_KEY) and that you have redeployed the application." 
+          message: "SYSTEM ERROR: ADMIN_ACCESS_KEY not found. Ensure the variable is set in the Vercel Dashboard. If you just set it, you MUST redeploy the app for the change to take effect in the browser bundle." 
         };
       }
 
@@ -57,7 +51,7 @@ export const authService = {
           iat: Date.now(), 
           exp: Date.now() + (1000 * 60 * 60 * 24) 
         };
-        const token = `neuron_auth_v3_${btoa(JSON.stringify(payload))}`;
+        const token = `neuron_auth_v4_${btoa(JSON.stringify(payload))}`;
         sessionStorage.setItem('neuron_session_token', token);
         return { user: { name: 'Admin', role: 'ADMIN' }, token };
       }
@@ -68,9 +62,9 @@ export const authService = {
 
   async getSession() {
     const token = sessionStorage.getItem('neuron_session_token');
-    if (!token || !token.startsWith('neuron_auth_v3_')) return null;
+    if (!token || !token.startsWith('neuron_auth_v4_')) return null;
     try {
-      const payload = JSON.parse(atob(token.replace('neuron_auth_v3_', '')));
+      const payload = JSON.parse(atob(token.replace('neuron_auth_v4_', '')));
       if (payload.exp < Date.now()) {
         sessionStorage.removeItem('neuron_session_token');
         return null;
