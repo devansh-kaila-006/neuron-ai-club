@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  CheckCircle, CreditCard, Loader2, Plus, Trash2, Cpu, ArrowRight, Printer, Mail, RefreshCw, AlertTriangle, ShieldCheck, Search, Database, Save, X, Send
+  CheckCircle, CreditCard, Loader2, Plus, Trash2, Cpu, ArrowRight, Printer, Mail, RefreshCw, AlertTriangle, ShieldCheck, Search, Database, Save, X, Send, Phone
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { z } from 'zod';
@@ -12,10 +13,10 @@ import { commsService } from '../services/comms.ts';
 import { useToast } from '../context/ToastContext.tsx';
 
 const memberSchema = z.object({
-  name: z.string().min(2, "Required"),
-  email: z.string().email("Invalid"),
-  phone: z.string().regex(/^[0-9]{10}$/, "10 digits"),
-  role: z.string().min(1, "Role"),
+  name: z.string().min(2, "Name required"),
+  email: z.string().email("Invalid email"),
+  phone: z.string().regex(/^[0-9]{10}$/, "10-digit number required"),
+  role: z.string().min(1, "Role required"),
 });
 
 const teamSchema = z.object({
@@ -37,14 +38,13 @@ const Register: React.FC = () => {
   const [registeredTeam, setRegisteredTeam] = useState<Team | null>(null);
   const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
 
-  // Update Logic State
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [lookupID, setLookupID] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('neuron_draft_v2');
+    const saved = localStorage.getItem('neuron_draft_v3');
     if (saved && !isUpdateMode) {
       try {
         const parsed = JSON.parse(saved);
@@ -55,7 +55,7 @@ const Register: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (step === 1 && !isUpdateMode) localStorage.setItem('neuron_draft_v2', JSON.stringify({ teamName, members }));
+    if (step === 1 && !isUpdateMode) localStorage.setItem('neuron_draft_v3', JSON.stringify({ teamName, members }));
   }, [teamName, members, step, isUpdateMode]);
 
   useEffect(() => {
@@ -78,7 +78,7 @@ const Register: React.FC = () => {
 
   const handleLookup = async () => {
     if (!lookupID.startsWith('TALOS-')) {
-      setLookupError("Invalid ID sequence. Must start with TALOS-");
+      setLookupError("Invalid ID. Format: TALOS-XXXX");
       return;
     }
     setIsLookingUp(true);
@@ -92,13 +92,13 @@ const Register: React.FC = () => {
         setIsUpdateMode(true);
         setErrors({});
         setLookupID('');
-        toast.success("Manifest retrieved. You are now in edit mode.");
+        toast.success("Manifest retrieved. Terminal unlocked.");
       } else {
-        setLookupError("No signal found for this sequence.");
-        toast.error("Manifest lookup failed.");
+        setLookupError("Sequence not found.");
+        toast.error("Lookup failed.");
       }
     } catch (err) {
-      setLookupError("Grid uplink failure during lookup.");
+      setLookupError("Grid failure.");
     } finally {
       setIsLookingUp(false);
     }
@@ -109,7 +109,7 @@ const Register: React.FC = () => {
     setRegisteredTeam(null);
     setTeamName('');
     setMembers([{ name: '', email: '', phone: '', role: 'Lead' }, { name: '', email: '', phone: '', role: 'Developer' }]);
-    toast.info("Update mode terminated.");
+    toast.info("Update mode closed.");
   };
 
   const handleProceedToPayment = () => {
@@ -127,7 +127,7 @@ const Register: React.FC = () => {
         }
       });
       setErrors(formattedErrors);
-      toast.error("Manifest contains integrity errors.");
+      toast.error("Integrity Error: Review required fields.");
       return;
     }
     
@@ -159,7 +159,7 @@ const Register: React.FC = () => {
       setStep(3);
       toast.success("Manifest successfully synchronized.");
     } catch (err: any) {
-      toast.error(`Update failed: ${err.message}`);
+      toast.error(`Sync failure: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -182,25 +182,23 @@ const Register: React.FC = () => {
           if (verifyRes.success) {
             setRegisteredTeam(verifyRes.data!);
             setStep(3);
-            localStorage.removeItem('neuron_draft_v2');
-            toast.success("Payment authorized. Squad deployed!");
+            localStorage.removeItem('neuron_draft_v3');
+            toast.success("Payment authorized.");
             
-            // Trigger Real Email Dispatch
             setEmailStatus('sending');
             try { 
               await commsService.sendManifestEmail(verifyRes.data!); 
               setEmailStatus('sent'); 
-              toast.info("Manifest dispatched to inbox.");
+              toast.info("Manifest emailed.");
             } catch (err) { 
               setEmailStatus('failed');
-              toast.error("Manifest dispatch failure. Using QR only.");
-              console.error(err);
+              toast.error("Email failure. Use QR.");
             }
           }
         }
       });
     } catch (err: any) {
-      toast.error(`Neural uplink failure: ${err.message}`);
+      toast.error(`Payment error: ${err.message}`);
     } finally { setIsSubmitting(false); }
   };
 
@@ -218,7 +216,7 @@ const Register: React.FC = () => {
                 {step > s ? <CheckCircle size={18} /> : s}
               </div>
               <span className="text-[10px] mt-2 uppercase tracking-tighter font-mono text-gray-500 opacity-60">
-                {s === 1 ? 'Manifest' : s === 2 ? 'Escrow' : 'Deployed'}
+                {s === 1 ? 'Registry' : s === 2 ? 'Escrow' : 'Deployed'}
               </span>
             </div>
           ))}
@@ -227,13 +225,12 @@ const Register: React.FC = () => {
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div key="s1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }}>
-              {/* Lookup Section */}
               {!isUpdateMode && (
                 <div className="max-w-2xl mx-auto mb-8">
                   <div className="glass p-6 rounded-[2rem] border-white/5 flex flex-col md:flex-row items-center gap-4">
                     <div className="flex items-center gap-3 shrink-0">
                       <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400"><Database size={18}/></div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Retrieve Manifest</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Edit Manifest</p>
                     </div>
                     <div className="flex-1 w-full relative">
                       <input 
@@ -255,7 +252,7 @@ const Register: React.FC = () => {
                 </div>
               )}
 
-              <div className="max-w-2xl mx-auto space-y-6">
+              <div className="max-w-3xl mx-auto space-y-6">
                 <div className="glass p-8 md:p-12 rounded-3xl border-indigo-500/10 shadow-2xl relative overflow-hidden">
                   {isUpdateMode && (
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animate-pulse" />
@@ -284,7 +281,7 @@ const Register: React.FC = () => {
                       <input 
                         value={teamName} 
                         onChange={e => setTeamName(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 focus:border-indigo-500 outline-none transition-all text-lg font-medium"
+                        className={`w-full bg-white/5 border rounded-2xl p-5 outline-none transition-all text-lg font-medium ${errors.teamName ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
                         placeholder="Ex: CyberDynasty"
                       />
                       <div className="absolute right-5 top-1/2 -translate-y-1/2">
@@ -296,18 +293,55 @@ const Register: React.FC = () => {
                     {errors.teamName && <p className="text-red-500 text-[10px] mt-2 uppercase font-mono">{errors.teamName}</p>}
                   </div>
 
-                  <div className="space-y-6">
-                    <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold block">Operator Access</label>
+                  <div className="space-y-8">
+                    <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold block">Operator Access (Min 2, Max 4)</label>
                     {members.map((m, i) => (
-                      <div key={i} className="flex gap-3 items-center">
-                        <div className="flex-1 grid grid-cols-2 gap-3">
-                          <input placeholder="Full Name" value={m.name} onChange={e => updateMember(i, 'name', e.target.value)} className="bg-white/[0.05] border border-white/5 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none" />
-                          <input placeholder="Email" value={m.email} onChange={e => updateMember(i, 'email', e.target.value)} className="bg-white/[0.05] border border-white/5 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none" />
+                      <div key={i} className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl relative">
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-widest">Member 0{i+1} — {m.role}</span>
+                          {i > 1 && (
+                            <button onClick={() => removeMember(i)} className="text-gray-600 hover:text-red-500 transition-colors">
+                              <Trash2 size={14} />
+                            </button>
+                          )}
                         </div>
-                        {i > 1 && <button onClick={() => removeMember(i)} className="text-gray-600 hover:text-red-500 p-2"><Trash2 size={16} /></button>}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <input 
+                              placeholder="Full Name" 
+                              value={m.name} 
+                              onChange={e => updateMember(i, 'name', e.target.value)} 
+                              className={`w-full bg-white/[0.05] border rounded-xl p-3 text-sm outline-none transition-all ${errors.members?.[i]?.name ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`} 
+                            />
+                            {errors.members?.[i]?.name && <p className="text-[8px] text-red-500 mt-1 uppercase font-mono">{errors.members[i].name}</p>}
+                          </div>
+                          <div>
+                            <input 
+                              placeholder="Email Address" 
+                              value={m.email} 
+                              onChange={e => updateMember(i, 'email', e.target.value)} 
+                              className={`w-full bg-white/[0.05] border rounded-xl p-3 text-sm outline-none transition-all ${errors.members?.[i]?.email ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`} 
+                            />
+                            {errors.members?.[i]?.email && <p className="text-[8px] text-red-500 mt-1 uppercase font-mono">{errors.members[i].email}</p>}
+                          </div>
+                          <div>
+                            <input 
+                              placeholder="10-Digit Phone" 
+                              value={m.phone} 
+                              maxLength={10}
+                              onChange={e => updateMember(i, 'phone', e.target.value.replace(/\D/g, ''))} 
+                              className={`w-full bg-white/[0.05] border rounded-xl p-3 text-sm outline-none transition-all ${errors.members?.[i]?.phone ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`} 
+                            />
+                            {errors.members?.[i]?.phone && <p className="text-[8px] text-red-500 mt-1 uppercase font-mono">{errors.members[i].phone}</p>}
+                          </div>
+                        </div>
                       </div>
                     ))}
-                    {members.length < 4 && <button onClick={addMember} className="w-full py-4 border border-dashed border-white/10 rounded-2xl text-xs text-gray-500 hover:text-indigo-400 flex items-center justify-center gap-2">+ Add Member</button>}
+                    {members.length < 4 && (
+                      <button onClick={addMember} className="w-full py-4 border border-dashed border-white/10 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-indigo-400 hover:border-indigo-500/50 transition-all flex items-center justify-center gap-2">
+                        <Plus size={14} /> Add Member
+                      </button>
+                    )}
                   </div>
 
                   <button 
@@ -337,7 +371,7 @@ const Register: React.FC = () => {
               <button onClick={handlePayment} disabled={isSubmitting} className="w-full py-5 bg-indigo-600 rounded-2xl font-bold flex items-center justify-center gap-3 disabled:opacity-50">
                 {isSubmitting ? <Loader2 className="animate-spin" /> : "Initiate Checkout"}
               </button>
-              <p className="text-[9px] text-gray-600 text-center mt-6 uppercase tracking-widest leading-relaxed">Secured via Razorpay Gateway. <br/>By proceeding, you agree to the legal manifest.</p>
+              <p className="text-[9px] text-gray-600 text-center mt-6 uppercase tracking-widest leading-relaxed">Secured via Razorpay. <br/>Registration fees are non-refundable.</p>
             </motion.div>
           )}
 
@@ -353,14 +387,13 @@ const Register: React.FC = () => {
                   {isUpdateMode ? 'Updated' : 'Deployed'}
                 </h2>
                 
-                <p className="text-gray-400 text-sm mb-6">Squad {registeredTeam?.teamName} manifest has been synchronized.</p>
+                <p className="text-gray-400 text-sm mb-6">Squad {registeredTeam?.teamName} sync complete.</p>
 
-                {/* Email Dispatch Progress */}
                 <div className="mb-10 inline-flex items-center gap-3 px-4 py-2 glass rounded-full border-white/5 no-print">
                   {emailStatus === 'sending' && (
                     <>
                       <Loader2 className="animate-spin text-indigo-400" size={14} />
-                      <span className="text-[9px] font-mono uppercase tracking-widest text-indigo-400">Dispatching manifest to {registeredTeam?.leadEmail}...</span>
+                      <span className="text-[9px] font-mono uppercase tracking-widest text-indigo-400">Dispatching manifest...</span>
                     </>
                   )}
                   {emailStatus === 'sent' && (
@@ -372,7 +405,7 @@ const Register: React.FC = () => {
                   {emailStatus === 'failed' && (
                     <>
                       <AlertTriangle className="text-amber-500" size={14} />
-                      <span className="text-[9px] font-mono uppercase tracking-widest text-amber-500">SMTP link unstable. QR backup active.</span>
+                      <span className="text-[9px] font-mono uppercase tracking-widest text-amber-500">SMTP unstable. QR backup active.</span>
                     </>
                   )}
                 </div>
@@ -390,7 +423,7 @@ const Register: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-center gap-4 no-print">
-                  <button onClick={() => window.location.href = '#/'} className="px-10 py-4 glass rounded-2xl text-sm font-bold">Home Hub</button>
+                  <button onClick={() => window.location.href = '/'} className="px-10 py-4 glass rounded-2xl text-sm font-bold">Home Hub</button>
                   <button onClick={() => window.print()} className="px-10 py-4 bg-indigo-600 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"><Printer size={18} /> Print Manifest</button>
                 </div>
               </div>
