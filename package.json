@@ -18,7 +18,8 @@
     "crypto-js": "4.2.0",
     "zod": "3.23.8",
     "qrcode.react": "4.1.0",
-    "jsqr": "1.4.0"
+    "jsqr": "1.4.0",
+    "@supabase/supabase-js": "2.48.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

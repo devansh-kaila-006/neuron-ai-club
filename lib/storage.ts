@@ -1,4 +1,5 @@
 
+import { createClient } from '@supabase/supabase-js';
 import { Team, PaymentStatus } from './types.ts';
 import { z } from 'zod';
 
@@ -28,14 +29,14 @@ const getEnv = (key: string): string | undefined => {
   }
 };
 
-const APP_ID = getEnv("MONGODB_APP_ID");
-const API_KEY = getEnv("MONGODB_API_KEY");
-const CLUSTER = getEnv("MONGODB_CLUSTER") || "Cluster0";
-const DATABASE = getEnv("MONGODB_DATABASE") || "neuron_db";
-const REGION = getEnv("MONGODB_REGION") || "us-east-1";
-const COLLECTION = 'teams';
+const SUPABASE_URL = getEnv("SUPABASE_URL");
+const SUPABASE_ANON_KEY = getEnv("SUPABASE_ANON_KEY");
+const TABLE_NAME = 'teams';
 
-const BASE_URL = `https://${REGION}.aws.data.mongodb-api.com/app/${APP_ID}/endpoint/data/v1/action`;
+// Initialize Supabase client
+const supabase = (SUPABASE_URL && SUPABASE_ANON_KEY) 
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
 
 export const generateSecureID = (prefix = '', length = 8) => {
   const array = new Uint32Array(1);
@@ -44,55 +45,30 @@ export const generateSecureID = (prefix = '', length = 8) => {
   return prefix ? `${prefix}-${randomStr}` : randomStr;
 };
 
-async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 500): Promise<T> {
-  try {
-    return await fn();
-  } catch (err) {
-    if (retries <= 0) throw err;
-    await new Promise(resolve => setTimeout(resolve, delay));
-    return withRetry(fn, retries - 1, delay * 2);
-  }
-}
-
-async function atlasFetch(action: string, body: any) {
-  if (!APP_ID || !API_KEY) {
-    console.warn(`[Persistence] Missing Credentials: ${!APP_ID ? 'MONGODB_APP_ID ' : ''}${!API_KEY ? 'MONGODB_API_KEY' : ''}. Operating in local-cache mode.`);
-    return null;
-  }
-  
-  return withRetry(async () => {
-    const response = await fetch(`${BASE_URL}/${action}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'api-key': API_KEY },
-      body: JSON.stringify({
-        dataSource: CLUSTER,
-        database: DATABASE,
-        collection: body.collection || COLLECTION,
-        ...body,
-      }),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Atlas API Error: ${response.status} - ${JSON.stringify(errorData)}`);
-    }
-    
-    return await response.json();
-  }).catch(err => {
-    console.error("[Persistence Layer] Uplink failure:", err.message);
-    return null;
-  });
-}
-
 export const storage = {
   async getTeams(): Promise<Team[]> {
-    const remoteData = await atlasFetch('find', { filter: {} });
-    if (remoteData?.documents) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteData.documents));
-      return remoteData.documents;
+    if (!supabase) {
+      console.warn("[Persistence] Supabase credentials missing. Operating in local-cache mode.");
+      const cached = localStorage.getItem(STORAGE_KEY);
+      return cached ? JSON.parse(cached) : [];
     }
-    const cached = localStorage.getItem(STORAGE_KEY);
-    return cached ? JSON.parse(cached) : [];
+
+    const { data, error } = await supabase
+      .from(TABLE_NAME)
+      .select('*');
+
+    if (error) {
+      console.error("[Persistence] Fetch error:", error.message);
+      const cached = localStorage.getItem(STORAGE_KEY);
+      return cached ? JSON.parse(cached) : [];
+    }
+
+    if (data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      return data as Team[];
+    }
+    
+    return [];
   },
 
   async saveTeam(team: Team): Promise<void> {
@@ -102,43 +78,101 @@ export const storage = {
       throw new Error("Neural Corrupt: Manifest failed integrity check.");
     }
 
+    // Update Local Cache
     const teams = await this.getTeams();
     const index = teams.findIndex(t => t.id === team.id);
     if (index >= 0) teams[index] = team;
     else teams.push(team);
-    
     localStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
-    await atlasFetch('updateOne', { 
-      filter: { id: team.id }, 
-      update: { $set: team },
-      upsert: true 
-    });
+
+    if (!supabase) return;
+
+    const { error } = await supabase
+      .from(TABLE_NAME)
+      .upsert(team, { onConflict: 'id' });
+
+    if (error) {
+      console.error("[Persistence] Save error:", error.message);
+      throw new Error("Neural Link Failure: Cloud sync failed.");
+    }
   },
 
   async findTeamByName(name: string): Promise<Team | null> {
-    const teams = await this.getTeams();
-    return teams.find(t => t.teamName.toLowerCase() === name.toLowerCase()) || null;
+    if (!supabase) {
+      const teams = await this.getTeams();
+      return teams.find(t => t.teamName.toLowerCase() === name.toLowerCase()) || null;
+    }
+
+    const { data, error } = await supabase
+      .from(TABLE_NAME)
+      .select('*')
+      .ilike('teamName', name)
+      .maybeSingle();
+
+    if (error) {
+      console.error("[Persistence] Query error:", error.message);
+    }
+
+    return (data as Team) || null;
   },
 
   async findTeamByTALOSID(talosID: string): Promise<Team | null> {
-    const teams = await this.getTeams();
-    return teams.find(t => t.teamID.toUpperCase() === talosID.toUpperCase()) || null;
+    if (!supabase) {
+      const teams = await this.getTeams();
+      return teams.find(t => t.teamID.toUpperCase() === talosID.toUpperCase()) || null;
+    }
+
+    const { data, error } = await supabase
+      .from(TABLE_NAME)
+      .select('*')
+      .eq('teamID', talosID.toUpperCase())
+      .maybeSingle();
+
+    if (error) {
+      console.error("[Persistence] Query error:", error.message);
+    }
+
+    return (data as Team) || null;
   },
 
   async updateCheckIn(id: string, status: boolean): Promise<void> {
+    // Update Local Cache
     const teams = await this.getTeams();
     const team = teams.find(t => t.id === id);
     if (team) {
       team.checkedIn = status;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
-      await atlasFetch('updateOne', { filter: { id }, update: { $set: { checkedIn: status } } });
+    }
+
+    if (!supabase) return;
+
+    const { error } = await supabase
+      .from(TABLE_NAME)
+      .update({ checkedIn: status })
+      .eq('id', id);
+
+    if (error) {
+      console.error("[Persistence] Update error:", error.message);
+      throw new Error("Neural Link Failure: Status update failed.");
     }
   },
 
   async deleteTeam(id: string): Promise<void> {
+    // Update Local Cache
     const teams = await this.getTeams();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(teams.filter(t => t.id !== id)));
-    await atlasFetch('deleteOne', { filter: { id } });
+
+    if (!supabase) return;
+
+    const { error } = await supabase
+      .from(TABLE_NAME)
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error("[Persistence] Delete error:", error.message);
+      throw new Error("Neural Link Failure: Deletion failed.");
+    }
   },
 
   async getStats() {

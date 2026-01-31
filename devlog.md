@@ -16,6 +16,8 @@
 - **Solution**: Refactored `authService` to throw a system error if `ADMIN_ACCESS_KEY` is not defined in the environment. No hardcoded fallback exists.
 - **Impact**: Ensures that without server-side environment configuration, the admin panel is inaccessible.
 
-### 4. Data Uplink Reliability
-- **Issue**: Unhandled Atlas API errors could lead to silent data loss.
-- **Solution**: Updated `atlasFetch` to log structured errors and include the response body in exceptions for better debugging. Added more granular logging for credential absence.
+### 4. Persistence Migration (Supabase Shift)
+- **Issue**: MongoDB Atlas Data API restrictions or regional availability issues.
+- **Solution**: Migrated the persistence layer from MongoDB Atlas to Supabase (PostgreSQL). 
+- **Implementation**: Used `@supabase/supabase-js` for robust RESTful communication. Preserved hybrid local-cache logic for high-performance offline resilience.
+- **Impact**: Leverages Row Level Security (RLS) and standardized SQL queries for future-proofing the "Neural Hub".
