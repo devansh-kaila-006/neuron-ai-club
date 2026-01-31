@@ -3,21 +3,21 @@
 
 ### 1. Entropy & ID Management
 - **Issue**: Use of `Math.random()` created predictable/guessable team IDs and sequences.
-- **Solution**: Implemented `generateSecureID` using `window.crypto.getRandomValues()`. This ensures IDs are non-sequential and cryptographically strong.
-- **Impact**: Mitigates ID enumeration attacks on the registration lookup.
+- **Solution**: Implemented `generateSecureID` using `window.crypto.getRandomValues()`.
+- **Impact**: Mitigates ID enumeration attacks.
 
 ### 2. Payment Integrity
 - **Issue**: Hardcoded `sim_order` string allowed for client-side payment bypass.
-- **Solution**: Removed all simulation/bypass logic in `paymentService`. Strict HMAC-SHA256 signature verification is now mandatory.
-- **Impact**: Closes the most significant financial loophole in the registration flow.
+- **Solution**: Removed all simulation/bypass logic. Strict HMAC-SHA256 signature verification is mandatory.
+- **Impact**: Secures financial registration flow.
 
-### 3. Authentication Hardening
-- **Issue**: Default "admin123" password made the Executive Terminal vulnerable to automated scans.
-- **Solution**: Refactored `authService` to throw a system error if `ADMIN_ACCESS_KEY` is not defined in the environment. No hardcoded fallback exists.
-- **Impact**: Ensures that without server-side environment configuration, the admin panel is inaccessible.
+### 3. Hashed Authentication (VITE_ Shielding)
+- **Issue**: Storing plain-text passwords in `VITE_` variables makes them visible in the browser's DevTools (F12).
+- **Solution**: Migrated to SHA-256 Hashed Authentication. The environment variable now stores `VITE_ADMIN_HASH`. 
+- **Implementation**: The client computes the hash of the user's input and compares it to the stored hash. The original password is never part of the bundle.
+- **Action Required**: Admins must generate a SHA-256 hash of their password and set it as `VITE_ADMIN_HASH` in the environment configuration.
 
 ### 4. Persistence Migration (Supabase Shift)
-- **Issue**: MongoDB Atlas Data API restrictions or regional availability issues.
-- **Solution**: Migrated the persistence layer from MongoDB Atlas to Supabase (PostgreSQL). 
-- **Implementation**: Used `@supabase/supabase-js` for robust RESTful communication. Preserved hybrid local-cache logic for high-performance offline resilience.
-- **Impact**: Leverages Row Level Security (RLS) and standardized SQL queries for future-proofing the "Neural Hub".
+- **Issue**: MongoDB Atlas Data API restrictions.
+- **Solution**: Migrated to Supabase (PostgreSQL).
+- **Impact**: Standardized SQL and RLS for better data integrity.

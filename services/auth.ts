@@ -1,26 +1,23 @@
 
 import { api } from './api.ts';
+import CryptoJS from 'crypto-js';
 
 /**
  * Universal environment variable retriever.
- * Checks all possible locations where Vercel, Vite, or the platform might inject variables.
  */
 const getEnv = (key: string): string | undefined => {
   try {
-    // 1. Check window.process.env (standard browser shim)
     if (typeof window !== 'undefined' && (window as any).process?.env) {
       const val = (window as any).process.env[key] || (window as any).process.env[`VITE_${key}`];
       if (val) return val;
     }
 
-    // 2. Check import.meta.env (Vite standard)
     const metaEnv = (import.meta as any).env;
     if (metaEnv) {
       if (metaEnv[key]) return metaEnv[key];
       if (metaEnv[`VITE_${key}`]) return metaEnv[`VITE_${key}`];
     }
 
-    // 3. Check global process
     if (typeof process !== 'undefined' && process.env) {
       const val = process.env[key] || process.env[`VITE_${key}`];
       if (val) return val;
@@ -33,19 +30,28 @@ const getEnv = (key: string): string | undefined => {
 };
 
 export const authService = {
+  /**
+   * Secure Hashed SignIn
+   * Compares the SHA-256 hash of the input password with the hash stored in VITE_ADMIN_HASH.
+   * This ensures the plain-text password is never exposed in the source code.
+   */
   async signIn(password: string) {
     return api.call(async () => {
-      const secureKey = getEnv("ADMIN_ACCESS_KEY");
+      // Look for the HASH, not the plain text key
+      const secureHash = getEnv("ADMIN_HASH");
       
-      if (!secureKey) {
-        console.error("NEURØN Security: ADMIN_ACCESS_KEY is missing from all detected environment objects.");
+      if (!secureHash) {
+        console.error("NEURØN Security: VITE_ADMIN_HASH is missing from environment. Authentication disabled.");
         throw { 
           status: 500, 
-          message: "SYSTEM ERROR: ADMIN_ACCESS_KEY not found. Ensure the variable is set in the Vercel Dashboard. If you just set it, you MUST redeploy the app for the change to take effect in the browser bundle." 
+          message: "CRITICAL: Security Grid Offline. ADMIN_HASH not detected in system environment." 
         };
       }
 
-      if (password === secureKey) {
+      // Compute hash of user input
+      const inputHash = CryptoJS.SHA256(password).toString();
+
+      if (inputHash === secureHash) {
         const payload = { 
           role: 'ADMIN', 
           iat: Date.now(), 
