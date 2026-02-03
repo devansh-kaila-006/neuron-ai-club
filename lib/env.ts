@@ -19,12 +19,9 @@ export const getEnv = (key: string): string | undefined => {
       const env = (window as any).process.env;
       if (env[viteKey]) return env[viteKey];
       if (env[key]) return env[key];
-    }
-
-    // 3. Check Global Process (Node-like environments)
-    if (typeof process !== 'undefined' && process.env) {
-      if (process.env[viteKey]) return process.env[viteKey];
-      if (process.env[key]) return process.env[key];
+      // Fallback for direct global process access if shimmed
+      if ((process as any).env?.[viteKey]) return (process as any).env[viteKey];
+      if ((process as any).env?.[key]) return (process as any).env[key];
     }
   } catch (e) {
     // Silent fail for environments with strict scope access
