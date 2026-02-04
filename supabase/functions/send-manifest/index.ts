@@ -13,61 +13,73 @@ serve(async (req) => {
 
   try {
     const { team } = await req.json()
-    const RESEND_API_KEY = process.env.RESEND_API_KEY;
+    
+    // Support multiple keys comma-separated
+    const keysString = process.env.RESEND_API_KEYS || process.env.RESEND_API_KEY || "";
+    const apiKeys = keysString.split(',').map(k => k.trim()).filter(k => k.length > 0);
 
-    if (!RESEND_API_KEY) {
-      console.warn("[Neural Comms] RESEND_API_KEY missing. Falling back to simulation mode.");
+    if (apiKeys.length === 0) {
+      console.warn("[Neural Comms] No Resend API Keys found. Simulation mode.");
       return new Response(
-        JSON.stringify({ success: true, message: "Simulation: Manifest logged to console." }),
+        JSON.stringify({ success: true, message: "Simulation: Manifest logged." }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // QR Code URL for the team ID
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${team.teamID}&bgcolor=050505&color=4f46e5&margin=10`;
+    
+    let lastError = null;
+    let success = false;
+    let responseData = null;
 
-    // Production Resend Dispatch
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: 'NEURØN Core <onboarding@resend.dev>', // Replace with your verified domain
-        to: [team.leadEmail],
-        subject: `[AUTHENTICATED] TALOS 2026 Manifest: ${team.teamID}`,
-        html: `
-          <div style="font-family: sans-serif; background: #050505; color: #ffffff; padding: 40px; border-radius: 20px; text-align: center;">
-            <h1 style="color: #4f46e5; margin-bottom: 10px;">NEURØN | TALOS 2026</h1>
-            <p style="color: #888; font-size: 14px;">Squad manifest successfully anchored in the neural grid.</p>
-            
-            <div style="background: #111; padding: 30px; border: 1px solid #333; border-radius: 20px; margin: 30px 0; display: inline-block; min-width: 280px;">
-              <p style="margin: 0 0 10px 0; color: #555; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">Squad Identity</p>
-              <h2 style="margin: 0 0 20px 0; font-size: 24px;">${team.teamName}</h2>
-              
-              <div style="background: #000; padding: 15px; border-radius: 15px; border: 1px solid #4f46e5; margin-bottom: 20px; display: inline-block;">
-                <img src="${qrUrl}" alt="TALOS QR ID" style="display: block; width: 150px; height: 150px;" />
+    // Try each API key until one succeeds (for rate limit handling)
+    for (const apiKey of apiKeys) {
+      try {
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            from: 'NEURØN Core <onboarding@resend.dev>',
+            to: [team.leadEmail],
+            subject: `[AUTHENTICATED] TALOS 2026 Manifest: ${team.teamID}`,
+            html: `
+              <div style="font-family: sans-serif; background: #050505; color: #ffffff; padding: 40px; border-radius: 20px; text-align: center;">
+                <h1 style="color: #4f46e5; margin-bottom: 10px;">NEURØN | TALOS 2026</h1>
+                <p style="color: #888; font-size: 14px;">Squad manifest anchored for Feb 20, 2026.</p>
+                
+                <div style="background: #111; padding: 30px; border: 1px solid #333; border-radius: 20px; margin: 30px 0; display: inline-block;">
+                  <p style="color: #555; font-size: 10px; text-transform: uppercase;">Squad Identity</p>
+                  <h2 style="font-size: 24px;">${team.teamName}</h2>
+                  <img src="${qrUrl}" alt="QR" style="width: 150px; height: 150px; border: 1px solid #4f46e5; margin: 20px 0;" />
+                  <p style="color: #4f46e5; font-family: monospace; font-size: 20px; letter-spacing: 4px;">${team.teamID}</p>
+                </div>
               </div>
-              
-              <p style="margin: 10px 0 0 0; color: #4f46e5; font-family: monospace; font-size: 20px; font-weight: bold; letter-spacing: 4px;">
-                ${team.teamID}
-              </p>
-            </div>
-            
-            <p style="font-size: 11px; color: #444; margin-top: 30px;">
-              This is an authenticated dispatch from the NEURØN Core Unit. <br/>
-              Present this QR code at the Innovation Hall checkpoint for entry.
-            </p>
-          </div>
-        `,
-      }),
-    });
+            `,
+          }),
+        });
 
-    const data = await res.json();
+        if (res.ok) {
+          responseData = await res.json();
+          success = true;
+          break;
+        } else {
+          lastError = await res.text();
+          console.warn(`[Neural Comms] Key rotation: ${lastError}`);
+        }
+      } catch (err) {
+        lastError = err.message;
+      }
+    }
+
+    if (!success) {
+      throw new Error(`All dispatch channels exhausted: ${lastError}`);
+    }
 
     return new Response(
-      JSON.stringify({ success: true, data }),
+      JSON.stringify({ success: true, data: responseData }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
