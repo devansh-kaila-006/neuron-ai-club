@@ -33,7 +33,7 @@ export const paymentService = {
         amount: order.amount,
         currency: order.currency,
         name: "NEURØN Core",
-        description: `TALOS 2025 Registry - ${options.teamName}`,
+        description: `TALOS 2026 Registry - ${options.teamName}`,
         image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=200",
         order_id: order.id,
         handler: options.onSuccess,

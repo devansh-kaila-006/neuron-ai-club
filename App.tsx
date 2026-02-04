@@ -61,7 +61,7 @@ const App: React.FC = () => {
                     <div className="flex flex-col gap-3 text-left">
                       <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-1">Grid Navigation</p>
                       <Link to="/" className="text-xs text-gray-600 hover:text-indigo-400">Hub Hub</Link>
-                      <Link to="/hackathon" className="text-xs text-gray-600 hover:text-indigo-400">TALOS 2025</Link>
+                      <Link to="/hackathon" className="text-xs text-gray-600 hover:text-indigo-400">TALOS 2026</Link>
                       <Link to="/team" className="text-xs text-gray-600 hover:text-indigo-400">The Core Council</Link>
                     </div>
                     <div className="flex flex-col gap-3 text-left">
@@ -81,7 +81,7 @@ const App: React.FC = () => {
                   </div>
                 </div>
                 <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between gap-4 text-[9px] text-gray-700 font-mono uppercase tracking-[0.2em]">
-                  <p>© 2025 NEURØN CORE UNIT | ALL RIGHTS RESERVED</p>
+                  <p>© 2026 NEURØN CORE UNIT | ALL RIGHTS RESERVED</p>
                   <p>Designed for the next generation of synthetic intelligence</p>
                 </div>
               </div>

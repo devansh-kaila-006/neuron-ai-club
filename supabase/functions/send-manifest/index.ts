@@ -36,10 +36,10 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'NEURØN Core <onboarding@resend.dev>', // Replace with your verified domain
         to: [team.leadEmail],
-        subject: `[AUTHENTICATED] TALOS 2025 Manifest: ${team.teamID}`,
+        subject: `[AUTHENTICATED] TALOS 2026 Manifest: ${team.teamID}`,
         html: `
           <div style="font-family: sans-serif; background: #050505; color: #ffffff; padding: 40px; border-radius: 20px; text-align: center;">
-            <h1 style="color: #4f46e5; margin-bottom: 10px;">NEURØN | TALOS 2025</h1>
+            <h1 style="color: #4f46e5; margin-bottom: 10px;">NEURØN | TALOS 2026</h1>
             <p style="color: #888; font-size: 14px;">Squad manifest successfully anchored in the neural grid.</p>
             
             <div style="background: #111; padding: 30px; border: 1px solid #333; border-radius: 20px; margin: 30px 0; display: inline-block; min-width: 280px;">
