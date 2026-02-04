@@ -15,6 +15,7 @@ const RAZORPAY_KEY_ID = getEnv("RAZORPAY_KEY_ID");
 export const paymentService = {
   async checkout(options: { 
     teamName: string, 
+    members: any[],
     email: string, 
     phone: string, 
     onSuccess: (response: any) => void 
@@ -37,6 +38,14 @@ export const paymentService = {
         image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=200",
         order_id: order.id,
         handler: options.onSuccess,
+        // CRITICAL: Webhook-First Payload
+        notes: {
+          teamData: JSON.stringify({
+            teamName: options.teamName,
+            members: options.members,
+            leadEmail: options.email
+          })
+        },
         prefill: {
           name: options.teamName,
           email: options.email,
@@ -52,10 +61,6 @@ export const paymentService = {
     });
   },
 
-  /**
-   * Secure Backend Verification
-   * Calls the 'verify-payment' Supabase function which holds the RAZORPAY_SECRET.
-   */
   async verifyPayment(orderId: string, paymentId: string, signature: string, teamData: Partial<Team>) {
     return api.call(async () => {
       if (!supabase) throw new Error("Neural Grid Offline.");
@@ -65,7 +70,6 @@ export const paymentService = {
       });
       
       if (error || !data.success) {
-        console.error("[Security Violation] Backend verification rejected the signature.");
         throw new Error(error?.message || "Security Breach: Neural payment verification failed.");
       }
 

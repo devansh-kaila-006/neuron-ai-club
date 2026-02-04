@@ -43,7 +43,6 @@ const Register: React.FC = () => {
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
 
-  // Use sessionStorage for drafts: survives reload, but clears on new session/tab close
   useEffect(() => {
     const saved = sessionStorage.getItem('neuron_draft_v4');
     if (saved && !isUpdateMode) {
@@ -82,7 +81,6 @@ const Register: React.FC = () => {
   const handleReset = () => {
     if (window.confirm("Purge local manifest draft and start fresh?")) {
       sessionStorage.removeItem('neuron_draft_v4');
-      localStorage.removeItem('neuron_draft_v3'); // Clear legacy drafts too
       setTeamName('');
       setMembers([
         { name: '', email: '', phone: '', role: 'Lead' },
@@ -96,7 +94,7 @@ const Register: React.FC = () => {
 
   const handleLookup = async () => {
     if (!lookupID.startsWith('TALOS-')) {
-      setLookupError("Invalid ID. Format: TALOS-XXXX");
+      setLookupError("Invalid ID. Format: TALOS-XXXXXX");
       return;
     }
     setIsLookingUp(true);
@@ -110,10 +108,9 @@ const Register: React.FC = () => {
         setIsUpdateMode(true);
         setErrors({});
         setLookupID('');
-        toast.success("Manifest retrieved. Terminal unlocked.");
+        toast.success("Manifest retrieved.");
       } else {
         setLookupError("Sequence not found.");
-        toast.error("Lookup failed.");
       }
     } catch (err) {
       setLookupError("Grid failure.");
@@ -127,7 +124,6 @@ const Register: React.FC = () => {
     setRegisteredTeam(null);
     setTeamName('');
     setMembers([{ name: '', email: '', phone: '', role: 'Lead' }, { name: '', email: '', phone: '', role: 'Developer' }]);
-    toast.info("Update mode closed.");
   };
 
   const handleProceedToPayment = () => {
@@ -145,12 +141,11 @@ const Register: React.FC = () => {
         }
       });
       setErrors(formattedErrors);
-      toast.error("Integrity Error: Review required fields.");
+      toast.error("Review required fields.");
       return;
     }
     
     if (!isUpdateMode && nameAvailability === 'taken') {
-      toast.error("Squad name already deployed.");
       return setErrors({ teamName: "This squad name is already deployed." });
     }
     
@@ -175,7 +170,7 @@ const Register: React.FC = () => {
       await storage.saveTeam(updatedTeam);
       setRegisteredTeam(updatedTeam);
       setStep(3);
-      toast.success("Manifest successfully synchronized.");
+      toast.success("Manifest synchronized.");
     } catch (err: any) {
       toast.error(`Sync failure: ${err.message}`);
     } finally {
@@ -188,37 +183,42 @@ const Register: React.FC = () => {
     try {
       await paymentService.checkout({
         teamName,
+        members,
         email: members[0].email,
         phone: members[0].phone,
         onSuccess: async (response: any) => {
+          // Attempt immediate sync
+          toast.info("Payment confirmed. Synchronizing...");
           const verifyRes = await paymentService.verifyPayment(
             response.razorpay_order_id, 
             response.razorpay_payment_id, 
             response.razorpay_signature, 
             { teamName, members, leadEmail: members[0].email }
           );
+          
           if (verifyRes.success) {
-            setRegisteredTeam(verifyRes.data!);
-            setStep(3);
-            sessionStorage.removeItem('neuron_draft_v4');
-            localStorage.removeItem('neuron_draft_v3');
-            toast.success("Payment authorized.");
-            
-            setEmailStatus('sending');
-            try { 
-              await commsService.sendManifestEmail(verifyRes.data!); 
-              setEmailStatus('sent'); 
-              toast.info("Manifest emailed.");
-            } catch (err) { 
-              setEmailStatus('failed');
-              toast.error("Email failure. Use QR.");
-            }
+            finishRegistration(verifyRes.data!);
           }
         }
       });
     } catch (err: any) {
       toast.error(`Payment error: ${err.message}`);
     } finally { setIsSubmitting(false); }
+  };
+
+  const finishRegistration = async (team: Team) => {
+    setRegisteredTeam(team);
+    setStep(3);
+    sessionStorage.removeItem('neuron_draft_v4');
+    toast.success("Neural Manifest Anchored.");
+    
+    setEmailStatus('sending');
+    try { 
+      await commsService.sendManifestEmail(team); 
+      setEmailStatus('sent'); 
+    } catch (err) { 
+      setEmailStatus('failed');
+    }
   };
 
   return (
@@ -255,7 +255,7 @@ const Register: React.FC = () => {
                       <input 
                         value={lookupID}
                         onChange={e => setLookupID(e.target.value.toUpperCase())}
-                        placeholder="TALOS-XXXX"
+                        placeholder="TALOS-XXXXXX"
                         className="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-4 text-xs font-mono outline-none focus:border-indigo-500 transition-all"
                       />
                       {lookupError && <p className="absolute -bottom-5 left-0 text-[8px] text-red-500 font-mono uppercase">{lookupError}</p>}
@@ -273,32 +273,21 @@ const Register: React.FC = () => {
 
               <div className="max-w-3xl mx-auto space-y-6">
                 <div className="glass p-8 md:p-12 rounded-3xl border-indigo-500/10 shadow-2xl relative overflow-hidden">
-                  {isUpdateMode && (
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animate-pulse" />
-                  )}
-
                   <div className="flex justify-between items-start mb-10">
                     <div className="flex items-center gap-3">
                       <Cpu className="text-indigo-400" size={28} />
-                      <div>
-                        <h2 className="text-2xl font-bold tracking-tight">
-                          {isUpdateMode ? 'Modify Manifest' : 'Neural Registry'}
-                        </h2>
-                        {isUpdateMode && <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Editing: {registeredTeam?.teamID}</p>}
-                      </div>
+                      <h2 className="text-2xl font-bold tracking-tight">
+                        {isUpdateMode ? 'Modify Manifest' : 'Neural Registry'}
+                      </h2>
                     </div>
                     <div className="flex items-center gap-4">
                       {!isUpdateMode && (
-                        <button 
-                          onClick={handleReset} 
-                          title="Purge Draft"
-                          className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-red-400 transition-colors px-3 py-2 glass rounded-xl border-white/5"
-                        >
-                          <RotateCcw size={14} /> Reset Terminal
+                        <button onClick={handleReset} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-red-400 px-3 py-2 glass rounded-xl border-white/5">
+                          <RotateCcw size={14} /> Reset
                         </button>
                       )}
                       {isUpdateMode && (
-                        <button onClick={cancelUpdate} className="p-2 glass rounded-lg text-gray-500 hover:text-white transition-colors">
+                        <button onClick={cancelUpdate} className="p-2 glass rounded-lg text-gray-500 hover:text-white">
                           <X size={18} />
                         </button>
                       )}
@@ -314,13 +303,7 @@ const Register: React.FC = () => {
                         className={`w-full bg-white/5 border rounded-2xl p-5 outline-none transition-all text-lg font-medium ${errors.teamName ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
                         placeholder="Ex: CyberDynasty"
                       />
-                      <div className="absolute right-5 top-1/2 -translate-y-1/2">
-                        {nameAvailability === 'checking' && <Loader2 className="animate-spin text-gray-500" size={20} />}
-                        {nameAvailability === 'available' && <CheckCircle className="text-green-500" size={20} />}
-                        {nameAvailability === 'taken' && <Trash2 className="text-red-500" size={20} />}
-                      </div>
                     </div>
-                    {errors.teamName && <p className="text-red-500 text-[10px] mt-2 uppercase font-mono">{errors.teamName}</p>}
                   </div>
 
                   <div className="space-y-8">
@@ -329,46 +312,17 @@ const Register: React.FC = () => {
                       <div key={i} className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl relative">
                         <div className="flex justify-between items-center mb-4">
                           <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-widest">Member 0{i+1} — {m.role}</span>
-                          {i > 1 && (
-                            <button onClick={() => removeMember(i)} className="text-gray-600 hover:text-red-500 transition-colors">
-                              <Trash2 size={14} />
-                            </button>
-                          )}
+                          {i > 1 && <button onClick={() => removeMember(i)} className="text-gray-600 hover:text-red-500"><Trash2 size={14} /></button>}
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <input 
-                              placeholder="Full Name" 
-                              value={m.name} 
-                              onChange={e => updateMember(i, 'name', e.target.value)} 
-                              className={`w-full bg-white/[0.05] border rounded-xl p-3 text-sm outline-none transition-all ${errors.members?.[i]?.name ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`} 
-                            />
-                            {errors.members?.[i]?.name && <p className="text-[8px] text-red-500 mt-1 uppercase font-mono">{errors.members[i].name}</p>}
-                          </div>
-                          <div>
-                            <input 
-                              placeholder="Email Address" 
-                              value={m.email} 
-                              onChange={e => updateMember(i, 'email', e.target.value)} 
-                              className={`w-full bg-white/[0.05] border rounded-xl p-3 text-sm outline-none transition-all ${errors.members?.[i]?.email ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`} 
-                            />
-                            {errors.members?.[i]?.email && <p className="text-[8px] text-red-500 mt-1 uppercase font-mono">{errors.members[i].email}</p>}
-                          </div>
-                          <div>
-                            <input 
-                              placeholder="10-Digit Phone" 
-                              value={m.phone} 
-                              maxLength={10}
-                              onChange={e => updateMember(i, 'phone', e.target.value.replace(/\D/g, ''))} 
-                              className={`w-full bg-white/[0.05] border rounded-xl p-3 text-sm outline-none transition-all ${errors.members?.[i]?.phone ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`} 
-                            />
-                            {errors.members?.[i]?.phone && <p className="text-[8px] text-red-500 mt-1 uppercase font-mono">{errors.members[i].phone}</p>}
-                          </div>
+                          <input placeholder="Name" value={m.name} onChange={e => updateMember(i, 'name', e.target.value)} className="w-full bg-white/[0.05] border border-white/5 rounded-xl p-3 text-sm outline-none focus:border-indigo-500" />
+                          <input placeholder="Email" value={m.email} onChange={e => updateMember(i, 'email', e.target.value)} className="w-full bg-white/[0.05] border border-white/5 rounded-xl p-3 text-sm outline-none focus:border-indigo-500" />
+                          <input placeholder="Phone" value={m.phone} maxLength={10} onChange={e => updateMember(i, 'phone', e.target.value.replace(/\D/g, ''))} className="w-full bg-white/[0.05] border border-white/5 rounded-xl p-3 text-sm outline-none focus:border-indigo-500" />
                         </div>
                       </div>
                     ))}
                     {members.length < 4 && (
-                      <button onClick={addMember} className="w-full py-4 border border-dashed border-white/10 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-indigo-400 hover:border-indigo-500/50 transition-all flex items-center justify-center gap-2">
+                      <button onClick={addMember} className="w-full py-4 border border-dashed border-white/10 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-indigo-400 hover:border-indigo-500/50 flex items-center justify-center gap-2">
                         <Plus size={14} /> Add Member
                       </button>
                     )}
@@ -376,15 +330,11 @@ const Register: React.FC = () => {
 
                   <button 
                     onClick={handleProceedToPayment} 
-                    className={`w-full mt-12 py-5 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl group ${
-                      isUpdateMode ? 'bg-purple-600 hover:bg-purple-500' : 'bg-indigo-600 hover:bg-indigo-500'
+                    className={`w-full mt-12 py-5 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-xl group ${
+                      isUpdateMode ? 'bg-purple-600' : 'bg-indigo-600'
                     }`}
                   >
-                    {isUpdateMode ? (
-                      <><Save size={20}/> Synchronize Manifest</>
-                    ) : (
-                      <>Authorize Registration <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /></>
-                    )}
+                    {isUpdateMode ? <Save size={20}/> : <><ArrowRight size={20}/> Proceed to Escrow</>}
                   </button>
                 </div>
               </div>
@@ -395,60 +345,23 @@ const Register: React.FC = () => {
             <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="glass p-12 rounded-[2.5rem] max-w-md mx-auto border-indigo-500/20 shadow-2xl">
               <div className="flex justify-between items-center mb-10"><h2 className="text-2xl font-bold">Escrow Detail</h2><CreditCard className="text-indigo-400" size={28} /></div>
               <div className="bg-white/5 rounded-3xl p-8 mb-10 border border-white/5 text-center">
-                <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Total Access Fee</p>
                 <p className="text-5xl font-bold text-white">₹499</p>
               </div>
-              <button onClick={handlePayment} disabled={isSubmitting} className="w-full py-5 bg-indigo-600 rounded-2xl font-bold flex items-center justify-center gap-3 disabled:opacity-50">
+              <button onClick={handlePayment} disabled={isSubmitting} className="w-full py-5 bg-indigo-600 rounded-2xl font-bold flex items-center justify-center gap-3">
                 {isSubmitting ? <Loader2 className="animate-spin" /> : "Initiate Checkout"}
               </button>
-              <p className="text-[9px] text-gray-600 text-center mt-6 uppercase tracking-widest leading-relaxed">Secured via Razorpay. <br/>Registration fees are non-refundable.</p>
             </motion.div>
           )}
 
           {step === 3 && (
             <motion.div key="s3" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center max-w-2xl mx-auto">
               <div className="glass p-16 rounded-[3.5rem] border-green-500/20 shadow-2xl manifest-card relative">
-                <div className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-2 text-[8px] font-mono text-green-500 uppercase tracking-widest bg-green-500/5 px-3 py-1 rounded-full border border-green-500/20">
-                  <ShieldCheck size={10} /> Authenticated Manifest
-                </div>
-                
-                <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto mb-10 mt-6"><CheckCircle size={48} /></div>
-                <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent uppercase">
-                  {isUpdateMode ? 'Updated' : 'Deployed'}
-                </h2>
-                
+                <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto mb-10"><CheckCircle size={48} /></div>
+                <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent uppercase">Deployed</h2>
                 <p className="text-gray-400 text-sm mb-6">Squad {registeredTeam?.teamName} sync complete.</p>
-
-                <div className="mb-10 inline-flex items-center gap-3 px-4 py-2 glass rounded-full border-white/5 no-print">
-                  {emailStatus === 'sending' && (
-                    <>
-                      <Loader2 className="animate-spin text-indigo-400" size={14} />
-                      <span className="text-[9px] font-mono uppercase tracking-widest text-indigo-400">Dispatching manifest...</span>
-                    </>
-                  )}
-                  {emailStatus === 'sent' && (
-                    <>
-                      <Send className="text-green-500" size={14} />
-                      <span className="text-[9px] font-mono uppercase tracking-widest text-green-500">Manifest anchored in inbox.</span>
-                    </>
-                  )}
-                  {emailStatus === 'failed' && (
-                    <>
-                      <AlertTriangle className="text-amber-500" size={14} />
-                      <span className="text-[9px] font-mono uppercase tracking-widest text-amber-500">SMTP unstable. QR backup active.</span>
-                    </>
-                  )}
-                </div>
                 
                 <div className="bg-white/[0.03] p-8 rounded-3xl border border-white/5 mb-10 block">
-                  <QRCodeSVG 
-                    value={registeredTeam?.teamID || ''} 
-                    size={180} 
-                    level="H" 
-                    includeMargin={true}
-                    fgColor="#ffffff"
-                    bgColor="transparent"
-                  />
+                  <QRCodeSVG value={registeredTeam?.teamID || ''} size={180} level="H" includeMargin={true} fgColor="#ffffff" bgColor="transparent" />
                   <p className="text-2xl font-bold font-mono tracking-[0.3em] mt-6 text-indigo-400">{registeredTeam?.teamID}</p>
                 </div>
 

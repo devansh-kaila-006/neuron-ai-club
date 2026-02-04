@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Calendar, MapPin, ChevronDown, ChevronUp, Sparkles, Trophy, Users, Lightbulb } from 'lucide-react';
 
@@ -7,8 +7,8 @@ const Hackathon: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
   useEffect(() => {
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + 14); // 2 weeks from now
+    // TALOS 2026 Launch: Feb 20, 2026 at 9:00 PM (21:00)
+    const targetDate = new Date('2026-02-20T21:00:00');
 
     const timer = setInterval(() => {
       const now = new Date();
@@ -16,6 +16,7 @@ const Hackathon: React.FC = () => {
       
       if (diff <= 0) {
         clearInterval(timer);
+        setTimeLeft({ days: 0, hours: 0, mins: 0, secs: 0 });
       } else {
         setTimeLeft({
           days: Math.floor(diff / (1000 * 60 * 60 * 24)),
@@ -74,7 +75,7 @@ const Hackathon: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-400 rounded-full border border-indigo-500/20 mb-8"
           >
             <Clock className="w-4 h-4" />
-            <span className="text-sm font-bold">COUNTDOWN TO TALOS</span>
+            <span className="text-sm font-bold">COUNTDOWN TO FEB 20</span>
           </motion.div>
           <div className="grid grid-cols-4 gap-4 md:gap-8 max-w-2xl mx-auto">
             {Object.entries(timeLeft).map(([key, val]) => (

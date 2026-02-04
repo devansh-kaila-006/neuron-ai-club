@@ -26,12 +26,11 @@ const SUPABASE_URL = getEnv("SUPABASE_URL");
 const SUPABASE_ANON_KEY = getEnv("SUPABASE_ANON_KEY");
 const TABLE_NAME = 'teams';
 
-// Exported for services to use .functions.invoke()
 export const supabase: SupabaseClient | null = (SUPABASE_URL && SUPABASE_ANON_KEY) 
   ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
-export const generateSecureID = (prefix = '', length = 8) => {
+export const generateSecureID = (prefix = '', length = 6) => {
   const array = new Uint32Array(1);
   window.crypto.getRandomValues(array);
   const randomStr = array[0].toString(36).substring(0, length).toUpperCase();

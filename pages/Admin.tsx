@@ -60,8 +60,8 @@ const Admin: React.FC = () => {
     
     try {
       const [data, s] = await Promise.all([storage.getTeams(), storage.getStats()]);
-      setTeams(data);
-      setStats(s);
+      setTeams(data || []);
+      setStats(s || { totalTeams: 0, paidTeams: 0, checkedIn: 0, revenue: 0 });
     } catch (err) {
       addLog("Grid uplink unstable", 'warn');
     } finally {
@@ -69,6 +69,23 @@ const Admin: React.FC = () => {
       setIsPolling(false);
     }
   };
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const s = await authService.getSession();
+        if (s) {
+          setIsAuthenticated(true);
+          await fetchData();
+        }
+      } catch (err) {
+        console.error("Auth session check failed", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -113,13 +130,13 @@ const Admin: React.FC = () => {
     const rows = teams.map(team => {
       return [
         team.teamID,
-        `"${team.teamName.replace(/"/g, '""')}"`,
+        `"${(team.teamName || '').replace(/"/g, '""')}"`,
         team.leadEmail,
-        `"${(team.members[0]?.name || '').replace(/"/g, '""')}"`,
-        `"${(team.members[1]?.name || '').replace(/"/g, '""')}"`,
-        `"${(team.members[2]?.name || '').replace(/"/g, '""')}"`,
-        `"${(team.members[3]?.name || '').replace(/"/g, '""')}"`,
-        team.paymentStatus.toUpperCase(),
+        `"${(team.members?.[0]?.name || '').replace(/"/g, '""')}"`,
+        `"${(team.members?.[1]?.name || '').replace(/"/g, '""')}"`,
+        `"${(team.members?.[2]?.name || '').replace(/"/g, '""')}"`,
+        `"${(team.members?.[3]?.name || '').replace(/"/g, '""')}"`,
+        (team.paymentStatus || 'pending').toUpperCase(),
         team.checkedIn ? "YES" : "NO",
         new Date(team.registeredAt).toLocaleString()
       ];
@@ -134,17 +151,6 @@ const Admin: React.FC = () => {
     link.click();
     addLog("Manifest Exported", 'success');
   };
-
-  useEffect(() => {
-    authService.getSession().then(s => { 
-      if (s) { 
-        setIsAuthenticated(true); 
-        fetchData(); 
-      } else {
-        setIsLoading(false);
-      }
-    });
-  }, []);
 
   useEffect(() => {
     if (isScannerOpen) startCamera();
@@ -166,6 +172,7 @@ const Admin: React.FC = () => {
     } catch (err) {
       addLog("Optical link denied", 'warn');
       toast.error("Camera access denied.");
+      setIsScannerOpen(false);
     }
   };
 
@@ -208,8 +215,8 @@ const Admin: React.FC = () => {
       const res = await authService.signIn(password);
       if (res.success) { 
         setIsAuthenticated(true); 
-        setPassword(''); // Secure Wipe on Success
-        fetchData(); 
+        setPassword(''); 
+        await fetchData(); 
         toast.success("Executive override successful.");
       } else {
         setLoginError(res.error || "Access Denied");
@@ -251,16 +258,28 @@ const Admin: React.FC = () => {
   const handleLogout = async () => {
     await authService.signOut();
     setIsAuthenticated(false);
-    setPassword(''); // Secure Wipe on Logout
+    setPassword(''); 
     toast.info("Terminal session terminated.");
   };
 
   const filteredTeams = teams.filter(t => {
-    const matchesSearch = t.teamName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         t.teamID.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchStr = (searchTerm || '').toLowerCase();
+    const matchesSearch = (t.teamName || '').toLowerCase().includes(searchStr) || 
+                         (t.teamID || '').toLowerCase().includes(searchStr);
     if (filter === 'all') return matchesSearch;
     return matchesSearch && t.paymentStatus === (filter === 'paid' ? PaymentStatus.PAID : PaymentStatus.PENDING);
   });
+
+  if (isLoading) {
+    return (
+      <div className="pt-32 min-h-screen flex items-center justify-center bg-[#050505]">
+        <div className="text-center">
+          <Loader2 className="animate-spin text-indigo-500 mb-4 mx-auto" size={32} />
+          <p className="text-xs font-mono text-gray-600 uppercase tracking-widest">Uplinking Terminal...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
