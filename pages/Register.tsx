@@ -43,22 +43,7 @@ const Register: React.FC = () => {
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const saved = sessionStorage.getItem('neuron_draft_v4');
-    if (saved && !isUpdateMode) {
-      try {
-        const parsed = JSON.parse(saved);
-        setTeamName(parsed.teamName || '');
-        setMembers(parsed.members || [{ name: '', email: '', phone: '', role: 'Lead' }, { name: '', email: '', phone: '', role: 'Developer' }]);
-      } catch (e) { console.warn("Restore manifest failed", e); }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (step === 1 && !isUpdateMode) {
-      sessionStorage.setItem('neuron_draft_v4', JSON.stringify({ teamName, members }));
-    }
-  }, [teamName, members, step, isUpdateMode]);
+  // Persistence removed per request: Data now resets on page refresh naturally.
 
   useEffect(() => {
     if (teamName.length < 3 || isUpdateMode) return setNameAvailability('idle');
@@ -76,20 +61,6 @@ const Register: React.FC = () => {
     const updated = [...members];
     updated[index] = { ...updated[index], [field]: value };
     setMembers(updated);
-  };
-
-  const handleReset = () => {
-    if (window.confirm("Purge local manifest draft and start fresh?")) {
-      sessionStorage.removeItem('neuron_draft_v4');
-      setTeamName('');
-      setMembers([
-        { name: '', email: '', phone: '', role: 'Lead' },
-        { name: '', email: '', phone: '', role: 'Developer' },
-      ]);
-      setErrors({});
-      setNameAvailability('idle');
-      toast.info("Manifest draft purged. Terminal reset.");
-    }
   };
 
   const handleLookup = async () => {
@@ -187,7 +158,6 @@ const Register: React.FC = () => {
         email: members[0].email,
         phone: members[0].phone,
         onSuccess: async (response: any) => {
-          // Attempt immediate sync
           toast.info("Payment confirmed. Synchronizing...");
           const verifyRes = await paymentService.verifyPayment(
             response.razorpay_order_id, 
@@ -281,11 +251,6 @@ const Register: React.FC = () => {
                       </h2>
                     </div>
                     <div className="flex items-center gap-4">
-                      {!isUpdateMode && (
-                        <button onClick={handleReset} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-red-400 px-3 py-2 glass rounded-xl border-white/5">
-                          <RotateCcw size={14} /> Reset
-                        </button>
-                      )}
                       {isUpdateMode && (
                         <button onClick={cancelUpdate} className="p-2 glass rounded-lg text-gray-500 hover:text-white">
                           <X size={18} />

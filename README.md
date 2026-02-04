@@ -8,6 +8,7 @@ This guide outlines the protocol for deploying the NEURØN Hub and TALOS 2026 re
 ### A. Database Initialization
 Run this in your **Supabase SQL Editor**:
 ```sql
+-- 1. Create the Manifest Table
 CREATE TABLE IF NOT EXISTS teams (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   teamName TEXT NOT NULL,
@@ -16,16 +17,38 @@ CREATE TABLE IF NOT EXISTS teams (
   leadEmail TEXT NOT NULL,
   paymentStatus TEXT NOT NULL DEFAULT 'pending',
   razorpayOrderId TEXT UNIQUE,
-  razorpayPaymentId TEXT UNIQUE,
+  razorpayPaymentId TEXT UNIQUE, -- CRITICAL: Unique for idempotency
   checkedIn BOOLEAN DEFAULT FALSE,
   registeredAt BIGINT NOT NULL
 );
 
--- Add Index for fast lookups during check-in
+-- 2. Add Index for high-speed lookups
 CREATE INDEX IF NOT EXISTS idx_team_id ON teams(teamID);
+CREATE INDEX IF NOT EXISTS idx_team_payment_status ON teams(paymentStatus);
 ```
 
-### B. Deploy Edge Functions
+### B. Database Policies (RLS)
+Security is paramount. Execute these to enable Row Level Security and allow the frontend to interact with the grid safely.
+
+```sql
+-- Enable RLS
+ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
+
+-- 1. Allow Public Read Access
+-- Required for checking squad name availability and manifest lookups.
+CREATE POLICY "Allow public read access" ON teams FOR SELECT USING (true);
+
+-- 2. Allow Public Insert/Update
+-- Required for the frontend to synchronize manifest drafts and check-ins.
+-- Note: Sensitive fields (Payment Status) are verified/overwritten by Service Role functions.
+CREATE POLICY "Allow public insert access" ON teams FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update access" ON teams FOR UPDATE USING (true);
+
+-- 3. Service Role (Bypass RLS)
+-- Edge functions using the SERVICE_ROLE_KEY bypass these policies automatically.
+```
+
+### C. Deploy Edge Functions
 Requires [Supabase CLI](https://supabase.com/docs/guides/cli).
 ```bash
 # 1. Login & Link
@@ -38,7 +61,7 @@ supabase functions deploy verify-payment --no-verify-jwt
 supabase functions deploy send-manifest --no-verify-jwt
 ```
 
-### C. Configure Secrets (CRITICAL)
+### D. Configure Secrets (CRITICAL)
 Set these variables in your **Supabase Settings > Edge Functions > Secrets**:
 ```bash
 # Gemini AI
@@ -67,13 +90,14 @@ supabase secrets set ADMIN_HASH=your_password_hash
 
 Add these to your **Vercel Project Settings > Environment Variables**:
 
-| Variable | Value |
-| :--- | :--- |
-| `VITE_SUPABASE_URL` | Your Supabase Project URL |
-| `VITE_SUPABASE_ANON_KEY` | Your Supabase `anon` `public` key |
-| `VITE_RAZORPAY_KEY_ID` | Your Razorpay Key ID (`rzp_live_...`) |
-| `VITE_ADMIN_HASH` | The same SHA-256 hash used in Supabase |
+| Variable | Value | Description |
+| :--- | :--- | :--- |
+| `VITE_SUPABASE_URL` | Your Project URL | `https://xyz.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | Your `anon` `public` key | Found in API Settings |
+| `VITE_RAZORPAY_KEY_ID` | Your Razorpay Key ID | `rzp_live_...` |
+| `VITE_ADMIN_HASH` | SHA-256 Password Hash | Matches Supabase secret |
 
 ## 4. Maintenance Ops
 - **Log Monitoring**: Use `supabase functions logs verify-payment --follow` to watch registration pulses in real-time.
-- **Check-in**: Use the Admin QR Scanner. It pulls directly from the live PostgreSQL manifest.
+- **Data Export**: Use the "Export CSV" button in the Admin Terminal for manifest handovers.
+- **Check-in**: Use the Admin QR Scanner or manual "Verify" toggle. It pulls directly from the live PostgreSQL manifest.
