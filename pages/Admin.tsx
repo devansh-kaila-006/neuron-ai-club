@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Trash2, Users, Activity, Loader2, RefreshCw, ShieldCheck, Download, 
-  CheckCircle2, TrendingUp, LogOut, Scan, X, Terminal, Flame
+  CheckCircle2, TrendingUp, LogOut, Scan, X, Terminal, Flame, FileSpreadsheet
 } from 'lucide-react';
 import jsQR from 'jsqr';
 import { storage } from '../lib/storage.ts';
@@ -33,7 +33,7 @@ const Admin: React.FC = () => {
   const requestRef = useRef<number | null>(null);
 
   const addLog = useCallback((msg: string, type: 'info' | 'warn' | 'success' = 'info') => {
-    setLogs(prev => [{ msg, time: new Date().toLocaleTimeString(), type }, ...prev].slice(0, 5));
+    setLogs(prev => [{ msg, time: new Date().toLocaleTimeString(), type }, ...prev].slice(0, 10));
   }, []);
 
   const fetchData = useCallback(async (silent = false) => {
@@ -108,9 +108,64 @@ const Admin: React.FC = () => {
       await storage.updateCheckIn(id, status);
       await fetchData(true);
       const team = teams.find(t => t.id === id);
-      addLog(`Status Updated: ${team?.teamName}`, 'success');
+      addLog(`${status ? 'Verified' : 'Unverified'}: ${team?.teamName}`, status ? 'success' : 'info');
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handleDownloadCSV = () => {
+    if (teams.length === 0) {
+      toast.error("Manifest empty. No data to export.");
+      return;
+    }
+
+    const headers = ["Team Name", "TALOS ID", "Status", "Checked In", "Lead Name", "Lead Email", "Lead Phone", "Members Count"];
+    const rows = teams.map(t => [
+      t.teamName,
+      t.teamID,
+      t.paymentStatus,
+      t.checkedIn ? "Yes" : "No",
+      t.members[0]?.name || "N/A",
+      t.members[0]?.email || "N/A",
+      t.members[0]?.phone || "N/A",
+      t.members.length
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(r => r.map(field => `"${field}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `TALOS_2026_Manifest_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    addLog("Manifest Exported (CSV)", 'success');
+    toast.success("Manifest downloaded.");
+  };
+
+  const handlePurge = async () => {
+    if (window.confirm("CRITICAL: This will permanently purge the entire neural manifest from the cloud. Proceed with full wipe?")) {
+      const secondCheck = window.confirm("Final Warning: This action cannot be undone. Data loss will be absolute.");
+      if (secondCheck) {
+        setIsLoading(true);
+        try {
+          await storage.clearAllData();
+          addLog("SYSTEM WIPE COMPLETE", 'warn');
+          toast.error("Grid Manifest Purged.");
+          await fetchData();
+        } catch (err: any) {
+          toast.error(`Purge Failed: ${err.message}`);
+        } finally {
+          setIsLoading(false);
+        }
+      }
     }
   };
 
@@ -170,10 +225,18 @@ const Admin: React.FC = () => {
             <p className="text-gray-500 text-sm font-mono uppercase tracking-widest">Neural Grid Active</p>
           </div>
           <div className="flex flex-wrap gap-3">
+            <button onClick={handleDownloadCSV} className="p-3 glass border-white/10 rounded-xl hover:bg-white/5 transition-all text-indigo-400 flex items-center gap-2 group">
+              <Download size={20} className="group-hover:translate-y-0.5 transition-transform" />
+              <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest">Export CSV</span>
+            </button>
             <button onClick={() => fetchData()} className="p-3 glass border-white/10 rounded-xl hover:bg-white/5 transition-all text-indigo-400">
               <RefreshCw className={isLoading ? 'animate-spin' : ''} size={20} />
             </button>
-            <button onClick={handleLogout} className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl hover:bg-red-500/20 transition-all">
+            <button onClick={handlePurge} className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl hover:bg-red-500/20 transition-all flex items-center gap-2">
+              <Flame size={20} />
+              <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest">Purge Manifest</span>
+            </button>
+            <button onClick={handleLogout} className="p-3 bg-white/5 border border-white/10 text-gray-400 rounded-xl hover:bg-white/10 transition-all">
               <LogOut size={20} />
             </button>
           </div>
@@ -199,26 +262,38 @@ const Admin: React.FC = () => {
         <div className="grid lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
             <div className="glass rounded-[2rem] border-white/5 overflow-hidden">
-              <div className="p-6 border-b border-white/5 flex flex-col md:flex-row gap-4 justify-between">
-                <input placeholder="Search Manifests..." className="flex-1 bg-white/5 border border-white/10 rounded-xl py-3 px-6 text-sm outline-none focus:border-indigo-500" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+              <div className="p-6 border-b border-white/5 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div className="relative flex-1 w-full">
+                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                   <input placeholder="Search Manifests by Name or ID..." className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-6 text-sm outline-none focus:border-indigo-500" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${filter === 'all' ? 'bg-indigo-600 text-white' : 'glass border-white/5 text-gray-500'}`}>All</button>
+                  <button onClick={() => setFilter('paid')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${filter === 'paid' ? 'bg-green-600 text-white' : 'glass border-white/5 text-gray-500'}`}>Paid</button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-white/2 font-mono text-[9px] uppercase tracking-widest text-gray-500">
-                    <tr><th className="px-8 py-4 text-left">Squad</th><th className="px-8 py-4 text-left">Status</th><th className="px-8 py-4 text-left">Check-In</th></tr>
+                    <tr><th className="px-8 py-4 text-left">Squad</th><th className="px-8 py-4 text-left">Status</th><th className="px-8 py-4 text-left">Action</th></tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {isLoading ? Array(3).fill(0).map((_, i) => <tr key={i}><td colSpan={3} className="px-8 py-6"><Skeleton className="h-12 w-full" /></td></tr>) : filteredTeams.map(team => (
+                    {isLoading ? Array(5).fill(0).map((_, i) => <tr key={i}><td colSpan={3} className="px-8 py-6"><Skeleton className="h-12 w-full" /></td></tr>) : filteredTeams.length === 0 ? (
+                      <tr><td colSpan={3} className="px-8 py-20 text-center text-gray-600 font-mono text-xs uppercase tracking-widest">No Manifests Found</td></tr>
+                    ) : filteredTeams.map(team => (
                       <tr key={team.id} className="hover:bg-white/2 transition-colors group">
                         <td className="px-8 py-6">
-                          <p className="font-bold text-sm">{team.teamName}</p>
-                          <span className="text-[10px] text-indigo-400 font-mono">{team.teamID}</span>
+                          <p className="font-bold text-sm group-hover:text-indigo-400 transition-colors">{team.teamName}</p>
+                          <span className="text-[10px] text-gray-500 font-mono">{team.teamID}</span>
                         </td>
                         <td className="px-8 py-6">
                           <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase ${team.paymentStatus === PaymentStatus.PAID ? 'bg-green-500/10 text-green-500' : 'bg-orange-500/10 text-orange-500'}`}>{team.paymentStatus}</span>
                         </td>
                         <td className="px-8 py-6">
-                           <button disabled={actionLoading === team.id} onClick={() => handleCheckIn(team.id, !team.checkedIn)} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${team.checkedIn ? 'bg-indigo-600 text-white' : 'bg-white/5 text-gray-500'}`}>{team.checkedIn ? 'Verified' : 'Verify'}</button>
+                           <button disabled={actionLoading === team.id} onClick={() => handleCheckIn(team.id, !team.checkedIn)} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all flex items-center gap-2 ${team.checkedIn ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.3)]' : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'}`}>
+                              {actionLoading === team.id ? <Loader2 size={12} className="animate-spin" /> : team.checkedIn ? <CheckCircle2 size={12} /> : null}
+                              {team.checkedIn ? 'Verified' : 'Verify'}
+                           </button>
                         </td>
                       </tr>
                     ))}
@@ -227,13 +302,18 @@ const Admin: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="glass p-6 rounded-[2rem] border-white/5">
-             <h3 className="text-[10px] font-bold uppercase font-mono mb-6 flex items-center gap-2"><Terminal size={14} className="text-indigo-400" /> Neural Feed</h3>
-             <div className="space-y-4">
-                {logs.map((log, i) => (
-                  <div key={i} className="flex gap-3 text-[11px] border-l-2 border-indigo-500/30 pl-3">
-                    <div><p className="text-gray-500 font-mono text-[9px]">{log.time}</p><p className={log.type === 'warn' ? 'text-red-400' : 'text-gray-300'}>{log.msg}</p></div>
-                  </div>
+          <div className="glass p-6 rounded-[2rem] border-white/5 h-fit">
+             <h3 className="text-[10px] font-bold uppercase font-mono mb-6 flex items-center gap-2 border-b border-white/5 pb-4"><Terminal size={14} className="text-indigo-400" /> Neural Feed</h3>
+             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                {logs.length === 0 ? (
+                  <p className="text-[10px] text-gray-700 italic text-center py-10">Uplink Quiet...</p>
+                ) : logs.map((log, i) => (
+                  <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} key={i} className="flex gap-3 text-[11px] border-l-2 border-indigo-500/30 pl-3">
+                    <div className="flex-1">
+                      <p className="text-gray-600 font-mono text-[9px] mb-1">{log.time}</p>
+                      <p className={`font-medium ${log.type === 'warn' ? 'text-red-400' : log.type === 'success' ? 'text-green-400' : 'text-gray-300'}`}>{log.msg}</p>
+                    </div>
+                  </motion.div>
                 ))}
              </div>
           </div>
