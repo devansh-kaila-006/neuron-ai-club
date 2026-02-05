@@ -3,7 +3,7 @@
 const envStore: Record<string, string> = {};
 (globalThis as any).process = {
   env: new Proxy({}, {
-    // Fix: Use (globalThis as any).Deno to avoid "Cannot find name 'Deno'" error
+    // Ensures 'Deno' is accessed via globalThis to prevent ReferenceErrors in the edge runtime
     get: (_, prop: string) => envStore[prop] || (globalThis as any).Deno.env.get(prop),
     set: (_, prop: string, value: string) => {
       envStore[prop] = value;
@@ -33,7 +33,6 @@ serve(async (req) => {
     }
 
     // Access the raw rotated keys from Supabase Secrets
-    // Fix: Use (globalThis as any).Deno to avoid "Cannot find name 'Deno'" error
     const rawKeys = (globalThis as any).Deno.env.get("API_KEY") || "";
     const apiKeys = rawKeys.split(',').map(k => k.trim()).filter(Boolean);
 
@@ -53,13 +52,16 @@ serve(async (req) => {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3-flash-preview',
+          // RECONFIGURED: Switched to the Gemini 2.5 Flash Lite (Slim) model
+          model: 'gemini-2.5-flash-lite-latest',
           contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
           config: {
-            systemInstruction: "You are the NEURØN Neural Assistant, an elite AI entity for the Amrita AI/ML Club. You are professional, technically sophisticated, and helpful. Use bold for critical terms. Provide real-time data using search tools when requested. You are helping students with TALOS 2026, an overnight hackathon.",
+            systemInstruction: "You are the NEURØN Neural Assistant, an elite AI entity for the Amrita AI/ML Club. You are professional, technically sophisticated, and helpful. Use bold for critical terms. You specialize in rapid, slim-processed reasoning. You are helping students with TALOS 2026, an overnight hackathon.",
             temperature: 0.7,
             topP: 0.95,
             topK: 64,
+            // Optimization for the 2.5 series: 0 budget for maximum response speed
+            thinkingConfig: { thinkingBudget: 0 },
             tools: [{ googleSearch: {} }] 
           },
         });
