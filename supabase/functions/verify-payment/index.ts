@@ -1,12 +1,14 @@
 
+// 1. NEURØN Global Environment Bridge
+(globalThis as any).process = {
+  env: new Proxy({}, {
+    // Fix: Use (globalThis as any).Deno to avoid "Cannot find name 'Deno'" error
+    get: (_, prop: string) => (globalThis as any).Deno.env.get(prop)
+  })
+} as any;
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
-
-// NEURØN Global Environment Bridge
-const denoEnv = (globalThis as any).Deno.env.toObject();
-(globalThis as any).process = {
-  env: denoEnv
-};
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,8 +38,9 @@ serve(async (req) => {
 
   try {
     const supabaseAdmin = createClient(
-      (globalThis as any).process.env.SUPABASE_URL ?? '',
-      (globalThis as any).process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
+      // Fix: Use (globalThis as any).Deno to avoid "Cannot find name 'Deno'" error
+      (globalThis as any).Deno.env.get("SUPABASE_URL") ?? '',
+      (globalThis as any).Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ''
     );
 
     const rzpWebhookSignature = req.headers.get('x-razorpay-signature');
@@ -45,10 +48,12 @@ serve(async (req) => {
     let orderId, paymentId, teamData;
 
     if (rzpWebhookSignature) {
-      const webhookSecret = (globalThis as any).process.env.RAZORPAY_WEBHOOK_SECRET;
-      if (!webhookSecret) throw new Error("Webhook Secret not configured.");
+      // Fix: Use (globalThis as any).Deno to avoid "Cannot find name 'Deno'" error
+      const webhookSecret = (globalThis as any).Deno.env.get("RAZORPAY_WEBHOOK_SECRET");
+      if (!webhookSecret) throw new Error("Manifest Integrity Error: Webhook Secret missing.");
+      
       const isValid = await verifySignature(rawBody, rzpWebhookSignature, webhookSecret);
-      if (!isValid) throw new Error("Unauthorized Webhook Signature.");
+      if (!isValid) throw new Error("Security Violation: Unauthorized Webhook Signature.");
 
       const payload = JSON.parse(rawBody);
       const payment = payload.payload.payment.entity;
@@ -62,11 +67,12 @@ serve(async (req) => {
       const clientSignature = body.signature;
       teamData = body.teamData;
 
-      const rzpSecret = (globalThis as any).process.env.RAZORPAY_SECRET;
-      if (!rzpSecret) throw new Error("Razorpay Secret not configured.");
+      // Fix: Use (globalThis as any).Deno to avoid "Cannot find name 'Deno'" error
+      const rzpSecret = (globalThis as any).Deno.env.get("RAZORPAY_SECRET");
+      if (!rzpSecret) throw new Error("Manifest Integrity Error: Secret Key missing.");
 
       const isValid = await verifySignature(`${orderId}|${paymentId}`, clientSignature, rzpSecret);
-      if (!isValid) throw new Error("Invalid Client Signature Sequence.");
+      if (!isValid) throw new Error("Security Violation: Invalid Client Signature.");
     }
 
     const { data: existing } = await supabaseAdmin
@@ -107,7 +113,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error("[Verify Error]:", error.message);
+    console.error("[Neural Verify Error]:", error.message);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

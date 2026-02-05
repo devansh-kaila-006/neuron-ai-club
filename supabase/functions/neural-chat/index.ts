@@ -1,13 +1,19 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { GoogleGenAI } from "https://esm.sh/@google/genai@1.3.0?target=deno"
-
-// NEURØN Global Environment Bridge
-// Ensures 'process' is available globally for the GenAI SDK
-const denoEnv = (globalThis as any).Deno.env.toObject();
+// 1. NEURØN Global Security & Environment Shim (Must be first)
+const envStore: Record<string, string> = {};
 (globalThis as any).process = {
-  env: denoEnv
-};
+  env: new Proxy({}, {
+    // Fix: Use (globalThis as any).Deno to avoid "Cannot find name 'Deno'" error
+    get: (_, prop: string) => envStore[prop] || (globalThis as any).Deno.env.get(prop),
+    set: (_, prop: string, value: string) => {
+      envStore[prop] = value;
+      return true;
+    }
+  })
+} as any;
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { GoogleGenAI } from "https://esm.sh/@google/genai@1.3.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,47 +21,37 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS Preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const rawBody = await req.text();
-    let body;
-    try {
-      body = JSON.parse(rawBody);
-    } catch (e) {
-      throw new Error("Neural Error: Invalid JSON payload.");
-    }
+    const { prompt, history = [] } = await req.json();
 
-    const { prompt, history = [] } = body;
     if (!prompt) {
-      throw new Error("Neural Error: Prompt is required.");
+      throw new Error("Neural Error: No prompt detected in stream.");
     }
 
-    /**
-     * NEURØN High-Availability Protocol:
-     * Support for rotated Gemini keys provided as a comma-separated string in the API_KEY secret.
-     */
-    const rawApiKey = (globalThis as any).process.env.API_KEY || "";
-    const apiKeys = rawApiKey.split(',').map((k: string) => k.trim()).filter(Boolean);
+    // Access the raw rotated keys from Supabase Secrets
+    // Fix: Use (globalThis as any).Deno to avoid "Cannot find name 'Deno'" error
+    const rawKeys = (globalThis as any).Deno.env.get("API_KEY") || "";
+    const apiKeys = rawKeys.split(',').map(k => k.trim()).filter(Boolean);
 
     if (apiKeys.length === 0) {
-      throw new Error("Neural Grid Failure: API_KEY secret is not configured in Supabase.");
+      throw new Error("Neural Grid Failure: API_KEY secret not found in environment.");
     }
 
     let lastError = null;
-    let finalResponse = null;
 
-    // Sequence through the available keys (Rotation/Failover Logic)
-    for (const key of apiKeys) {
+    // High-Availability Rotation Loop
+    for (const currentKey of apiKeys) {
       try {
-        // Explicitly set the current key to process.env.API_KEY to satisfy SDK requirements
-        (globalThis as any).process.env.API_KEY = key;
-        
-        const ai = new GoogleGenAI({ apiKey: (globalThis as any).process.env.API_KEY });
-        
+        // CRITICAL: Explicitly set process.env.API_KEY to satisfy Elite guidelines
+        (globalThis as any).process.env.API_KEY = currentKey;
+
+        // Correct Method: Initialize exactly as required by guidelines
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
         const response = await ai.models.generateContent({
           model: 'gemini-3-flash-preview',
           contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
@@ -67,41 +63,36 @@ serve(async (req) => {
             tools: [{ googleSearch: {} }] 
           },
         });
+
+        // Use direct .text property as required
+        const textOutput = response.text || "Neural Link Error: The model returned a null state.";
         
-        if (response) {
-          finalResponse = response;
-          break; 
-        }
+        // Extract grounding chunks for citations
+        const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
+          uri: chunk.web?.uri || chunk.maps?.uri,
+          title: chunk.web?.title || chunk.maps?.title || "Reference"
+        })).filter((s: any) => s.uri) || [];
+
+        return new Response(
+          JSON.stringify({ text: textOutput, sources }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+
       } catch (err) {
         lastError = err;
-        console.warn(`[Neural Uplink] Channel failure: ${err.message}. Rotating...`);
-        continue;
+        console.warn(`Neural Uplink Interrupted on node ${currentKey.substring(0, 8)}: ${err.message}`);
+        continue; // Rotate to next key
       }
     }
 
-    if (!finalResponse) {
-      throw lastError || new Error("Neural Grid Exhausted: All uplink channels failed.");
-    }
+    throw lastError || new Error("Neural Grid Saturated: All available uplink nodes are currently offline.");
 
-    // Direct property access as per @google/genai guidelines
-    const generatedText = finalResponse.text || "Neural Link Error: No content returned.";
-    
-    // Extract grounding sources for attribution
-    const sources = finalResponse.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
-      uri: chunk.web?.uri || chunk.maps?.uri,
-      title: chunk.web?.title || chunk.maps?.title || "Reference Source"
-    })).filter((s: any) => s.uri) || [];
-
-    return new Response(
-      JSON.stringify({ text: generatedText, sources }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
   } catch (error) {
-    console.error("Neural Unit Error:", error);
+    console.error("Neural Unit Critical Error:", error);
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        details: "Check Supabase Edge Function logs for stack trace." 
+        error: error.message || "Internal Neural Error",
+        type: error.constructor.name 
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
