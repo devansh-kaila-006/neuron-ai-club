@@ -1,9 +1,8 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Search, Trash2, Users, Activity, Loader2, RefreshCw, ShieldCheck, Download, 
-  CheckCircle2, TrendingUp, LogOut, Scan, X, Terminal, Flame, FileSpreadsheet
+  Search, Users, Activity, Loader2, RefreshCw, ShieldCheck, Download, 
+  CheckCircle2, TrendingUp, LogOut, Scan, X, Terminal, Flame
 } from 'lucide-react';
 import jsQR from 'jsqr';
 import { storage } from '../lib/storage.ts';
@@ -55,6 +54,86 @@ const Admin: React.FC = () => {
     }
   }, [addLog]);
 
+  const handleCheckIn = async (id: string, status: boolean) => {
+    setActionLoading(id);
+    try {
+      await storage.updateCheckIn(id, status);
+      await fetchData(true);
+      const team = teams.find(t => t.id === id);
+      addLog(`${status ? 'Verified' : 'Unverified'}: ${team?.teamName}`, status ? 'success' : 'info');
+      if (status) toast.success(`Checked in: ${team?.teamName}`);
+    } catch (err) {
+      toast.error("Check-in sync failure.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // QR Scanning Logic
+  const tick = useCallback(() => {
+    if (videoRef.current?.readyState === videoRef.current?.HAVE_ENOUGH_DATA && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      canvas.height = video.videoHeight;
+      canvas.width = video.videoWidth;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: "dontInvert",
+      });
+
+      if (code) {
+        const talosID = code.data.trim().toUpperCase();
+        addLog(`QR Detected: ${talosID}`, 'info');
+        
+        const team = teams.find(t => t.teamID === talosID);
+        if (team) {
+          if (!team.checkedIn) {
+            handleCheckIn(team.id, true);
+            setIsScannerOpen(false);
+          } else {
+            addLog(`Already Verified: ${team.teamName}`, 'warn');
+            toast.info(`${team.teamName} is already checked in.`);
+            setIsScannerOpen(false);
+          }
+        } else {
+          toast.error("Unrecognized Manifest ID.");
+        }
+      }
+    }
+    requestRef.current = requestAnimationFrame(tick);
+  }, [teams, handleCheckIn, addLog, toast]);
+
+  useEffect(() => {
+    if (isScannerOpen) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(stream => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.setAttribute("playsinline", "true");
+            videoRef.current.play();
+            requestRef.current = requestAnimationFrame(tick);
+          }
+        })
+        .catch(err => {
+          console.error("Camera Access Failed:", err);
+          toast.error("Optics Malfunction: Camera access denied.");
+          setIsScannerOpen(false);
+        });
+    } else {
+      if (videoRef.current?.srcObject) {
+        (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+      }
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    }
+    return () => {
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    };
+  }, [isScannerOpen, tick, toast]);
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -102,18 +181,6 @@ const Admin: React.FC = () => {
     }
   };
 
-  const handleCheckIn = async (id: string, status: boolean) => {
-    setActionLoading(id);
-    try {
-      await storage.updateCheckIn(id, status);
-      await fetchData(true);
-      const team = teams.find(t => t.id === id);
-      addLog(`${status ? 'Verified' : 'Unverified'}: ${team?.teamName}`, status ? 'success' : 'info');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
   const handleDownloadCSV = () => {
     if (teams.length === 0) {
       toast.error("Manifest empty. No data to export.");
@@ -151,20 +218,17 @@ const Admin: React.FC = () => {
   };
 
   const handlePurge = async () => {
-    if (window.confirm("CRITICAL: This will permanently purge the entire neural manifest from the cloud. Proceed with full wipe?")) {
-      const secondCheck = window.confirm("Final Warning: This action cannot be undone. Data loss will be absolute.");
-      if (secondCheck) {
-        setIsLoading(true);
-        try {
-          await storage.clearAllData();
-          addLog("SYSTEM WIPE COMPLETE", 'warn');
-          toast.error("Grid Manifest Purged.");
-          await fetchData();
-        } catch (err: any) {
-          toast.error(`Purge Failed: ${err.message}`);
-        } finally {
-          setIsLoading(false);
-        }
+    if (window.confirm("CRITICAL: This will permanently purge the entire neural manifest. Proceed?")) {
+      setIsLoading(true);
+      try {
+        await storage.clearAllData();
+        addLog("SYSTEM WIPE COMPLETE", 'warn');
+        toast.error("Grid Manifest Purged.");
+        await fetchData();
+      } catch (err: any) {
+        toast.error(`Purge Failed: ${err.message}`);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -225,6 +289,10 @@ const Admin: React.FC = () => {
             <p className="text-gray-500 text-sm font-mono uppercase tracking-widest">Neural Grid Active</p>
           </div>
           <div className="flex flex-wrap gap-3">
+            <button onClick={() => setIsScannerOpen(true)} className="p-3 bg-indigo-600 border border-indigo-400/30 text-white rounded-xl hover:bg-indigo-500 transition-all flex items-center gap-2 group shadow-[0_0_15px_rgba(79,70,229,0.3)]">
+              <Scan size={20} className="group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest">Scan Manifest</span>
+            </button>
             <button onClick={handleDownloadCSV} className="p-3 glass border-white/10 rounded-xl hover:bg-white/5 transition-all text-indigo-400 flex items-center gap-2 group">
               <Download size={20} className="group-hover:translate-y-0.5 transition-transform" />
               <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest">Export CSV</span>
@@ -234,7 +302,6 @@ const Admin: React.FC = () => {
             </button>
             <button onClick={handlePurge} className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl hover:bg-red-500/20 transition-all flex items-center gap-2">
               <Flame size={20} />
-              <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest">Purge Manifest</span>
             </button>
             <button onClick={handleLogout} className="p-3 bg-white/5 border border-white/10 text-gray-400 rounded-xl hover:bg-white/10 transition-all">
               <LogOut size={20} />
@@ -265,7 +332,7 @@ const Admin: React.FC = () => {
               <div className="p-6 border-b border-white/5 flex flex-col md:flex-row gap-4 justify-between items-center">
                 <div className="relative flex-1 w-full">
                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-                   <input placeholder="Search Manifests by Name or ID..." className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-6 text-sm outline-none focus:border-indigo-500" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                   <input placeholder="Search Manifests..." className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-6 text-sm outline-none focus:border-indigo-500" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${filter === 'all' ? 'bg-indigo-600 text-white' : 'glass border-white/5 text-gray-500'}`}>All</button>
@@ -318,6 +385,48 @@ const Admin: React.FC = () => {
              </div>
           </div>
         </div>
+
+        <AnimatePresence>
+          {isScannerOpen && (
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/90 backdrop-blur-2xl"
+            >
+              <div className="relative w-full max-w-lg glass border-indigo-500/30 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                <div className="p-8 border-b border-white/10 flex justify-between items-center">
+                   <div className="flex items-center gap-3">
+                     <Scan className="text-indigo-500" />
+                     <h2 className="text-xl font-bold uppercase tracking-widest font-mono">Neural Scanner</h2>
+                   </div>
+                   <button onClick={() => setIsScannerOpen(false)} className="text-gray-500 hover:text-white"><X /></button>
+                </div>
+                
+                <div className="relative aspect-video bg-black flex items-center justify-center">
+                  <video ref={videoRef} className="w-full h-full object-cover" />
+                  <canvas ref={canvasRef} className="hidden" />
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                     <div className="w-64 h-64 border-2 border-indigo-500/50 rounded-3xl relative">
+                        <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-indigo-500 -translate-x-1 -translate-y-1 rounded-tl-lg" />
+                        <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-indigo-500 translate-x-1 -translate-y-1 rounded-tr-lg" />
+                        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-indigo-500 -translate-x-1 translate-y-1 rounded-bl-lg" />
+                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-indigo-500 translate-x-1 translate-y-1 rounded-br-lg" />
+                        <motion.div 
+                          animate={{ y: [0, 240, 0] }} 
+                          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                          className="absolute top-0 left-0 w-full h-0.5 bg-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.8)]"
+                        />
+                     </div>
+                  </div>
+                </div>
+                <div className="p-8 bg-white/2 text-center">
+                   <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                     Place QR manifest within scanning zone
+                   </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

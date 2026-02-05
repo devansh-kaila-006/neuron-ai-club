@@ -1,4 +1,3 @@
-
 // 1. NEURØN Global Security & Environment Shim (Must be first)
 const envStore: Record<string, string> = {};
 (globalThis as any).process = {
@@ -52,7 +51,7 @@ serve(async (req) => {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
         const response = await ai.models.generateContent({
-          // FIXED: Reconfigured to the valid 'gemini-flash-lite-latest' ID
+          // FIXED: Using the exact alias for 'flash lite' from guidelines
           model: 'gemini-flash-lite-latest',
           contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
           config: {
