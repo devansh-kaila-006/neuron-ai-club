@@ -1,5 +1,5 @@
 import { api } from './api.ts';
-import { supabase, generateSecureID } from '../lib/storage.ts';
+import { supabase } from '../lib/storage.ts';
 import { Team } from '../lib/types.ts';
 import { getEnv } from '../lib/env.ts';
 
@@ -31,14 +31,13 @@ export const paymentService = {
         name: "NEURØN Core",
         description: `TALOS 2026 Registry - ${options.teamName}`,
         image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=200",
-        // REMOVED: order_id. It must be created via server-side API to be valid.
         handler: options.onSuccess,
-        // Simplified notes to stay under 256 char limit per field
         notes: {
           teamName: options.teamName,
           leadEmail: options.email,
           memberCount: options.members.length.toString()
         },
+        // Prefill ensures user doesn't have to re-type in the Razorpay UI
         prefill: {
           name: options.teamName,
           email: options.email,
@@ -62,11 +61,12 @@ export const paymentService = {
         body: { orderId, paymentId, signature, teamData }
       });
       
-      if (error || !data.success) {
-        throw new Error(error?.message || "Security Breach: Neural payment verification failed.");
-      }
+      if (error) throw new Error(error.message);
+      if (!data || !data.success) throw new Error(data?.error || "Security Breach: Neural payment verification failed.");
 
-      return data;
+      // CRITICAL FIX: Return ONLY the team data record (data.data), not the success wrapper.
+      // This ensures the caller receives the actual Team object with all properties correctly mapped.
+      return data.data as Team;
     });
   }
 };
