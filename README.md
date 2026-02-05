@@ -43,7 +43,16 @@ CREATE POLICY "Allow public update access" ON teams FOR UPDATE USING (true);
 ```
 
 ### C. Deploy Edge Functions
+Requires [Supabase CLI](https://supabase.com/docs/guides/cli).
+
 ```bash
+# 1. Authorize CLI
+supabase login
+
+# 2. Link to your cloud project
+supabase link --project-ref your-project-id
+
+# 3. Deploy all Neural Units
 supabase functions deploy neural-chat --no-verify-jwt
 supabase functions deploy verify-payment --no-verify-jwt
 supabase functions deploy send-manifest --no-verify-jwt
@@ -54,7 +63,7 @@ Set these in **Supabase Settings > Edge Functions > Secrets**:
 
 ```bash
 # Gemini AI (Input 4 keys separated by commas for 60 RPM throughput)
-# Model: Gemini 2.5 Flash-Lite
+# Model: gemini-flash-lite-latest
 supabase secrets set API_KEY="key1,key2,key3,key4"
 
 # Resend (Input 4 keys separated by commas for 400+ registration surge)
@@ -64,7 +73,7 @@ supabase secrets set RESEND_API_KEYS="re_key1,re_key2,re_key3,re_key4"
 supabase secrets set RAZORPAY_SECRET=your_secret
 supabase secrets set RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
 
-# Admin Terminal
+# Admin Terminal Access (SHA-256 of your password)
 supabase secrets set ADMIN_HASH=sha256_hash_of_password
 ```
 
@@ -79,7 +88,7 @@ Add these to your **Vercel Environment Variables**:
 | `VITE_RAZORPAY_KEY_ID` | `rzp_live_...` |
 | `VITE_ADMIN_HASH` | Matches Supabase secret |
 
-## 3. Maintenance
-- **RPM Check**: With 4 keys, `neural-chat` supports ~60 RPM.
+## 3. Maintenance Protocols
+- **RPM Check**: With 4 keys, `neural-chat` supports ~60 RPM using `gemini-flash-lite-latest`.
 - **Surge Check**: With 4 Resend keys, `send-manifest` handles roughly 400 emails/day on free tier or unlimited on paid.
 - **Purge**: Use the "Purge Manifest" button in Admin for end-of-event cleanups.

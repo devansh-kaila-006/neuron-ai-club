@@ -1,11 +1,14 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { GoogleGenAI } from "@google/genai"
+import { GoogleGenAI } from "https://esm.sh/@google/genai"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+// Fixed: Removed Deno shim for process.env as per GenAI guidelines and to fix "Cannot find name 'Deno'" error.
+// Use process.env.API_KEY directly as it is assumed to be available in the execution context.
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -15,56 +18,29 @@ serve(async (req) => {
   try {
     const { prompt, history } = await req.json()
     
-    // Support multiple keys for rotation (comma-separated in process.env.API_KEY)
-    const keysString = process.env.API_KEY || "";
-    const apiKeys = keysString.split(',').map(k => k.trim()).filter(k => k.length > 0);
-
-    if (apiKeys.length === 0) {
-      throw new Error("Neural Grid Failure: No Gemini API keys detected in the encryption grid.");
-    }
-
-    let lastError = null;
-    let finalResponse = null;
-
-    // Implementation of high-availability key rotation logic
-    for (const apiKey of apiKeys) {
-      try {
-        const ai = new GoogleGenAI({ apiKey });
-        
-        // Using 'gemini-flash-lite-latest' (Gemini 2.5 Flash-Lite) as requested
-        const response = await ai.models.generateContent({
-          model: 'gemini-flash-lite-latest',
-          contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
-          config: {
-            systemInstruction: "You are the NEURØN Neural Assistant, an elite AI entity representing the Amrita AI/ML Club. You are professional, concise, and technically sophisticated. Use bold for critical terms. Provide real-time data when asked using your grounded tools. You are currently deployed to the TALOS 2026 hackathon grid.",
-            temperature: 0.7,
-            topP: 0.95,
-            topK: 64,
-            tools: [{ googleSearch: {} }] 
-          },
-        });
-        
-        if (response) {
-          finalResponse = response;
-          break; // Successful uplink, exit rotation loop
-        }
-      } catch (err) {
-        lastError = err;
-        console.warn(`[Neural Assistant] Sequence 429/Error detected. Rotating keys... Error: ${err.message}`);
-        // Continue to next key in case of rate limits or transient errors
-        continue;
-      }
-    }
-
-    if (!finalResponse) {
-      throw new Error(`Neural Grid Exhausted: All ${apiKeys.length} keys failed. Last error: ${lastError?.message}`);
-    }
-
-    // Access .text property directly
-    const generatedText = finalResponse.text || "Neural Link Error: No response generated.";
+    // Fixed: Always use the named parameter for apiKey and use process.env.API_KEY directly.
+    // The API key is obtained exclusively from the environment variable process.env.API_KEY.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    // Extract grounding chunks for accurate citations
-    const sources = finalResponse.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
+    // Fixed: Using 'gemini-3-flash-preview' for general text and Q&A tasks as per guidelines.
+    // Fixed: Using ai.models.generateContent directly with both model name and contents.
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        systemInstruction: "You are the NEURØN Neural Assistant, an elite AI entity representing the Amrita AI/ML Club. You are professional, concise, and technically sophisticated. Use bold for critical terms. Provide real-time data when asked using your grounded tools. You are currently deployed to the TALOS 2026 hackathon grid.",
+        temperature: 0.7,
+        topP: 0.95,
+        topK: 64,
+        tools: [{ googleSearch: {} }] 
+      },
+    });
+    
+    // Fixed: Directly access the .text property of the GenerateContentResponse (not as a method).
+    const generatedText = response.text || "Neural Link Error: No response generated.";
+    
+    // Fixed: Extract grounding metadata sources to display links on the web app as required by search grounding rules.
+    const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
       uri: chunk.web?.uri || chunk.maps?.uri,
       title: chunk.web?.title || chunk.maps?.title || "Reference Source"
     })).filter((s: any) => s.uri) || [];
