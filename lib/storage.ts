@@ -1,4 +1,3 @@
-
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Team, PaymentStatus } from './types.ts';
 import { z } from 'zod';
@@ -166,7 +165,7 @@ export const storage = {
       totalTeams: teams.length,
       paidTeams: paid.length,
       checkedIn: teams.filter(t => t.checkedIn).length,
-      revenue: paid.length * 499
+      revenue: paid.length * 1 // UPDATED FOR TESTING: ₹1 multiplier
     };
   }
 };

@@ -1,4 +1,3 @@
-
 import { api } from './api.ts';
 import { supabase, generateSecureID } from '../lib/storage.ts';
 import { Team } from '../lib/types.ts';
@@ -25,7 +24,7 @@ export const paymentService = {
       
       const order = {
         id: `order_${generateSecureID('', 12)}`,
-        amount: 499 * 100,
+        amount: 1 * 100, // TEST AMOUNT: ₹1 (100 Paise)
         currency: "INR"
       };
 

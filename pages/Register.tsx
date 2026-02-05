@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -42,8 +41,6 @@ const Register: React.FC = () => {
   const [lookupID, setLookupID] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
-
-  // Persistence removed per request: Data now resets on page refresh naturally.
 
   useEffect(() => {
     if (teamName.length < 3 || isUpdateMode) return setNameAvailability('idle');
@@ -310,7 +307,7 @@ const Register: React.FC = () => {
             <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="glass p-12 rounded-[2.5rem] max-w-md mx-auto border-indigo-500/20 shadow-2xl">
               <div className="flex justify-between items-center mb-10"><h2 className="text-2xl font-bold">Escrow Detail</h2><CreditCard className="text-indigo-400" size={28} /></div>
               <div className="bg-white/5 rounded-3xl p-8 mb-10 border border-white/5 text-center">
-                <p className="text-5xl font-bold text-white">₹499</p>
+                <p className="text-5xl font-bold text-white">₹1</p>
               </div>
               <button onClick={handlePayment} disabled={isSubmitting} className="w-full py-5 bg-indigo-600 rounded-2xl font-bold flex items-center justify-center gap-3">
                 {isSubmitting ? <Loader2 className="animate-spin" /> : "Initiate Checkout"}
