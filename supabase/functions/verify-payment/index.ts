@@ -7,6 +7,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// NEURØN Environment Bridge: Shim process.env for Deno runtime
+const process = {
+  // Fix: Access Deno through globalThis to resolve environment name resolution issues
+  env: (globalThis as any).Deno.env.toObject()
+};
+
 /**
  * Verifies Razorpay Signature using HMAC-SHA256
  */

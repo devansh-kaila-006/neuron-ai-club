@@ -7,6 +7,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// NEURØN Environment Bridge: Shim process.env for Deno runtime
+const process = {
+  // Fix: Access Deno through globalThis to resolve environment name resolution issues
+  env: (globalThis as any).Deno.env.toObject()
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -18,9 +24,8 @@ serve(async (req) => {
     /**
      * NEURØN High-Availability Protocol:
      * Support for 4 rotated Gemini keys provided as a comma-separated string in the API_KEY secret.
-     * We access process.env.API_KEY directly as per official SDK requirements.
      */
-    const keysString = (globalThis as any).process?.env?.API_KEY || "";
+    const keysString = process.env.API_KEY || "";
     const apiKeys = keysString.split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0);
 
     if (apiKeys.length === 0) {
@@ -33,12 +38,13 @@ serve(async (req) => {
     // Sequence through the available keys to bypass rate limits (Rotation Logic)
     for (const apiKey of apiKeys) {
       try {
+        // Create new instance per attempt to ensure fresh state
         const ai = new GoogleGenAI({ apiKey });
         const response = await ai.models.generateContent({
           model: 'gemini-3-flash-preview',
           contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
           config: {
-            systemInstruction: "You are the NEURØN Neural Assistant, an elite AI entity for the Amrita AI/ML Club. You are professional, technically sophisticated, and helpful. Use bold for critical terms. Provide real-time data using search tools when requested.",
+            systemInstruction: "You are the NEURØN Neural Assistant, an elite AI entity for the Amrita AI/ML Club. You are professional, technically sophisticated, and helpful. Use bold for critical terms. Provide real-time data using search tools when requested. You are helping students with TALOS 2026, an overnight hackathon.",
             temperature: 0.7,
             topP: 0.95,
             topK: 64,
