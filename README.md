@@ -64,15 +64,16 @@ supabase functions deploy send-manifest --no-verify-jwt
 ### D. Configure Secrets (CRITICAL)
 Set these variables in your **Supabase Settings > Edge Functions > Secrets**:
 ```bash
-# Gemini AI
-supabase secrets set API_KEY=your_gemini_key
+# Gemini AI (Input 4 keys separated by commas for 429 rotation)
+# Uses Gemini 2.5 Flash-Lite
+supabase secrets set GEMINI_API_KEYS="key1,key2,key3,key4"
 
 # Razorpay (Use Live keys for production)
 supabase secrets set RAZORPAY_SECRET=your_razorpay_secret
 supabase secrets set RAZORPAY_WEBHOOK_SECRET=your_webhook_secret_from_dashboard
 
-# Resend (Input all 4 keys separated by commas for the 400+ surge)
-supabase secrets set RESEND_API_KEYS="re_key1,re_key2,re_key3,re_key4"
+# Resend (Input multiple keys separated by commas for the surge)
+supabase secrets set RESEND_API_KEYS="re_key1,re_key2"
 
 # Admin Access (SHA-256 of your password)
 supabase secrets set ADMIN_HASH=your_password_hash
