@@ -7,16 +7,17 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-/**
- * NEURØN Environment Bridge
- * Fixes the ReferenceError for process.env in Deno.
- */
+// NEURØN Universal Environment Shim for Deno
+// Fix: Use (globalThis as any).Deno to avoid "Cannot find name 'Deno'" error
 const process = {
   env: new Proxy({}, {
-    get: (_target, prop: string) => (globalThis as any).Deno?.env.get(prop)
+    get: (_target, prop: string) => (globalThis as any).Deno.env.get(prop)
   })
 } as any;
 
+/**
+ * Verifies Razorpay Signature using native SubtleCrypto
+ */
 async function verifySignature(data: string, signature: string, secret: string) {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
@@ -50,9 +51,10 @@ serve(async (req) => {
 
     if (rzpWebhookSignature) {
       const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
-      if (!webhookSecret) throw new Error("Webhook Secret not configured.");
+      if (!webhookSecret) throw new Error("Verification Failed: Webhook Secret not configured.");
+      
       const isValid = await verifySignature(rawBody, rzpWebhookSignature, webhookSecret);
-      if (!isValid) throw new Error("Unauthorized Webhook Signature.");
+      if (!isValid) throw new Error("Security Breach: Unauthorized Webhook Signature.");
 
       const payload = JSON.parse(rawBody);
       const payment = payload.payload.payment.entity;
@@ -67,12 +69,13 @@ serve(async (req) => {
       teamData = body.teamData;
 
       const rzpSecret = process.env.RAZORPAY_SECRET;
-      if (!rzpSecret) throw new Error("Razorpay Secret not configured.");
+      if (!rzpSecret) throw new Error("Verification Failed: Razorpay Secret not configured.");
 
       const isValid = await verifySignature(`${orderId}|${paymentId}`, clientSignature, rzpSecret);
-      if (!isValid) throw new Error("Invalid Client Signature Sequence.");
+      if (!isValid) throw new Error("Security Breach: Invalid Client Signature Sequence.");
     }
 
+    // Check for existing record to prevent duplicates
     const { data: existing } = await supabaseAdmin
       .from('teams')
       .select('*')
@@ -83,6 +86,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ success: true, data: existing }), { headers: corsHeaders });
     }
 
+    // Generate TALOS ID
     const array = new Uint32Array(1);
     crypto.getRandomValues(array);
     const teamID = `TALOS-${array[0].toString(36).substring(0, 6).toUpperCase()}`;

@@ -6,12 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-/**
- * NEURØN Environment Bridge
- */
+// NEURØN Universal Environment Shim for Deno
+// Fix: Use (globalThis as any).Deno to avoid "Cannot find name 'Deno'" error
 const process = {
   env: new Proxy({}, {
-    get: (_target, prop: string) => (globalThis as any).Deno?.env.get(prop)
+    get: (_target, prop: string) => (globalThis as any).Deno.env.get(prop)
   })
 } as any;
 
@@ -25,10 +24,10 @@ serve(async (req) => {
     
     // Support for rotated Resend keys
     const keysString = process.env.RESEND_API_KEYS || process.env.RESEND_API_KEY || "";
-    const apiKeys = keysString.split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0);
+    const apiKeys = keysString.split(',').map((k: string) => k.trim()).filter(Boolean);
 
     if (apiKeys.length === 0) {
-      console.warn("[Neural Comms] No Resend keys detected.");
+      console.warn("[Neural Comms] No Resend keys detected. System in simulation mode.");
       return new Response(
         JSON.stringify({ success: true, message: "Simulation Mode: No dispatch sent." }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -84,7 +83,7 @@ serve(async (req) => {
     }
 
     if (!success) {
-      throw new Error(`Neural Comms Failure: ${lastError}`);
+      throw new Error(`Neural Comms Failure: All SMTP nodes failed. Last Error: ${lastError}`);
     }
 
     return new Response(
