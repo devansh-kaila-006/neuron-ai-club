@@ -7,9 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Fixed: Removed Deno shim for process.env as per GenAI guidelines and to fix "Cannot find name 'Deno'" error.
-// Use process.env.API_KEY directly as it is assumed to be available in the execution context.
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -18,29 +15,57 @@ serve(async (req) => {
   try {
     const { prompt, history } = await req.json()
     
-    // Fixed: Always use the named parameter for apiKey and use process.env.API_KEY directly.
-    // The API key is obtained exclusively from the environment variable process.env.API_KEY.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    /**
+     * NEURØN High-Availability Protocol:
+     * Support for 4 rotated Gemini keys provided as a comma-separated string in the API_KEY secret.
+     * We access process.env.API_KEY directly as per official SDK requirements.
+     */
+    const keysString = (globalThis as any).process?.env?.API_KEY || "";
+    const apiKeys = keysString.split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0);
+
+    if (apiKeys.length === 0) {
+      throw new Error("Neural Grid Failure: No Gemini API keys detected. Ensure 'API_KEY' is configured in Supabase secrets.");
+    }
+
+    let lastError = null;
+    let finalResponse = null;
+
+    // Sequence through the available keys to bypass rate limits (Rotation Logic)
+    for (const apiKey of apiKeys) {
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await ai.models.generateContent({
+          model: 'gemini-3-flash-preview',
+          contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
+          config: {
+            systemInstruction: "You are the NEURØN Neural Assistant, an elite AI entity for the Amrita AI/ML Club. You are professional, technically sophisticated, and helpful. Use bold for critical terms. Provide real-time data using search tools when requested.",
+            temperature: 0.7,
+            topP: 0.95,
+            topK: 64,
+            tools: [{ googleSearch: {} }] 
+          },
+        });
+        
+        if (response) {
+          finalResponse = response;
+          break; // Successful uplink established
+        }
+      } catch (err) {
+        lastError = err;
+        console.warn(`[Neural Uplink] Rotation triggered. Key failure: ${err.message}`);
+        continue;
+      }
+    }
+
+    if (!finalResponse) {
+      throw lastError || new Error("Neural Grid Exhausted: All available uplink channels failed.");
+    }
+
+    // Access .text property directly (not as a method)
+    const generatedText = finalResponse.text || "Neural Link Error: No data received.";
     
-    // Fixed: Using 'gemini-3-flash-preview' for general text and Q&A tasks as per guidelines.
-    // Fixed: Using ai.models.generateContent directly with both model name and contents.
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
-      config: {
-        systemInstruction: "You are the NEURØN Neural Assistant, an elite AI entity representing the Amrita AI/ML Club. You are professional, concise, and technically sophisticated. Use bold for critical terms. Provide real-time data when asked using your grounded tools. You are currently deployed to the TALOS 2026 hackathon grid.",
-        temperature: 0.7,
-        topP: 0.95,
-        topK: 64,
-        tools: [{ googleSearch: {} }] 
-      },
-    });
-    
-    // Fixed: Directly access the .text property of the GenerateContentResponse (not as a method).
-    const generatedText = response.text || "Neural Link Error: No response generated.";
-    
-    // Fixed: Extract grounding metadata sources to display links on the web app as required by search grounding rules.
-    const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
+    // Extract search grounding metadata for UI attribution
+    const sources = finalResponse.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
       uri: chunk.web?.uri || chunk.maps?.uri,
       title: chunk.web?.title || chunk.maps?.title || "Reference Source"
     })).filter((s: any) => s.uri) || [];
@@ -50,7 +75,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error("Neural Error:", error);
+    console.error("Neural Unit Error:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

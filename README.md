@@ -63,11 +63,11 @@ Set these in **Supabase Settings > Edge Functions > Secrets**:
 
 ```bash
 # Gemini AI (Input 4 keys separated by commas for 60 RPM throughput)
-# Model: gemini-flash-lite-latest
-supabase secrets set API_KEY="key1,key2,key3,key4"
+# Format: "key1,key2,key3,key4"
+supabase secrets set API_KEY="your_gemini_key_1,your_gemini_key_2..."
 
-# Resend (Input 4 keys separated by commas for 400+ registration surge)
-supabase secrets set RESEND_API_KEYS="re_key1,re_key2,re_key3,re_key4"
+# Resend (Input 4 keys separated by commas for registration spikes)
+supabase secrets set RESEND_API_KEYS="re_key1,re_key2..."
 
 # Razorpay (Live Keys)
 supabase secrets set RAZORPAY_SECRET=your_secret
@@ -89,6 +89,6 @@ Add these to your **Vercel Environment Variables**:
 | `VITE_ADMIN_HASH` | Matches Supabase secret |
 
 ## 3. Maintenance Protocols
-- **RPM Check**: With 4 keys, `neural-chat` supports ~60 RPM using `gemini-flash-lite-latest`.
-- **Surge Check**: With 4 Resend keys, `send-manifest` handles roughly 400 emails/day on free tier or unlimited on paid.
+- **RPM Check**: With 4 keys, `neural-chat` supports ~60 RPM using `gemini-3-flash-preview`.
+- **Surge Check**: With 4 Resend keys, `send-manifest` handles roughly 400 emails/day on free tier.
 - **Purge**: Use the "Purge Manifest" button in Admin for end-of-event cleanups.

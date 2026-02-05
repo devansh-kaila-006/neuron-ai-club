@@ -14,14 +14,14 @@ serve(async (req) => {
   try {
     const { team } = await req.json()
     
-    // Support multiple keys comma-separated for surge protection
-    const keysString = process.env.RESEND_API_KEYS || process.env.RESEND_API_KEY || "";
-    const apiKeys = keysString.split(',').map(k => k.trim()).filter(k => k.length > 0);
+    // Support for 4 rotated Resend keys (comma-separated in the RESEND_API_KEYS secret)
+    const keysString = (globalThis as any).process?.env?.RESEND_API_KEYS || (globalThis as any).process?.env?.RESEND_API_KEY || "";
+    const apiKeys = keysString.split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0);
 
     if (apiKeys.length === 0) {
-      console.warn("[Neural Comms] No Resend API Keys found. Simulation mode.");
+      console.warn("[Neural Comms] No Resend keys detected. Simulation mode active.");
       return new Response(
-        JSON.stringify({ success: true, message: "Simulation: Manifest logged locally." }),
+        JSON.stringify({ success: true, message: "Simulation Mode: No dispatch sent." }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -32,7 +32,7 @@ serve(async (req) => {
     let success = false;
     let responseData = null;
 
-    // Sequential key rotation for SMTP surge handling
+    // SMTP Failover Rotation
     for (const apiKey of apiKeys) {
       try {
         const res = await fetch('https://api.resend.com/emails', {
@@ -68,17 +68,18 @@ serve(async (req) => {
           success = true;
           break;
         } else {
-          const errorText = await res.text();
-          lastError = errorText;
-          console.warn(`[Neural Comms] SMTP Key rotation triggered. Key rejected: ${errorText}`);
+          lastError = await res.text();
+          console.warn(`[Neural Comms] Dispatch rotation triggered. Error: ${lastError}`);
+          continue;
         }
       } catch (err) {
         lastError = err.message;
+        continue;
       }
     }
 
     if (!success) {
-      throw new Error(`All 4 dispatch channels exhausted. Last SMTP error: ${lastError}`);
+      throw new Error(`Neural Comms Failure: All 4 channels exhausted. Last SMTP Error: ${lastError}`);
     }
 
     return new Response(
