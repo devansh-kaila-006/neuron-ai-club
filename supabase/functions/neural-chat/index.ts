@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-// Always use import {GoogleGenAI} from "@google/genai"; as per guidelines
 import { GoogleGenAI } from "@google/genai"
 
 const corsHeaders = {
@@ -16,33 +15,56 @@ serve(async (req) => {
   try {
     const { prompt, history } = await req.json()
     
-    // Always use process.env.API_KEY directly as per GenAI guidelines.
-    // This also fixes the "Cannot find name 'Deno'" error in Supabase functions by using the pre-configured environment variable.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
-    // Using 'gemini-flash-lite-latest' (Gemini 2.5 Flash-Lite)
-    // Directly calling ai.models.generateContent with both model name and prompt/contents.
-    const response = await ai.models.generateContent({
-      model: 'gemini-flash-lite-latest',
-      contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
-      config: {
-        systemInstruction: "You are the NEURØN Neural Assistant, an elite AI entity representing the Amrita AI/ML Club. You are professional, concise, and technically sophisticated. Use bold for critical terms. Provide real-time data when asked using your grounded tools. You are currently deployed to the TALOS 2026 hackathon grid.",
-        temperature: 0.7,
-        topP: 0.95,
-        topK: 64,
-        tools: [{ googleSearch: {} }] 
-      },
-    });
+    // Support multiple keys for rotation (comma-separated in process.env.API_KEY)
+    const keysString = process.env.API_KEY || "";
+    const apiKeys = keysString.split(',').map(k => k.trim()).filter(k => k.length > 0);
 
-    if (!response) {
-      throw new Error("Neural Grid Exhausted: Uplink failed.");
+    if (apiKeys.length === 0) {
+      throw new Error("Neural Grid Failure: No Gemini API keys detected in the encryption grid.");
     }
 
-    // Access .text property directly (not a method) as per guidelines.
-    const generatedText = response.text || "Neural Link Error: No response generated.";
+    let lastError = null;
+    let finalResponse = null;
+
+    // Implementation of high-availability key rotation logic
+    for (const apiKey of apiKeys) {
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        
+        // Using 'gemini-flash-lite-latest' (Gemini 2.5 Flash-Lite) as requested
+        const response = await ai.models.generateContent({
+          model: 'gemini-flash-lite-latest',
+          contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
+          config: {
+            systemInstruction: "You are the NEURØN Neural Assistant, an elite AI entity representing the Amrita AI/ML Club. You are professional, concise, and technically sophisticated. Use bold for critical terms. Provide real-time data when asked using your grounded tools. You are currently deployed to the TALOS 2026 hackathon grid.",
+            temperature: 0.7,
+            topP: 0.95,
+            topK: 64,
+            tools: [{ googleSearch: {} }] 
+          },
+        });
+        
+        if (response) {
+          finalResponse = response;
+          break; // Successful uplink, exit rotation loop
+        }
+      } catch (err) {
+        lastError = err;
+        console.warn(`[Neural Assistant] Sequence 429/Error detected. Rotating keys... Error: ${err.message}`);
+        // Continue to next key in case of rate limits or transient errors
+        continue;
+      }
+    }
+
+    if (!finalResponse) {
+      throw new Error(`Neural Grid Exhausted: All ${apiKeys.length} keys failed. Last error: ${lastError?.message}`);
+    }
+
+    // Access .text property directly
+    const generatedText = finalResponse.text || "Neural Link Error: No response generated.";
     
-    // Extract grounding chunks for accurate citations from the groundingMetadata.
-    const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
+    // Extract grounding chunks for accurate citations
+    const sources = finalResponse.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
       uri: chunk.web?.uri || chunk.maps?.uri,
       title: chunk.web?.title || chunk.maps?.title || "Reference Source"
     })).filter((s: any) => s.uri) || [];

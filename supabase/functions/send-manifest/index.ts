@@ -14,14 +14,14 @@ serve(async (req) => {
   try {
     const { team } = await req.json()
     
-    // Support multiple keys comma-separated
+    // Support multiple keys comma-separated for surge protection
     const keysString = process.env.RESEND_API_KEYS || process.env.RESEND_API_KEY || "";
     const apiKeys = keysString.split(',').map(k => k.trim()).filter(k => k.length > 0);
 
     if (apiKeys.length === 0) {
       console.warn("[Neural Comms] No Resend API Keys found. Simulation mode.");
       return new Response(
-        JSON.stringify({ success: true, message: "Simulation: Manifest logged." }),
+        JSON.stringify({ success: true, message: "Simulation: Manifest logged locally." }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -32,7 +32,7 @@ serve(async (req) => {
     let success = false;
     let responseData = null;
 
-    // Try each API key until one succeeds (for rate limit handling)
+    // Sequential key rotation for SMTP surge handling
     for (const apiKey of apiKeys) {
       try {
         const res = await fetch('https://api.resend.com/emails', {
@@ -46,16 +46,18 @@ serve(async (req) => {
             to: [team.leadEmail],
             subject: `[AUTHENTICATED] TALOS 2026 Manifest: ${team.teamID}`,
             html: `
-              <div style="font-family: sans-serif; background: #050505; color: #ffffff; padding: 40px; border-radius: 20px; text-align: center;">
+              <div style="font-family: sans-serif; background: #050505; color: #ffffff; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #111;">
                 <h1 style="color: #4f46e5; margin-bottom: 10px;">NEURØN | TALOS 2026</h1>
                 <p style="color: #888; font-size: 14px;">Squad manifest anchored for Feb 20, 2026.</p>
                 
                 <div style="background: #111; padding: 30px; border: 1px solid #333; border-radius: 20px; margin: 30px 0; display: inline-block;">
-                  <p style="color: #555; font-size: 10px; text-transform: uppercase;">Squad Identity</p>
-                  <h2 style="font-size: 24px;">${team.teamName}</h2>
-                  <img src="${qrUrl}" alt="QR" style="width: 150px; height: 150px; border: 1px solid #4f46e5; margin: 20px 0;" />
-                  <p style="color: #4f46e5; font-family: monospace; font-size: 20px; letter-spacing: 4px;">${team.teamID}</p>
+                  <p style="color: #555; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">Squad Identity</p>
+                  <h2 style="font-size: 24px; margin: 10px 0;">${team.teamName}</h2>
+                  <img src="${qrUrl}" alt="QR" style="width: 150px; height: 150px; border: 1px solid #4f46e5; margin: 20px 0; background: #000;" />
+                  <p style="color: #4f46e5; font-family: monospace; font-size: 20px; letter-spacing: 4px; margin: 0;">${team.teamID}</p>
                 </div>
+                
+                <p style="color: #444; font-size: 11px; margin-top: 20px;">Present this digital manifest at the Innovation Hall check-in node.</p>
               </div>
             `,
           }),
@@ -66,8 +68,9 @@ serve(async (req) => {
           success = true;
           break;
         } else {
-          lastError = await res.text();
-          console.warn(`[Neural Comms] Key rotation: ${lastError}`);
+          const errorText = await res.text();
+          lastError = errorText;
+          console.warn(`[Neural Comms] SMTP Key rotation triggered. Key rejected: ${errorText}`);
         }
       } catch (err) {
         lastError = err.message;
@@ -75,7 +78,7 @@ serve(async (req) => {
     }
 
     if (!success) {
-      throw new Error(`All dispatch channels exhausted: ${lastError}`);
+      throw new Error(`All 4 dispatch channels exhausted. Last SMTP error: ${lastError}`);
     }
 
     return new Response(

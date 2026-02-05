@@ -35,70 +35,51 @@ Security is paramount. Execute these to enable Row Level Security and allow the 
 ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
 
 -- 1. Allow Public Read Access
--- Required for checking squad name availability and manifest lookups.
 CREATE POLICY "Allow public read access" ON teams FOR SELECT USING (true);
 
 -- 2. Allow Public Insert/Update
--- Required for the frontend to synchronize manifest drafts and check-ins.
--- Note: Sensitive fields (Payment Status) are verified/overwritten by Service Role functions.
 CREATE POLICY "Allow public insert access" ON teams FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public update access" ON teams FOR UPDATE USING (true);
-
--- 3. Service Role (Bypass RLS)
--- Edge functions using the SERVICE_ROLE_KEY bypass these policies automatically.
 ```
 
 ### C. Deploy Edge Functions
-Requires [Supabase CLI](https://supabase.com/docs/guides/cli).
 ```bash
-# 1. Login & Link
-supabase login
-supabase link --project-ref your-project-id
-
-# 2. Deploy Functions
 supabase functions deploy neural-chat --no-verify-jwt
 supabase functions deploy verify-payment --no-verify-jwt
 supabase functions deploy send-manifest --no-verify-jwt
 ```
 
-### D. Configure Secrets (CRITICAL)
-Set these variables in your **Supabase Settings > Edge Functions > Secrets**:
+### D. Configure Secrets (HIGH AVAILABILITY)
+Set these in **Supabase Settings > Edge Functions > Secrets**:
+
 ```bash
-# Gemini AI (Input 4 keys separated by commas for 429 rotation)
-# Uses Gemini 2.5 Flash-Lite
-supabase secrets set GEMINI_API_KEYS="key1,key2,key3,key4"
+# Gemini AI (Input 4 keys separated by commas for 60 RPM throughput)
+# Model: Gemini 2.5 Flash-Lite
+supabase secrets set API_KEY="key1,key2,key3,key4"
 
-# Razorpay (Use Live keys for production)
-supabase secrets set RAZORPAY_SECRET=your_razorpay_secret
-supabase secrets set RAZORPAY_WEBHOOK_SECRET=your_webhook_secret_from_dashboard
+# Resend (Input 4 keys separated by commas for 400+ registration surge)
+supabase secrets set RESEND_API_KEYS="re_key1,re_key2,re_key3,re_key4"
 
-# Resend (Input multiple keys separated by commas for the surge)
-supabase secrets set RESEND_API_KEYS="re_key1,re_key2"
+# Razorpay (Live Keys)
+supabase secrets set RAZORPAY_SECRET=your_secret
+supabase secrets set RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
 
-# Admin Access (SHA-256 of your password)
-supabase secrets set ADMIN_HASH=your_password_hash
+# Admin Terminal
+supabase secrets set ADMIN_HASH=sha256_hash_of_password
 ```
 
-## 2. Razorpay Webhook Configuration
+## 2. Vercel Frontend Configuration
 
-1.  Go to **Razorpay Dashboard > Settings > Webhooks**.
-2.  **Webhook URL**: `https://your-project-id.supabase.co/functions/v1/verify-payment`
-3.  **Secret**: Use the same string you set in `RAZORPAY_WEBHOOK_SECRET`.
-4.  **Active Events**: Select `payment.captured`.
-5.  **Save**: This ensures registrations are anchored even if the user closes their browser post-payment.
+Add these to your **Vercel Environment Variables**:
 
-## 3. Vercel Frontend Configuration
+| Variable | Value |
+| :--- | :--- |
+| `VITE_SUPABASE_URL` | `https://xyz.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | Your Public Key |
+| `VITE_RAZORPAY_KEY_ID` | `rzp_live_...` |
+| `VITE_ADMIN_HASH` | Matches Supabase secret |
 
-Add these to your **Vercel Project Settings > Environment Variables**:
-
-| Variable | Value | Description |
-| :--- | :--- | :--- |
-| `VITE_SUPABASE_URL` | Your Project URL | `https://xyz.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | Your `anon` `public` key | Found in API Settings |
-| `VITE_RAZORPAY_KEY_ID` | Your Razorpay Key ID | `rzp_live_...` |
-| `VITE_ADMIN_HASH` | SHA-256 Password Hash | Matches Supabase secret |
-
-## 4. Maintenance Ops
-- **Log Monitoring**: Use `supabase functions logs verify-payment --follow` to watch registration pulses in real-time.
-- **Data Export**: Use the "Export CSV" button in the Admin Terminal for manifest handovers.
-- **Check-in**: Use the Admin QR Scanner or manual "Verify" toggle. It pulls directly from the live PostgreSQL manifest.
+## 3. Maintenance
+- **RPM Check**: With 4 keys, `neural-chat` supports ~60 RPM.
+- **Surge Check**: With 4 Resend keys, `send-manifest` handles roughly 400 emails/day on free tier or unlimited on paid.
+- **Purge**: Use the "Purge Manifest" button in Admin for end-of-event cleanups.
