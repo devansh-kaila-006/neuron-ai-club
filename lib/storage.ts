@@ -7,12 +7,12 @@ const STORAGE_KEY = 'neuron_teams_vault';
 
 const teamValidator = z.object({
   id: z.string(),
-  teamName: z.string().min(3).max(20),
-  teamID: z.string().startsWith('TALOS-'),
-  leadEmail: z.string().email(),
-  paymentStatus: z.nativeEnum(PaymentStatus),
-  checkedIn: z.boolean(),
-  registeredAt: z.number(),
+  teamname: z.string().min(3).max(20),
+  teamid: z.string().startsWith('TALOS-'),
+  leademail: z.string().email(),
+  paymentstatus: z.nativeEnum(PaymentStatus),
+  checkedin: z.boolean(),
+  registeredat: z.number(),
   members: z.array(z.object({
     name: z.string().min(2),
     email: z.string().email(),
@@ -63,6 +63,7 @@ export const storage = {
   async saveTeam(team: Team): Promise<void> {
     const validation = teamValidator.safeParse(team);
     if (!validation.success) {
+      console.error("Validation Error:", validation.error);
       throw new Error("Neural Corrupt: Manifest failed integrity check.");
     }
 
@@ -99,13 +100,13 @@ export const storage = {
   async findTeamByName(name: string): Promise<Team | null> {
     if (!supabase) {
       const teams = await this.getTeams();
-      return teams.find(t => t.teamName.toLowerCase() === name.toLowerCase()) || null;
+      return teams.find(t => t.teamname.toLowerCase() === name.toLowerCase()) || null;
     }
 
     const { data } = await supabase
       .from(TABLE_NAME)
       .select('*')
-      .ilike('teamName', name)
+      .ilike('teamname', name)
       .maybeSingle();
 
     return (data as Team) || null;
@@ -114,13 +115,13 @@ export const storage = {
   async findTeamByTALOSID(talosID: string): Promise<Team | null> {
     if (!supabase) {
       const teams = await this.getTeams();
-      return teams.find(t => t.teamID.toUpperCase() === talosID.toUpperCase()) || null;
+      return teams.find(t => t.teamid.toUpperCase() === talosID.toUpperCase()) || null;
     }
 
     const { data } = await supabase
       .from(TABLE_NAME)
       .select('*')
-      .eq('teamID', talosID.toUpperCase())
+      .eq('teamid', talosID.toUpperCase())
       .maybeSingle();
 
     return (data as Team) || null;
@@ -130,7 +131,7 @@ export const storage = {
     const teams = await this.getTeams();
     const team = teams.find(t => t.id === id);
     if (team) {
-      team.checkedIn = status;
+      team.checkedin = status;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
     }
 
@@ -138,7 +139,7 @@ export const storage = {
 
     const { error } = await supabase
       .from(TABLE_NAME)
-      .update({ checkedIn: status })
+      .update({ checkedin: status })
       .eq('id', id);
 
     if (error) throw new Error("Neural Link Failure: Status update failed.");
@@ -160,12 +161,12 @@ export const storage = {
 
   async getStats() {
     const teams = await this.getTeams();
-    const paid = teams.filter(t => t.paymentStatus === PaymentStatus.PAID);
+    const paid = teams.filter(t => t.paymentstatus === PaymentStatus.PAID);
     return {
       totalTeams: teams.length,
       paidTeams: paid.length,
-      checkedIn: teams.filter(t => t.checkedIn).length,
-      revenue: paid.length * 1 // UPDATED FOR TESTING: ₹1 multiplier
+      checkedIn: teams.filter(t => t.checkedin).length,
+      revenue: paid.length * 1
     };
   }
 };

@@ -14,15 +14,15 @@ export interface TeamMember {
 
 export interface Team {
   id: string;
-  teamName: string;
-  teamID: string;
+  teamname: string;
+  teamid: string;
   members: TeamMember[];
-  leadEmail: string;
-  paymentStatus: PaymentStatus;
-  razorpayOrderId?: string;
-  razorpayPaymentId?: string;
-  checkedIn: boolean;
-  registeredAt: number;
+  leademail: string;
+  paymentstatus: PaymentStatus;
+  razorpayorderid?: string;
+  razorpaypaymentid?: string;
+  checkedin: boolean;
+  registeredat: number;
 }
 
 export interface NavItem {

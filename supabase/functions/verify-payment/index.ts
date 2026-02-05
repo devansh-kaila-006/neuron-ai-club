@@ -55,11 +55,15 @@ serve(async (req) => {
       const payment = payload.payload.payment.entity;
       orderId = payment.order_id;
       paymentId = payment.id;
-      // Handle missing notes in webhook
+      
       try {
-        teamData = payment.notes?.teamData ? JSON.parse(payment.notes.teamData) : {};
+        // Use consistent mapping for webhook
+        teamData = payment.notes?.teamData ? JSON.parse(payment.notes.teamData) : {
+          teamname: payment.notes?.teamName,
+          leademail: payment.notes?.leadEmail
+        };
       } catch {
-        teamData = { teamName: payment.notes?.teamName, leadEmail: payment.notes?.leadEmail };
+        teamData = { teamname: payment.notes?.teamName, leademail: payment.notes?.leadEmail };
       }
     } else {
       const body = JSON.parse(rawBody);
@@ -68,9 +72,6 @@ serve(async (req) => {
       const clientSignature = body.signature;
       teamData = body.teamData;
 
-      // In a "Direct Payment" (no order_id), we skip HMAC signature verification
-      // and ideally fetch the payment details from Razorpay API to confirm success.
-      // For testing ₹1, we will proceed if paymentId exists.
       if (orderId && clientSignature) {
         const rzpSecret = (globalThis as any).Deno.env.get("RAZORPAY_SECRET");
         if (!rzpSecret) throw new Error("Manifest Integrity Error: Secret Key missing.");
@@ -81,11 +82,11 @@ serve(async (req) => {
 
     if (!paymentId) throw new Error("Manifest Error: Missing Payment ID.");
 
-    // Idempotency check
+    // Idempotency check with lowercase column
     const { data: existing } = await supabaseAdmin
       .from('teams')
       .select('*')
-      .eq('razorpayPaymentId', paymentId)
+      .eq('razorpaypaymentid', paymentId)
       .maybeSingle();
 
     if (existing) {
@@ -96,20 +97,23 @@ serve(async (req) => {
     crypto.getRandomValues(array);
     const teamID = `TALOS-${array[0].toString(36).substring(0, 6).toUpperCase()}`;
     
+    // Construct object matching Supabase lowercase columns exactly
     const fullTeam = {
-      ...teamData,
+      teamname: teamData.teamname || teamData.teamName,
+      leademail: teamData.leademail || teamData.leadEmail,
+      members: teamData.members,
       id: crypto.randomUUID(),
-      teamID,
-      paymentStatus: 'paid',
-      checkedIn: false,
-      registeredAt: Date.now(),
-      razorpayOrderId: orderId || null,
-      razorpayPaymentId: paymentId
+      teamid: teamID,
+      paymentstatus: 'paid',
+      checkedin: false,
+      registeredat: Date.now(),
+      razorpayorderid: orderId || null,
+      razorpaypaymentid: paymentId
     };
 
     const { data, error } = await supabaseAdmin
       .from('teams')
-      .upsert(fullTeam, { onConflict: 'razorpayPaymentId' })
+      .upsert(fullTeam, { onConflict: 'razorpaypaymentid' })
       .select()
       .single();
 

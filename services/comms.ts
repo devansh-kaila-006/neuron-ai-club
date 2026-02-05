@@ -12,7 +12,8 @@ export const commsService = {
     return api.call(async () => {
       if (!supabase) throw new Error("Neural Connection Lost.");
 
-      console.log(`[Neural Dispatch] Routing manifest for: ${team.leadEmail}`);
+      // Fix: Property name is lowercase 'leademail' in the Team type definition
+      console.log(`[Neural Dispatch] Routing manifest for: ${team.leademail}`);
 
       const { data, error } = await supabase.functions.invoke('send-manifest', {
         body: { team }

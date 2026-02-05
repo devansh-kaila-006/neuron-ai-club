@@ -60,8 +60,8 @@ const Admin: React.FC = () => {
       await storage.updateCheckIn(id, status);
       await fetchData(true);
       const team = teams.find(t => t.id === id);
-      addLog(`${status ? 'Verified' : 'Unverified'}: ${team?.teamName}`, status ? 'success' : 'info');
-      if (status) toast.success(`Checked in: ${team?.teamName}`);
+      addLog(`${status ? 'Verified' : 'Unverified'}: ${team?.teamname}`, status ? 'success' : 'info');
+      if (status) toast.success(`Checked in: ${team?.teamname}`);
     } catch (err) {
       toast.error("Check-in sync failure.");
     } finally {
@@ -69,7 +69,6 @@ const Admin: React.FC = () => {
     }
   };
 
-  // QR Scanning Logic
   const tick = useCallback(() => {
     if (videoRef.current?.readyState === videoRef.current?.HAVE_ENOUGH_DATA && canvasRef.current) {
       const video = videoRef.current;
@@ -89,14 +88,14 @@ const Admin: React.FC = () => {
         const talosID = code.data.trim().toUpperCase();
         addLog(`QR Detected: ${talosID}`, 'info');
         
-        const team = teams.find(t => t.teamID === talosID);
+        const team = teams.find(t => t.teamid === talosID);
         if (team) {
-          if (!team.checkedIn) {
+          if (!team.checkedin) {
             handleCheckIn(team.id, true);
             setIsScannerOpen(false);
           } else {
-            addLog(`Already Verified: ${team.teamName}`, 'warn');
-            toast.info(`${team.teamName} is already checked in.`);
+            addLog(`Already Verified: ${team.teamname}`, 'warn');
+            toast.info(`${team.teamname} is already checked in.`);
             setIsScannerOpen(false);
           }
         } else {
@@ -189,10 +188,10 @@ const Admin: React.FC = () => {
 
     const headers = ["Team Name", "TALOS ID", "Status", "Checked In", "Lead Name", "Lead Email", "Lead Phone", "Members Count"];
     const rows = teams.map(t => [
-      t.teamName,
-      t.teamID,
-      t.paymentStatus,
-      t.checkedIn ? "Yes" : "No",
+      t.teamname,
+      t.teamid,
+      t.paymentstatus,
+      t.checkedin ? "Yes" : "No",
       t.members[0]?.name || "N/A",
       t.members[0]?.email || "N/A",
       t.members[0]?.phone || "N/A",
@@ -242,10 +241,10 @@ const Admin: React.FC = () => {
 
   const filteredTeams = teams.filter(t => {
     const searchStr = searchTerm.toLowerCase();
-    const matchesSearch = t.teamName.toLowerCase().includes(searchStr) || 
-                         t.teamID.toLowerCase().includes(searchStr);
+    const matchesSearch = t.teamname.toLowerCase().includes(searchStr) || 
+                         t.teamid.toLowerCase().includes(searchStr);
     if (filter === 'all') return matchesSearch;
-    return matchesSearch && t.paymentStatus === (filter === 'paid' ? PaymentStatus.PAID : PaymentStatus.PENDING);
+    return matchesSearch && t.paymentstatus === (filter === 'paid' ? PaymentStatus.PAID : PaymentStatus.PENDING);
   });
 
   if (isLoading && isAuthenticated === null) {
@@ -350,16 +349,16 @@ const Admin: React.FC = () => {
                     ) : filteredTeams.map(team => (
                       <tr key={team.id} className="hover:bg-white/2 transition-colors group">
                         <td className="px-8 py-6">
-                          <p className="font-bold text-sm group-hover:text-indigo-400 transition-colors">{team.teamName}</p>
-                          <span className="text-[10px] text-gray-500 font-mono">{team.teamID}</span>
+                          <p className="font-bold text-sm group-hover:text-indigo-400 transition-colors">{team.teamname}</p>
+                          <span className="text-[10px] text-gray-500 font-mono">{team.teamid}</span>
                         </td>
                         <td className="px-8 py-6">
-                          <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase ${team.paymentStatus === PaymentStatus.PAID ? 'bg-green-500/10 text-green-500' : 'bg-orange-500/10 text-orange-500'}`}>{team.paymentStatus}</span>
+                          <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase ${team.paymentstatus === PaymentStatus.PAID ? 'bg-green-500/10 text-green-500' : 'bg-orange-500/10 text-orange-500'}`}>{team.paymentstatus}</span>
                         </td>
                         <td className="px-8 py-6">
-                           <button disabled={actionLoading === team.id} onClick={() => handleCheckIn(team.id, !team.checkedIn)} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all flex items-center gap-2 ${team.checkedIn ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.3)]' : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'}`}>
-                              {actionLoading === team.id ? <Loader2 size={12} className="animate-spin" /> : team.checkedIn ? <CheckCircle2 size={12} /> : null}
-                              {team.checkedIn ? 'Verified' : 'Verify'}
+                           <button disabled={actionLoading === team.id} onClick={() => handleCheckIn(team.id, !team.checkedin)} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all flex items-center gap-2 ${team.checkedin ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.3)]' : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'}`}>
+                              {actionLoading === team.id ? <Loader2 size={12} className="animate-spin" /> : team.checkedin ? <CheckCircle2 size={12} /> : null}
+                              {team.checkedin ? 'Verified' : 'Verify'}
                            </button>
                         </td>
                       </tr>

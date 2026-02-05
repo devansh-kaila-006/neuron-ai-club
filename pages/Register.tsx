@@ -58,7 +58,6 @@ const Register: React.FC = () => {
     const updated = [...members];
     updated[index] = { ...updated[index], [field]: value };
     setMembers(updated);
-    // Clear specific error on change
     if (errors.members?.[index]?.[field]) {
       const newErrors = { ...errors };
       delete newErrors.members[index][field];
@@ -77,7 +76,7 @@ const Register: React.FC = () => {
       const team = await storage.findTeamByTALOSID(lookupID);
       if (team) {
         setRegisteredTeam(team);
-        setTeamName(team.teamName);
+        setTeamName(team.teamname);
         setMembers(team.members);
         setIsUpdateMode(true);
         setErrors({});
@@ -125,7 +124,7 @@ const Register: React.FC = () => {
     
     setErrors({});
     
-    if (isUpdateMode && registeredTeam?.paymentStatus === PaymentStatus.PAID) {
+    if (isUpdateMode && registeredTeam?.paymentstatus === PaymentStatus.PAID) {
       handleDirectUpdate();
     } else {
       setStep(2);
@@ -135,11 +134,11 @@ const Register: React.FC = () => {
   const handleDirectUpdate = async () => {
     setIsSubmitting(true);
     try {
-      const updatedTeam = {
+      const updatedTeam: Team = {
         ...registeredTeam!,
-        teamName,
+        teamname: teamName,
         members,
-        leadEmail: members[0].email
+        leademail: members[0].email
       };
       await storage.saveTeam(updatedTeam);
       setRegisteredTeam(updatedTeam);
@@ -166,7 +165,7 @@ const Register: React.FC = () => {
             response.razorpay_order_id, 
             response.razorpay_payment_id, 
             response.razorpay_signature, 
-            { teamName, members, leadEmail: members[0].email }
+            { teamname: teamName, members, leademail: members[0].email }
           );
           
           if (verifyRes.success) {
@@ -197,7 +196,6 @@ const Register: React.FC = () => {
   return (
     <div className="pt-24 min-h-screen px-6 pb-20 relative bg-[#050505]">
       <div className="max-w-4xl mx-auto">
-        {/* Progress Tracker */}
         <div className="flex justify-between items-center mb-12 max-w-[280px] mx-auto relative no-print">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[1px] bg-white/10 -z-0" />
           {[1, 2, 3].map(s => (
@@ -352,11 +350,11 @@ const Register: React.FC = () => {
               <div className="glass p-16 rounded-[3.5rem] border-green-500/20 shadow-2xl manifest-card relative">
                 <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto mb-10"><CheckCircle size={48} /></div>
                 <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent uppercase">Deployed</h2>
-                <p className="text-gray-400 text-sm mb-6">Squad {registeredTeam?.teamName} sync complete.</p>
+                <p className="text-gray-400 text-sm mb-6">Squad {registeredTeam?.teamname} sync complete.</p>
                 
                 <div className="bg-white/[0.03] p-8 rounded-3xl border border-white/5 mb-10 block">
-                  <QRCodeSVG value={registeredTeam?.teamID || ''} size={180} level="H" includeMargin={true} fgColor="#ffffff" bgColor="transparent" />
-                  <p className="text-2xl font-bold font-mono tracking-[0.3em] mt-6 text-indigo-400">{registeredTeam?.teamID}</p>
+                  <QRCodeSVG value={registeredTeam?.teamid || ''} size={180} level="H" includeMargin={true} fgColor="#ffffff" bgColor="transparent" />
+                  <p className="text-2xl font-bold font-mono tracking-[0.3em] mt-6 text-indigo-400">{registeredTeam?.teamid}</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-center gap-4 no-print">
