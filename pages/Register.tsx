@@ -13,7 +13,7 @@ import { useToast } from '../context/ToastContext.tsx';
 
 const memberSchema = z.object({
   name: z.string().min(2, "Name required"),
-  email: z.string().email("Invalid email"),
+  email: z.string().email("Invalid email format"),
   phone: z.string().regex(/^[0-9]{10}$/, "10-digit number required"),
   role: z.string().min(1, "Role required"),
 });
@@ -58,6 +58,12 @@ const Register: React.FC = () => {
     const updated = [...members];
     updated[index] = { ...updated[index], [field]: value };
     setMembers(updated);
+    // Clear specific error on change
+    if (errors.members?.[index]?.[field]) {
+      const newErrors = { ...errors };
+      delete newErrors.members[index][field];
+      setErrors(newErrors);
+    }
   };
 
   const handleLookup = async () => {
@@ -265,6 +271,7 @@ const Register: React.FC = () => {
                         className={`w-full bg-white/5 border rounded-2xl p-5 outline-none transition-all text-lg font-medium ${errors.teamName ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
                         placeholder="Ex: CyberDynasty"
                       />
+                      {errors.teamName && <p className="text-[10px] text-red-500 mt-2 font-mono uppercase">{errors.teamName}</p>}
                     </div>
                   </div>
 
@@ -277,9 +284,34 @@ const Register: React.FC = () => {
                           {i > 1 && <button onClick={() => removeMember(i)} className="text-gray-600 hover:text-red-500"><Trash2 size={14} /></button>}
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <input placeholder="Name" value={m.name} onChange={e => updateMember(i, 'name', e.target.value)} className="w-full bg-white/[0.05] border border-white/5 rounded-xl p-3 text-sm outline-none focus:border-indigo-500" />
-                          <input placeholder="Email" value={m.email} onChange={e => updateMember(i, 'email', e.target.value)} className="w-full bg-white/[0.05] border border-white/5 rounded-xl p-3 text-sm outline-none focus:border-indigo-500" />
-                          <input placeholder="Phone" value={m.phone} maxLength={10} onChange={e => updateMember(i, 'phone', e.target.value.replace(/\D/g, ''))} className="w-full bg-white/[0.05] border border-white/5 rounded-xl p-3 text-sm outline-none focus:border-indigo-500" />
+                          <div className="space-y-1">
+                            <input 
+                              placeholder="Name" 
+                              value={m.name} 
+                              onChange={e => updateMember(i, 'name', e.target.value)} 
+                              className={`w-full bg-white/[0.05] border rounded-xl p-3 text-sm outline-none transition-all ${errors.members?.[i]?.name ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`} 
+                            />
+                            {errors.members?.[i]?.name && <p className="text-[9px] text-red-500 font-mono pl-1 uppercase">{errors.members[i].name}</p>}
+                          </div>
+                          <div className="space-y-1">
+                            <input 
+                              placeholder="Email" 
+                              value={m.email} 
+                              onChange={e => updateMember(i, 'email', e.target.value)} 
+                              className={`w-full bg-white/[0.05] border rounded-xl p-3 text-sm outline-none transition-all ${errors.members?.[i]?.email ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`} 
+                            />
+                            {errors.members?.[i]?.email && <p className="text-[9px] text-red-500 font-mono pl-1 uppercase">{errors.members[i].email}</p>}
+                          </div>
+                          <div className="space-y-1">
+                            <input 
+                              placeholder="Phone" 
+                              value={m.phone} 
+                              maxLength={10} 
+                              onChange={e => updateMember(i, 'phone', e.target.value.replace(/\D/g, ''))} 
+                              className={`w-full bg-white/[0.05] border rounded-xl p-3 text-sm outline-none transition-all ${errors.members?.[i]?.phone ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`} 
+                            />
+                            {errors.members?.[i]?.phone && <p className="text-[9px] text-red-500 font-mono pl-1 uppercase">{errors.members[i].phone}</p>}
+                          </div>
                         </div>
                       </div>
                     ))}
