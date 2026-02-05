@@ -1,4 +1,3 @@
-
 # 🧠 NEURØN | Production Ops Manual
 
 This guide outlines the protocol for deploying the NEURØN Hub and TALOS 2026 registration grid.
@@ -88,7 +87,16 @@ Add these to your **Vercel Environment Variables**:
 | `VITE_RAZORPAY_KEY_ID` | `rzp_live_...` |
 | `VITE_ADMIN_HASH` | Matches Supabase secret |
 
-## 3. Maintenance Protocols
-- **RPM Check**: With 4 keys, `neural-chat` supports ~60 RPM using `gemini-3-flash-preview`.
+## 3. Razorpay Webhook Configuration (CRITICAL)
+
+To ensure registrations are captured even if a user closes their browser before redirection, you must configure a webhook in the **Razorpay Dashboard**:
+
+1.  **Webhook URL**: `https://[YOUR_SUPABASE_PROJECT_ID].supabase.co/functions/v1/verify-payment`
+2.  **Secret**: Must match the `RAZORPAY_WEBHOOK_SECRET` you set in Supabase.
+3.  **Active Events**: Select `payment.captured`.
+4.  **Alert Email**: Set your developer email to monitor failures.
+
+## 4. Maintenance Protocols
+- **RPM Check**: With 4 keys, `neural-chat` supports ~60 RPM using `gemini-flash-lite-latest`.
 - **Surge Check**: With 4 Resend keys, `send-manifest` handles roughly 400 emails/day on free tier.
 - **Purge**: Use the "Purge Manifest" button in Admin for end-of-event cleanups.
