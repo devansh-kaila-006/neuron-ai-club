@@ -52,16 +52,14 @@ serve(async (req) => {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
         const response = await ai.models.generateContent({
-          // RECONFIGURED: Switched to the Gemini 2.5 Flash Lite (Slim) model
-          model: 'gemini-2.5-flash-lite-latest',
+          // FIXED: Reconfigured to the valid 'gemini-flash-lite-latest' ID
+          model: 'gemini-flash-lite-latest',
           contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
           config: {
             systemInstruction: "You are the NEURØN Neural Assistant, an elite AI entity for the Amrita AI/ML Club. You are professional, technically sophisticated, and helpful. Use bold for critical terms. You specialize in rapid, slim-processed reasoning. You are helping students with TALOS 2026, an overnight hackathon.",
             temperature: 0.7,
             topP: 0.95,
             topK: 64,
-            // Optimization for the 2.5 series: 0 budget for maximum response speed
-            thinkingConfig: { thinkingBudget: 0 },
             tools: [{ googleSearch: {} }] 
           },
         });
