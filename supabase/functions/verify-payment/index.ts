@@ -7,15 +7,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// NEURØN Environment Bridge: Shim process.env for Deno runtime
-const process = {
-  // Fix: Access Deno through globalThis to resolve environment name resolution issues
-  env: (globalThis as any).Deno.env.toObject()
-};
-
 /**
- * Verifies Razorpay Signature using HMAC-SHA256
+ * NEURØN Environment Bridge
+ * Fixes the ReferenceError for process.env in Deno.
  */
+const process = {
+  env: new Proxy({}, {
+    get: (_target, prop: string) => (globalThis as any).Deno?.env.get(prop)
+  })
+} as any;
+
 async function verifySignature(data: string, signature: string, secret: string) {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
@@ -47,12 +48,9 @@ serve(async (req) => {
     const rawBody = await req.text();
     let orderId, paymentId, teamData;
 
-    // WEBHOOK PATH (Automated Sync)
     if (rzpWebhookSignature) {
       const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
       if (!webhookSecret) throw new Error("Webhook Secret not configured.");
-
-      // Security: Validate that the request actually came from Razorpay
       const isValid = await verifySignature(rawBody, rzpWebhookSignature, webhookSecret);
       if (!isValid) throw new Error("Unauthorized Webhook Signature.");
 
@@ -61,11 +59,7 @@ serve(async (req) => {
       orderId = payment.order_id;
       paymentId = payment.id;
       teamData = JSON.parse(payment.notes?.teamData || "{}");
-      
-      console.log(`[Webhook]: Verified payment ${paymentId} for ${teamData.teamName}`);
-    } 
-    // CLIENT PATH (Instant Sync)
-    else {
+    } else {
       const body = JSON.parse(rawBody);
       orderId = body.orderId;
       paymentId = body.paymentId;
@@ -79,7 +73,6 @@ serve(async (req) => {
       if (!isValid) throw new Error("Invalid Client Signature Sequence.");
     }
 
-    // IDEMPOTENCY: Check if already registered
     const { data: existing } = await supabaseAdmin
       .from('teams')
       .select('*')
@@ -90,7 +83,6 @@ serve(async (req) => {
       return new Response(JSON.stringify({ success: true, data: existing }), { headers: corsHeaders });
     }
 
-    // GENERATE SECURE 6-DIGIT TALOS ID
     const array = new Uint32Array(1);
     crypto.getRandomValues(array);
     const teamID = `TALOS-${array[0].toString(36).substring(0, 6).toUpperCase()}`;
@@ -106,7 +98,6 @@ serve(async (req) => {
       razorpayPaymentId: paymentId
     };
 
-    // ATOMIC UPSERT: Handle race conditions between Webhook and Client
     const { data, error } = await supabaseAdmin
       .from('teams')
       .upsert(fullTeam, { onConflict: 'razorpayPaymentId' })
