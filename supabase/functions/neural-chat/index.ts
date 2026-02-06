@@ -65,9 +65,10 @@ serve(async (req) => {
         (globalThis as any).process.env.API_KEY = currentKey;
         const ai = new GoogleGenAI({ apiKey: currentKey });
 
-        // Using gemini-3-flash-preview for high speed and better quota availability
+        // Using gemini-flash-lite-latest for maximum RPM (Requests Per Minute)
+        // This model is optimized for high-throughput scenarios like hackathons.
         const result = await ai.models.generateContent({
-          model: 'gemini-3-flash-preview',
+          model: 'gemini-flash-lite-latest',
           contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
           config: {
             systemInstruction: "You are the NEURØN Neural Assistant. Be concise, professional, and technical. You assist with the TALOS 2026 AI hackathon at Amrita University. If technical implementation is requested, provide robust and secure code examples.",
