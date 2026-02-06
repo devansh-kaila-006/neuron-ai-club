@@ -12,7 +12,6 @@ const envStore: Record<string, string> = {};
 } as any;
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-// Using the recommended esm.sh import for Deno
 import { GoogleGenAI } from "https://esm.sh/@google/genai@1.3.0"
 
 const corsHeaders = {
@@ -26,19 +25,9 @@ serve(async (req) => {
   }
 
   try {
-    const adminHash = (globalThis as any).Deno.env.get("ADMIN_HASH");
-    const clientAuth = req.headers.get('x-neural-auth');
-    
-    // SECURITY: Validate administrative link
-    if (!adminHash) {
-      console.error("CONFIGURATION ERROR: ADMIN_HASH missing.");
-      return new Response(JSON.stringify({ error: "System Configuration Error: Security token missing." }), { status: 500, headers: corsHeaders });
-    }
-
-    if (clientAuth !== adminHash) {
-      console.warn("UNAUTHORIZED ACCESS: Neural identity mismatch.");
-      return new Response(JSON.stringify({ error: "Access Denied: Neural Link identity mismatch." }), { status: 401, headers: corsHeaders });
-    }
+    // NOTE: We no longer gate the AI Assistant behind the ADMIN_HASH 
+    // to allow public interaction on the landing page. 
+    // Sensitive functions (Email/Payment) remain shielded.
 
     const body = await req.json();
     const { prompt, history = [] } = body;
@@ -61,12 +50,9 @@ serve(async (req) => {
     // Attempt generation with available keys
     for (const currentKey of apiKeys) {
       try {
-        // Initialize precisely as per SDK guidelines
         (globalThis as any).process.env.API_KEY = currentKey;
         const ai = new GoogleGenAI({ apiKey: currentKey });
 
-        // Using gemini-flash-lite-latest for maximum RPM (Requests Per Minute)
-        // This model is optimized for high-throughput scenarios like hackathons.
         const result = await ai.models.generateContent({
           model: 'gemini-flash-lite-latest',
           contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
@@ -79,14 +65,12 @@ serve(async (req) => {
           },
         });
 
-        // Safe property access as per SDK response structure
         if (!result || !result.candidates || result.candidates.length === 0) {
            throw new Error("Uplink returned empty candidate pool.");
         }
 
         const textOutput = result.text || "Uplink returned empty state.";
         
-        // Extract grounding sources safely
         const metadata = result.candidates[0]?.groundingMetadata;
         const chunks = metadata?.groundingChunks || [];
         const sources = chunks.map((chunk: any) => {
@@ -103,11 +87,10 @@ serve(async (req) => {
       } catch (err) {
         lastErrorMsg = err.message;
         console.warn(`Uplink Key Segment [${currentKey.substring(0, 4)}...] Failed: ${err.message}`);
-        continue; // Try next key
+        continue; 
       }
     }
 
-    // Exhausted all keys
     return new Response(
       JSON.stringify({ error: `Neural Exhaustion: ${lastErrorMsg}` }),
       { status: 503, headers: corsHeaders }
