@@ -161,21 +161,35 @@ const Register: React.FC = () => {
         email: members[0].email,
         phone: members[0].phone,
         onSuccess: async (response: any) => {
-          toast.info("Payment confirmed. Synchronizing...");
-          const verifyRes = await paymentService.verifyPayment(
-            response.razorpay_order_id, 
-            response.razorpay_payment_id, 
-            response.razorpay_signature, 
-            { teamname: teamName, members, leademail: members[0].email }
-          );
-          
-          if (verifyRes.success) {
-            finishRegistration(verifyRes.data!);
+          toast.info("Synchronizing with Neural Grid...");
+          try {
+            const verifyRes = await paymentService.verifyPayment(
+              response.razorpay_order_id, 
+              response.razorpay_payment_id, 
+              response.razorpay_signature, 
+              { teamname: teamName, members, leademail: members[0].email }
+            );
+            
+            if (verifyRes.success && verifyRes.data) {
+              finishRegistration(verifyRes.data);
+            } else {
+              throw new Error("Verification failed.");
+            }
+          } catch (err: any) {
+            console.warn("Retrying direct lookup via PaymentID...");
+            // Final fallback: Check if the webhook already handled it
+            const existing = await storage.getTeams();
+            const found = existing.find(t => t.razorpaypaymentid === response.razorpay_payment_id);
+            if (found) {
+              finishRegistration(found);
+            } else {
+              toast.error(`Neural Grid Sync Error: ${err.message}. Please contact support with Payment ID: ${response.razorpay_payment_id}`);
+            }
           }
         }
       });
     } catch (err: any) {
-      toast.error(`Payment error: ${err.message}`);
+      toast.error(`Checkout Error: ${err.message}`);
     } finally { setIsSubmitting(false); }
   };
 
