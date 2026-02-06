@@ -3,6 +3,7 @@ import { api } from './api.ts';
 import { supabase } from '../lib/storage.ts';
 import { Team } from '../lib/types.ts';
 import { getEnv } from '../lib/env.ts';
+import { authService } from './auth.ts';
 
 declare global {
   interface Window {
@@ -23,7 +24,7 @@ export const paymentService = {
     return api.call(async () => {
       if (!RAZORPAY_KEY_ID) throw new Error("Payment Gateway Offline: Key ID missing.");
       
-      const amountInPaise = 1 * 100; // TEST AMOUNT: ₹1 (100 Paise)
+      const amountInPaise = 1 * 100; // TEST AMOUNT: ₹1
 
       const rzpOptions = {
         key: RAZORPAY_KEY_ID,
@@ -57,24 +58,23 @@ export const paymentService = {
     return api.call(async () => {
       if (!supabase) throw new Error("Neural Grid Offline.");
 
-      const adminHash = getEnv("ADMIN_HASH");
+      // For normal users, this is null. For admins, it's the session hash.
+      const sessionHash = authService.getStoredHash();
 
       const { data, error } = await supabase.functions.invoke('verify-payment', {
         body: { orderId, paymentId, signature, teamData },
         headers: {
-          'x-neural-auth': adminHash || ''
+          'x-neural-auth': sessionHash || ''
         }
       });
       
       if (error) {
         let errorMsg = error.message;
         try {
-          // Attempt to extract detailed error from Edge Function response
           const errorContext = await error.context?.json();
           if (errorContext?.error) {
             errorMsg = errorContext.error;
             if (errorContext.details) {
-              console.warn(`Neural Diagnostic: ${errorContext.details}`);
               errorMsg += ` (${errorContext.details})`;
             }
           }
@@ -83,9 +83,7 @@ export const paymentService = {
       }
 
       if (!data || !data.success) {
-        const serverError = data?.error || "Neural verification sequence rejected.";
-        const details = data?.details ? ` - ${data.details}` : "";
-        throw new Error(serverError + details);
+        throw new Error(data?.error || "Neural verification sequence rejected.");
       }
 
       return data.data as Team;

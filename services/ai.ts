@@ -1,6 +1,6 @@
 
 import { supabase } from '../lib/storage.ts';
-import { getEnv } from '../lib/env.ts';
+import { authService } from './auth.ts';
 
 export interface NeuralResponse {
   text: string;
@@ -19,19 +19,18 @@ export const getNeuralResponse = async (prompt: string, history: MessageHistory[
   try {
     if (!supabase) throw new Error("Neural Uplink inactive.");
 
-    const adminHash = getEnv("ADMIN_HASH");
+    // SECURITY: Get hash from active session (derived from password)
+    const sessionHash = authService.getStoredHash();
 
     // Attempt to call the Edge Function
     const response = await supabase.functions.invoke('neural-chat', {
       body: { prompt, history },
       headers: {
-        'x-neural-auth': adminHash || ''
+        'x-neural-auth': sessionHash || ''
       }
     });
 
-    // Supabase client handles non-2xx as 'error'
     if (response.error) {
-      // Try to parse error body if it exists
       let errorData;
       try {
         errorData = await response.error.context?.json();
