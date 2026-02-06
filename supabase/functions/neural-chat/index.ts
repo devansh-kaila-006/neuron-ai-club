@@ -1,3 +1,4 @@
+
 // 1. NEURØN Global Security & Environment Shim
 const envStore: Record<string, string> = {};
 (globalThis as any).process = {
@@ -16,7 +17,7 @@ import { GoogleGenAI } from "https://esm.sh/@google/genai@1.3.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-neural-auth',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-neural-auth, x-neuron-client',
 }
 
 serve(async (req) => {
