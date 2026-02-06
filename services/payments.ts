@@ -1,3 +1,4 @@
+
 import { api } from './api.ts';
 import { supabase } from '../lib/storage.ts';
 import { Team } from '../lib/types.ts';
@@ -37,7 +38,6 @@ export const paymentService = {
           leadEmail: options.email,
           memberCount: options.members.length.toString()
         },
-        // Prefill ensures user doesn't have to re-type in the Razorpay UI
         prefill: {
           name: options.teamName,
           email: options.email,
@@ -57,15 +57,26 @@ export const paymentService = {
     return api.call(async () => {
       if (!supabase) throw new Error("Neural Grid Offline.");
 
+      const adminHash = getEnv("ADMIN_HASH");
+
       const { data, error } = await supabase.functions.invoke('verify-payment', {
-        body: { orderId, paymentId, signature, teamData }
+        body: { orderId, paymentId, signature, teamData },
+        headers: {
+          'x-neural-auth': adminHash || ''
+        }
       });
       
-      if (error) throw new Error(error.message);
-      if (!data || !data.success) throw new Error(data?.error || "Security Breach: Neural payment verification failed.");
+      if (error) {
+        let errorMsg = error.message;
+        try {
+          const errorData = await error.context?.json();
+          if (errorData?.error) errorMsg = errorData.error;
+        } catch { /* use original message */ }
+        throw new Error(errorMsg);
+      }
 
-      // CRITICAL FIX: Return ONLY the team data record (data.data), not the success wrapper.
-      // This ensures the caller receives the actual Team object with all properties correctly mapped.
+      if (!data || !data.success) throw new Error(data?.error || "Neural verification sequence rejected.");
+
       return data.data as Team;
     });
   }

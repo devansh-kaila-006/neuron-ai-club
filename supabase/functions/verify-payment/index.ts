@@ -42,27 +42,22 @@ serve(async (req) => {
     );
 
     const rzpWebhookSignature = req.headers.get('x-razorpay-signature');
-    const rawBody = await req.text();
+    const clientAuth = req.headers.get('x-neural-auth');
+    const adminHash = (globalThis as any).Deno.env.get("ADMIN_HASH");
     
-    // SECURITY FIX: Fail-Closed for non-webhook requests
-    if (!rzpWebhookSignature) {
-       const adminHash = (globalThis as any).Deno.env.get("ADMIN_HASH");
-       const clientAuth = req.headers.get('x-neural-auth');
-       
-       if (!adminHash || clientAuth !== adminHash) {
-         console.warn("Security Alert: Blocked unauthorized verify-payment trigger.");
-         return new Response(JSON.stringify({ error: "Unauthorized access path." }), { status: 401, headers: corsHeaders });
-       }
-    }
-
-    let orderId, paymentId, teamData;
+    const rawBody = await req.text();
+    let orderId, paymentId, teamData, signature;
 
     if (rzpWebhookSignature) {
+      // WEBHOOK PATH
       const webhookSecret = (globalThis as any).Deno.env.get("RAZORPAY_WEBHOOK_SECRET");
-      if (!webhookSecret) throw new Error("Secret missing.");
+      if (!webhookSecret) throw new Error("Server Configuration Error: Webhook secret missing.");
       
       const isValid = await verifySignature(rawBody, rzpWebhookSignature, webhookSecret);
-      if (!isValid) throw new Error("Security Violation: Unauthorized Webhook Signature.");
+      if (!isValid) {
+        console.error("Security Alert: Invalid Webhook Signature.");
+        return new Response(JSON.stringify({ error: "Unauthorized Webhook Path." }), { status: 401, headers: corsHeaders });
+      }
 
       const payload = JSON.parse(rawBody);
       const payment = payload.payload.payment.entity;
@@ -73,22 +68,36 @@ serve(async (req) => {
         leademail: payment.notes?.leadEmail
       };
     } else {
+      // CLIENT PATH (OR ADMIN OVERRIDE)
       const body = JSON.parse(rawBody);
       orderId = body.orderId;
       paymentId = body.paymentId;
-      const clientSignature = body.signature;
+      signature = body.signature;
       teamData = body.teamData;
 
-      if (orderId && clientSignature) {
-        const rzpSecret = (globalThis as any).Deno.env.get("RAZORPAY_SECRET");
-        if (!rzpSecret) throw new Error("Secret Key missing.");
-        const isValid = await verifySignature(`${orderId}|${paymentId}`, clientSignature, rzpSecret);
-        if (!isValid) throw new Error("Security Violation: Invalid Client Signature.");
+      const rzpSecret = (globalThis as any).Deno.env.get("RAZORPAY_SECRET");
+      
+      // Verification logic:
+      // 1. If user provided a signature, verify it against Razorpay Secret.
+      // 2. If no signature, check if requester is an authorized Admin.
+      if (orderId && signature && rzpSecret) {
+        const isValid = await verifySignature(`${orderId}|${paymentId}`, signature, rzpSecret);
+        if (!isValid) {
+          console.error("Security Alert: Invalid Client Payment Signature.");
+          return new Response(JSON.stringify({ error: "Invalid Payment Signature." }), { status: 400, headers: corsHeaders });
+        }
+      } else if (clientAuth && adminHash && clientAuth === adminHash) {
+        // Authorized Admin Override - Allow processing without signature
+        console.log("Admin Override: Processing payment record manually.");
+      } else {
+        console.warn("Security Alert: Blocked unauthorized verify-payment trigger (No signature or admin auth).");
+        return new Response(JSON.stringify({ error: "Unauthorized Access Path." }), { status: 401, headers: corsHeaders });
       }
     }
 
     if (!paymentId) throw new Error("Missing Payment ID.");
 
+    // Check for existing record to prevent duplicates
     const { data: existing } = await supabaseAdmin
       .from('teams')
       .select('*')
@@ -99,6 +108,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ success: true, data: existing }), { headers: corsHeaders });
     }
 
+    // Generate new unique TALOS ID
     const array = new Uint32Array(1);
     crypto.getRandomValues(array);
     const teamID = `TALOS-${array[0].toString(36).substring(0, 6).toUpperCase()}`;
@@ -126,6 +136,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ success: true, data }), { headers: corsHeaders });
   } catch (error) {
-    return new Response(JSON.stringify({ success: false, error: "Validation failed." }), { status: 500, headers: corsHeaders });
+    console.error("Payment Verification Fatal Error:", error);
+    return new Response(JSON.stringify({ success: false, error: "Validation processing failed." }), { status: 500, headers: corsHeaders });
   }
 })
