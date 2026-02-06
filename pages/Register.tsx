@@ -209,7 +209,7 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="pt-24 min-h-screen px-6 pb-20 relative bg-[#050505]">
+    <div className="pt-24 min-h-screen px-6 pb-20 relative bg-transparent">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-12 max-w-[280px] mx-auto relative no-print">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[1px] bg-white/10 -z-0" />

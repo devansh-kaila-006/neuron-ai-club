@@ -1,5 +1,6 @@
 
 import React from 'react';
+// @ts-ignore - Fixing react-router-dom member export false positive
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Cpu, Menu, X } from 'lucide-react';

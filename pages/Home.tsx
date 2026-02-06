@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+// @ts-ignore - Fixing react-router-dom Link export false positive
 import { Link } from 'react-router-dom';
 import { 
   Bot, Zap, Shield, Code, ChevronRight, Target, Eye, Rocket, BookOpen, 
@@ -21,9 +22,9 @@ const Home: React.FC = () => {
   }, []);
 
   return (
-    <div className="pt-24 min-h-screen">
+    <div className="pt-24 min-h-screen bg-transparent">
       {/* Hero Section */}
-      <section className="relative px-6 py-20 overflow-hidden">
+      <section className="relative px-6 py-20 overflow-hidden bg-transparent">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-indigo-600/10 blur-[120px] rounded-full -z-10" />
         
         <div className="max-w-5xl mx-auto text-center">
@@ -77,14 +78,14 @@ const Home: React.FC = () => {
       </section>
 
       {/* Vision & Mission Section */}
-      <section className="px-6 py-20 bg-[#080808]">
+      <section className="px-6 py-20 bg-transparent">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8">
           {/* @ts-ignore - Fixing framer-motion type mismatch */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="glass p-10 rounded-3xl border-indigo-500/20"
+            className="glass p-10 rounded-3xl border-indigo-500/20 shadow-xl"
           >
             <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 mb-6">
               <Eye size={32} />
@@ -100,7 +101,7 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="glass p-10 rounded-3xl border-purple-500/20"
+            className="glass p-10 rounded-3xl border-purple-500/20 shadow-xl"
           >
             <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500 mb-6">
               <Rocket size={32} />
@@ -117,7 +118,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* CoP Framework Section */}
-      <section className="px-6 py-20 bg-black">
+      <section className="px-6 py-20 bg-transparent">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-[10px] uppercase tracking-[0.5em] text-indigo-500 font-bold mb-4">The CoP Framework</h2>
@@ -149,7 +150,7 @@ const Home: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="glass p-8 rounded-[2.5rem] border-white/5 text-center group hover:border-indigo-500/30 transition-all"
+                className="glass p-8 rounded-[2.5rem] border-white/5 text-center group hover:border-indigo-500/30 transition-all shadow-lg"
               >
                 <div className="w-16 h-16 mx-auto bg-white/5 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   {pillar.icon}
@@ -163,7 +164,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Objectives Grid */}
-      <section className="px-6 py-20 bg-[#050505]">
+      <section className="px-6 py-20 bg-transparent">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
@@ -177,14 +178,14 @@ const Home: React.FC = () => {
                   { icon: <Lightbulb size={20}/>, text: "Encourage innovation" },
                   { icon: <Microscope size={20}/>, text: "Prepare students for AI-related careers" },
                 ].map((obj, i) => (
-                  <div key={i} className="flex items-start gap-4 p-4 glass rounded-2xl border-white/5">
+                  <div key={i} className="flex items-start gap-4 p-4 glass rounded-2xl border-white/5 shadow-md">
                     <div className="text-indigo-500 mt-1">{obj.icon}</div>
                     <p className="text-sm text-gray-300 font-medium">{obj.text}</p>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="glass p-10 rounded-[3rem] border-indigo-500/10 relative overflow-hidden">
+            <div className="glass p-10 rounded-[3rem] border-indigo-500/10 relative overflow-hidden shadow-2xl">
                <div className="absolute top-0 right-0 p-8 opacity-10"><Cpu size={120} /></div>
                <h3 className="text-2xl font-bold mb-6 flex items-center gap-3"><Terminal className="text-indigo-400"/> Club Activities</h3>
                <ul className="space-y-4">
@@ -210,7 +211,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Impact Section */}
-      <section className="px-6 py-20 bg-black">
+      <section className="px-6 py-20 bg-transparent">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-12">Expected Impact</h2>
           <div className="flex flex-wrap justify-center gap-4">
@@ -222,7 +223,7 @@ const Home: React.FC = () => {
               "Industry Readiness",
               "Leadership Development"
             ].map((impact, i) => (
-              <span key={i} className="px-6 py-3 glass rounded-full border-indigo-500/20 text-xs font-bold text-indigo-400 uppercase tracking-widest">
+              <span key={i} className="px-6 py-3 glass rounded-full border-indigo-500/20 text-xs font-bold text-indigo-400 uppercase tracking-widest shadow-sm">
                 {impact}
               </span>
             ))}

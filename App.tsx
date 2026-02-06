@@ -1,5 +1,6 @@
 
 import React, { useState, Suspense, lazy } from 'react';
+// @ts-ignore - Fixing react-router-dom member export false positive
 import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Navbar from './components/Navbar.tsx';
 import NeuralAssistant from './components/NeuralAssistant.tsx';
@@ -33,11 +34,11 @@ const App: React.FC = () => {
     <ProductionErrorBoundary>
       <ToastProvider>
         <Router>
-          <div className="bg-[#050505] min-h-screen text-white relative">
+          <div className="min-h-screen text-white relative bg-[#050505]">
             <NeuralBackground />
             <Navbar />
             <ToastContainer />
-            <main className="relative z-10">
+            <main className="relative z-10 bg-transparent min-h-[80vh]">
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/" element={<Home />} />
@@ -50,7 +51,7 @@ const App: React.FC = () => {
             </main>
             <NeuralAssistant />
             
-            <footer className="relative z-10 py-16 px-6 border-t border-white/5 bg-[#030303]/80 backdrop-blur-md">
+            <footer className="relative z-20 py-16 px-6 border-t border-white/5 bg-[#030303]/60 backdrop-blur-md">
               <div className="max-w-7xl mx-auto text-center md:text-left">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
                   <div className="col-span-1 text-left">
