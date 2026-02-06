@@ -1,3 +1,4 @@
+
 // 1. NEURØN Global Security & Environment Shim
 const envStore: Record<string, string> = {};
 (globalThis as any).process = {
@@ -11,7 +12,8 @@ const envStore: Record<string, string> = {};
 } as any;
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { GoogleGenAI } from "https://esm.sh/@google/genai@1.3.0"
+// Always use import {GoogleGenAI} from "@google/genai";
+import { GoogleGenAI } from "@google/genai"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,13 +26,18 @@ serve(async (req) => {
   }
 
   try {
-    // SECURITY FIX: Verify shared secret header if provided in environment
+    // SECURITY FIX: Fail-Closed Authorization
     const adminHash = (globalThis as any).Deno.env.get("ADMIN_HASH");
     const clientAuth = req.headers.get('x-neural-auth');
     
-    if (adminHash && clientAuth !== adminHash) {
-      console.warn("Security Alert: Unauthorized Edge Function attempt.");
-      return new Response(JSON.stringify({ error: "Access Denied: Neural Link requires authorization." }), { status: 401, headers: corsHeaders });
+    if (!adminHash) {
+      console.error("CRITICAL: ADMIN_HASH secret missing in Supabase environment.");
+      return new Response(JSON.stringify({ error: "System Configuration Error" }), { status: 500, headers: corsHeaders });
+    }
+
+    if (clientAuth !== adminHash) {
+      console.warn("Security Alert: Unauthorized access attempt blocked.");
+      return new Response(JSON.stringify({ error: "Access Denied: Neural Link identity mismatch." }), { status: 401, headers: corsHeaders });
     }
 
     const { prompt, history = [] } = await req.json();
@@ -51,10 +58,12 @@ serve(async (req) => {
     for (const currentKey of apiKeys) {
       try {
         (globalThis as any).process.env.API_KEY = currentKey;
+        // Always use const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+        // Use gemini-3-pro-preview for complex technical and hackathon tasks
         const response = await ai.models.generateContent({
-          model: 'gemini-flash-lite-latest',
+          model: 'gemini-3-pro-preview',
           contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
           config: {
             systemInstruction: "You are the NEURØN Neural Assistant. Be concise, technical, and helpful. You are assisting with the TALOS 2026 hackathon.",
@@ -65,6 +74,7 @@ serve(async (req) => {
           },
         });
 
+        // The GenerateContentResponse object features a text property (not a method)
         const textOutput = response.text || "Uplink returned empty state.";
         const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
           uri: chunk.web?.uri || chunk.maps?.uri,

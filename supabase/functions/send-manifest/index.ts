@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -11,11 +12,12 @@ serve(async (req) => {
   }
 
   try {
-    // SECURITY FIX: Verify shared secret
+    // SECURITY FIX: Fail-Closed shared secret check
     const adminHash = (globalThis as any).Deno.env.get("ADMIN_HASH");
     const clientAuth = req.headers.get('x-neural-auth');
     
-    if (adminHash && clientAuth !== adminHash) {
+    if (!adminHash || clientAuth !== adminHash) {
+      console.warn("Security Alert: Unauthorized email dispatch attempt blocked.");
       return new Response(JSON.stringify({ error: "Access Denied." }), { status: 401, headers: corsHeaders });
     }
 

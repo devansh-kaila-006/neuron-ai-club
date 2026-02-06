@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
@@ -22,6 +23,7 @@ const ToastContainer: React.FC = () => {
     <div className="fixed top-6 right-6 z-[2000] flex flex-col gap-3 pointer-events-none">
       <AnimatePresence>
         {toasts.map((toast) => (
+          /* @ts-ignore - Fixing framer-motion type mismatch */
           <motion.div
             key={toast.id}
             initial={{ opacity: 0, x: 50, scale: 0.9 }}

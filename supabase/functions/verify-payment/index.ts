@@ -1,3 +1,4 @@
+
 // 1. NEURØN Global Environment Bridge
 (globalThis as any).process = {
   env: new Proxy({}, {
@@ -43,11 +44,13 @@ serve(async (req) => {
     const rzpWebhookSignature = req.headers.get('x-razorpay-signature');
     const rawBody = await req.text();
     
-    // SECURITY: Validate webhook or client request
+    // SECURITY FIX: Fail-Closed for non-webhook requests
     if (!rzpWebhookSignature) {
        const adminHash = (globalThis as any).Deno.env.get("ADMIN_HASH");
        const clientAuth = req.headers.get('x-neural-auth');
-       if (adminHash && clientAuth !== adminHash) {
+       
+       if (!adminHash || clientAuth !== adminHash) {
+         console.warn("Security Alert: Blocked unauthorized verify-payment trigger.");
          return new Response(JSON.stringify({ error: "Unauthorized access path." }), { status: 401, headers: corsHeaders });
        }
     }

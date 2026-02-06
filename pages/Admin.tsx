@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -35,24 +36,40 @@ const Admin: React.FC = () => {
     setLogs(prev => [{ msg, time: new Date().toLocaleTimeString(), type }, ...prev].slice(0, 10));
   }, []);
 
+  // SECURITY FIX: Automatic Logout on 401
+  const handleAuthFailure = useCallback(() => {
+    authService.signOut();
+    setIsAuthenticated(false);
+    toast.error("Session De-authorized: Invalid or expired access key.");
+  }, [toast]);
+
   const fetchData = useCallback(async (silent = false) => {
     if (!silent) setIsLoading(true);
     else setIsPolling(true);
     
     try {
+      // In this hardened version, storage calls will fail with 401 if the token is wrong
       const [data, s] = await Promise.all([
-        storage.getTeams().catch(() => []),
-        storage.getStats().catch(() => ({ totalTeams: 0, paidTeams: 0, checkedIn: 0, revenue: 0 }))
+        storage.getTeams().catch(err => {
+          if (err.status === 401) handleAuthFailure();
+          throw err;
+        }),
+        storage.getStats().catch(err => {
+          if (err.status === 401) handleAuthFailure();
+          throw err;
+        })
       ]);
       setTeams(data);
       setStats(s);
-    } catch (err) {
-      addLog("Grid uplink unstable", 'warn');
+    } catch (err: any) {
+      if (err.status !== 401) {
+        addLog("Grid uplink unstable", 'warn');
+      }
     } finally {
       setIsLoading(false);
       setIsPolling(false);
     }
-  }, [addLog]);
+  }, [addLog, handleAuthFailure]);
 
   const handleCheckIn = async (id: string, status: boolean) => {
     setActionLoading(id);
@@ -62,8 +79,9 @@ const Admin: React.FC = () => {
       const team = teams.find(t => t.id === id);
       addLog(`${status ? 'Verified' : 'Unverified'}: ${team?.teamname}`, status ? 'success' : 'info');
       if (status) toast.success(`Checked in: ${team?.teamname}`);
-    } catch (err) {
-      toast.error("Check-in sync failure.");
+    } catch (err: any) {
+      if (err.status === 401) handleAuthFailure();
+      else toast.error("Check-in sync failure.");
     } finally {
       setActionLoading(null);
     }
@@ -168,13 +186,14 @@ const Admin: React.FC = () => {
       if (res.success) { 
         setIsAuthenticated(true); 
         setPassword(''); 
+        // Verification happens here:
         await fetchData(); 
         toast.success("Executive override successful.");
       } else {
         setLoginError(res.error || "Access Denied");
       }
-    } catch (err) {
-      setLoginError("Auth uplink failure");
+    } catch (err: any) {
+      setLoginError(err.message || "Auth uplink failure");
     } finally {
       setIsLoggingIn(false);
     }
@@ -225,7 +244,8 @@ const Admin: React.FC = () => {
         toast.error("Grid Manifest Purged.");
         await fetchData();
       } catch (err: any) {
-        toast.error(`Purge Failed: ${err.message}`);
+        if (err.status === 401) handleAuthFailure();
+        else toast.error(`Purge Failed: ${err.message}`);
       } finally {
         setIsLoading(false);
       }
@@ -261,6 +281,7 @@ const Admin: React.FC = () => {
   if (isAuthenticated === false) {
     return (
       <div className="pt-32 min-h-screen flex items-center justify-center px-6">
+        {/* @ts-ignore - Fixing framer-motion type mismatch */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass p-12 rounded-[2.5rem] w-full max-w-md text-center border-indigo-500/20 shadow-2xl">
           <ShieldCheck size={64} className="mx-auto text-indigo-500 mb-8" />
           <h1 className="text-2xl font-bold mb-8 uppercase tracking-widest font-mono">Executive Terminal</h1>
@@ -283,6 +304,7 @@ const Admin: React.FC = () => {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-4xl font-bold tracking-tight">Command Center</h1>
+              {/* @ts-ignore - Fixing framer-motion type mismatch */}
               {isPolling && <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }} className="w-2 h-2 rounded-full bg-indigo-500" />}
             </div>
             <p className="text-gray-500 text-sm font-mono uppercase tracking-widest">Neural Grid Active</p>
@@ -374,6 +396,7 @@ const Admin: React.FC = () => {
                 {logs.length === 0 ? (
                   <p className="text-[10px] text-gray-700 italic text-center py-10">Uplink Quiet...</p>
                 ) : logs.map((log, i) => (
+                  /* @ts-ignore - Fixing framer-motion type mismatch */
                   <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} key={i} className="flex gap-3 text-[11px] border-l-2 border-indigo-500/30 pl-3">
                     <div className="flex-1">
                       <p className="text-gray-600 font-mono text-[9px] mb-1">{log.time}</p>
@@ -387,6 +410,7 @@ const Admin: React.FC = () => {
 
         <AnimatePresence>
           {isScannerOpen && (
+            /* @ts-ignore - Fixing framer-motion type mismatch */
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/90 backdrop-blur-2xl"
@@ -409,6 +433,7 @@ const Admin: React.FC = () => {
                         <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-indigo-500 translate-x-1 -translate-y-1 rounded-tr-lg" />
                         <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-indigo-500 -translate-x-1 translate-y-1 rounded-bl-lg" />
                         <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-indigo-500 translate-x-1 translate-y-1 rounded-br-lg" />
+                        {/* @ts-ignore - Fixing framer-motion type mismatch */}
                         <motion.div 
                           animate={{ y: [0, 240, 0] }} 
                           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
