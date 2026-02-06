@@ -10,7 +10,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-neural-auth',
 }
 
 async function verifySignature(data: string, signature: string, secret: string) {
@@ -42,11 +42,21 @@ serve(async (req) => {
 
     const rzpWebhookSignature = req.headers.get('x-razorpay-signature');
     const rawBody = await req.text();
+    
+    // SECURITY: Validate webhook or client request
+    if (!rzpWebhookSignature) {
+       const adminHash = (globalThis as any).Deno.env.get("ADMIN_HASH");
+       const clientAuth = req.headers.get('x-neural-auth');
+       if (adminHash && clientAuth !== adminHash) {
+         return new Response(JSON.stringify({ error: "Unauthorized access path." }), { status: 401, headers: corsHeaders });
+       }
+    }
+
     let orderId, paymentId, teamData;
 
     if (rzpWebhookSignature) {
       const webhookSecret = (globalThis as any).Deno.env.get("RAZORPAY_WEBHOOK_SECRET");
-      if (!webhookSecret) throw new Error("Manifest Integrity Error: Webhook Secret missing.");
+      if (!webhookSecret) throw new Error("Secret missing.");
       
       const isValid = await verifySignature(rawBody, rzpWebhookSignature, webhookSecret);
       if (!isValid) throw new Error("Security Violation: Unauthorized Webhook Signature.");
@@ -55,16 +65,10 @@ serve(async (req) => {
       const payment = payload.payload.payment.entity;
       orderId = payment.order_id;
       paymentId = payment.id;
-      
-      try {
-        // Use consistent mapping for webhook
-        teamData = payment.notes?.teamData ? JSON.parse(payment.notes.teamData) : {
-          teamname: payment.notes?.teamName,
-          leademail: payment.notes?.leadEmail
-        };
-      } catch {
-        teamData = { teamname: payment.notes?.teamName, leademail: payment.notes?.leadEmail };
-      }
+      teamData = payment.notes?.teamData ? JSON.parse(payment.notes.teamData) : {
+        teamname: payment.notes?.teamName,
+        leademail: payment.notes?.leadEmail
+      };
     } else {
       const body = JSON.parse(rawBody);
       orderId = body.orderId;
@@ -74,15 +78,14 @@ serve(async (req) => {
 
       if (orderId && clientSignature) {
         const rzpSecret = (globalThis as any).Deno.env.get("RAZORPAY_SECRET");
-        if (!rzpSecret) throw new Error("Manifest Integrity Error: Secret Key missing.");
+        if (!rzpSecret) throw new Error("Secret Key missing.");
         const isValid = await verifySignature(`${orderId}|${paymentId}`, clientSignature, rzpSecret);
         if (!isValid) throw new Error("Security Violation: Invalid Client Signature.");
       }
     }
 
-    if (!paymentId) throw new Error("Manifest Error: Missing Payment ID.");
+    if (!paymentId) throw new Error("Missing Payment ID.");
 
-    // Idempotency check with lowercase column
     const { data: existing } = await supabaseAdmin
       .from('teams')
       .select('*')
@@ -97,7 +100,6 @@ serve(async (req) => {
     crypto.getRandomValues(array);
     const teamID = `TALOS-${array[0].toString(36).substring(0, 6).toUpperCase()}`;
     
-    // Construct object matching Supabase lowercase columns exactly
     const fullTeam = {
       teamname: teamData.teamname || teamData.teamName,
       leademail: teamData.leademail || teamData.leadEmail,
@@ -119,15 +121,8 @@ serve(async (req) => {
 
     if (error) throw error;
 
-    return new Response(
-      JSON.stringify({ success: true, data }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ success: true, data }), { headers: corsHeaders });
   } catch (error) {
-    console.error("[Neural Verify Error]:", error.message);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ success: false, error: "Validation failed." }), { status: 500, headers: corsHeaders });
   }
 })

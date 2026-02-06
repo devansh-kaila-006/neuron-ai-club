@@ -9,11 +9,14 @@ export const api = {
       const result = await handler();
       return { success: true, data: result, status: 200 };
     } catch (err: any) {
-      // Better error logging for debugging complex objects
-      console.error("[Service Error]:", typeof err === 'object' ? JSON.stringify(err, null, 2) : err);
+      // SECURITY FIX: Sanitize logs. Do not stringify the raw error object to the console
+      // as it may contain Supabase internal URLs or database schema details.
+      const sanitizedMessage = err.message || (typeof err === 'string' ? err : "Neural Link Error: Request terminated.");
+      console.error("[Service Error]:", sanitizedMessage);
+      
       return { 
         success: false, 
-        error: err.message || (typeof err === 'string' ? err : "Internal Server Error"), 
+        error: sanitizedMessage, 
         status: err.status || 500 
       };
     }

@@ -2,26 +2,27 @@
 import { api } from './api.ts';
 import { supabase } from '../lib/storage.ts';
 import { Team } from '../lib/types.ts';
+import { getEnv } from '../lib/env.ts';
 
 /**
  * Production Communication Service - Proxied
- * Sends manifests via Supabase Edge Function to prevent EmailJS key exposure.
  */
 export const commsService = {
   async sendManifestEmail(team: Team) {
     return api.call(async () => {
       if (!supabase) throw new Error("Neural Connection Lost.");
 
-      // Fix: Property name is lowercase 'leademail' in the Team type definition
-      console.log(`[Neural Dispatch] Routing manifest for: ${team.leademail}`);
+      const adminHash = getEnv("ADMIN_HASH");
 
       const { data, error } = await supabase.functions.invoke('send-manifest', {
-        body: { team }
+        body: { team },
+        headers: {
+          'x-neural-auth': adminHash || ''
+        }
       });
 
       if (error) {
-        console.warn("[Neural Dispatch] SMTP Routing Failure. Manifest not delivered.");
-        throw new Error(`Dispatch Error: ${error.message}`);
+        throw new Error(`Dispatch Error: Service unavailable.`);
       }
 
       return data;

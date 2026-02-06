@@ -3,7 +3,9 @@ import { Team, PaymentStatus } from './types.ts';
 import { z } from 'zod';
 import { getEnv } from './env.ts';
 
-const STORAGE_KEY = 'neuron_teams_vault';
+// SECURITY FIX: Use sessionStorage for the manifest cache. 
+// localStorage persists across reboots, which is a risk for PII on shared computers.
+const STORAGE_KEY = 'neuron_teams_vault_session';
 
 const teamValidator = z.object({
   id: z.string(),
@@ -26,7 +28,11 @@ const SUPABASE_ANON_KEY = getEnv("SUPABASE_ANON_KEY");
 const TABLE_NAME = 'teams';
 
 export const supabase: SupabaseClient | null = (SUPABASE_URL && SUPABASE_ANON_KEY) 
-  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: {
+        headers: { 'x-neuron-client': 'shield-v1' }
+      }
+    })
   : null;
 
 export const generateSecureID = (prefix = '', length = 6) => {
@@ -39,7 +45,7 @@ export const generateSecureID = (prefix = '', length = 6) => {
 export const storage = {
   async getTeams(): Promise<Team[]> {
     if (!supabase) {
-      const cached = localStorage.getItem(STORAGE_KEY);
+      const cached = sessionStorage.getItem(STORAGE_KEY);
       return cached ? JSON.parse(cached) : [];
     }
 
@@ -48,12 +54,12 @@ export const storage = {
       .select('*');
 
     if (error) {
-      const cached = localStorage.getItem(STORAGE_KEY);
+      const cached = sessionStorage.getItem(STORAGE_KEY);
       return cached ? JSON.parse(cached) : [];
     }
 
     if (data) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       return data as Team[];
     }
     
@@ -63,7 +69,7 @@ export const storage = {
   async saveTeam(team: Team): Promise<void> {
     const validation = teamValidator.safeParse(team);
     if (!validation.success) {
-      console.error("Validation Error:", validation.error);
+      console.error("Validation Error: Integrity check failed.");
       throw new Error("Neural Corrupt: Manifest failed integrity check.");
     }
 
@@ -71,7 +77,7 @@ export const storage = {
     const index = teams.findIndex(t => t.id === team.id);
     if (index >= 0) teams[index] = team;
     else teams.push(team);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
 
     if (!supabase) return;
 
@@ -83,8 +89,8 @@ export const storage = {
   },
 
   async clearAllData(): Promise<void> {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem('neuron_draft_v3');
+    sessionStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem('neuron_teams_vault'); // Clear old insecure storage
     sessionStorage.removeItem('neuron_draft_v4');
     
     if (!supabase) return;
@@ -94,7 +100,7 @@ export const storage = {
       .delete()
       .neq('id', '00000000-0000-0000-0000-000000000000');
 
-    if (error) throw new Error(`Purge Failure: ${error.message}`);
+    if (error) throw new Error(`Purge Failure: ${sanitizedError(error)}`);
   },
 
   async findTeamByName(name: string): Promise<Team | null> {
@@ -132,7 +138,7 @@ export const storage = {
     const team = teams.find(t => t.id === id);
     if (team) {
       team.checkedin = status;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
     }
 
     if (!supabase) return;
@@ -147,7 +153,7 @@ export const storage = {
 
   async deleteTeam(id: string): Promise<void> {
     const teams = await this.getTeams();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(teams.filter(t => t.id !== id)));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(teams.filter(t => t.id !== id)));
 
     if (!supabase) return;
 
@@ -170,3 +176,7 @@ export const storage = {
     };
   }
 };
+
+function sanitizedError(error: any): string {
+  return error.message || "Cloud error";
+}
