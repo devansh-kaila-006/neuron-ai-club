@@ -7,367 +7,263 @@ interface NeuralLoaderProps {
 }
 
 const NeuralLoader: React.FC<NeuralLoaderProps> = ({ onComplete }) => {
-  const [phase, setPhase] = useState<'singularity' | 'synthesis' | 'manifest' | 'exit'>('singularity');
+  const [phase, setPhase] = useState<'draw' | 'flash' | 'wordmark' | 'exit'>('draw');
 
   useEffect(() => {
     const sequence = async () => {
-      // 1. Singularity - The point of origin stabilization
-      await new Promise(r => setTimeout(r, 2000));
-      setPhase('synthesis');
+      // 1. Drawing the Ø (Precision SVG Path)
+      await new Promise(r => setTimeout(r, 2400));
+      setPhase('flash');
       
-      // 2. Synthesis - Structural assembly and neural mapping
-      await new Promise(r => setTimeout(r, 3500));
-      setPhase('manifest');
+      // 2. High-intensity ignition flash
+      await new Promise(r => setTimeout(r, 700));
+      setPhase('wordmark');
       
-      // 3. Manifest - Final identity crystallization
-      await new Promise(r => setTimeout(r, 4000));
+      // 3. Wordmark Assembly (Kinetic Letter Reveal)
+      await new Promise(r => setTimeout(r, 3200));
       setPhase('exit');
       
-      // 4. Cleanup and handoff to core UI
-      await new Promise(r => setTimeout(r, 1500));
+      // 4. Dimensional Handoff
+      await new Promise(r => setTimeout(r, 1200));
       onComplete();
     };
     sequence();
   }, [onComplete]);
+
+  // Define SVG Paths for the exact font style from the image
+  // Each path is normalized to a 100x100 box for easy scaling
+  const paths = {
+    N: "M10,90 V10 L90,90 V10",
+    E: "M90,10 H10 V90 H90 M10,50 H70",
+    U: "M10,10 V90 H90 V10",
+    R: "M10,90 V10 H80 Q90,10 90,30 V40 Q90,55 75,55 H10 M60,55 L90,90",
+    O_Circle: "M 50,10 A 40,40 0 1,1 50,90 A 40,40 0 1,1 50,10",
+    O_Slash: "M 5,95 L 95,5" // Made longer and bigger as requested
+  };
 
   return (
     <motion.div
       initial={{ opacity: 1 }}
       exit={{ 
         opacity: 0, 
-        scale: 1.1, 
-        filter: 'brightness(4) blur(60px)',
-        transition: { duration: 1.5, ease: [0.7, 0, 0.3, 1] }
+        scale: 1.1,
+        filter: 'brightness(3) contrast(1.2) blur(60px)',
+        transition: { duration: 1, ease: [0.7, 0, 0.3, 1] }
       }}
-      className="fixed inset-0 z-[5000] bg-[#010101] flex items-center justify-center overflow-hidden pointer-events-auto"
+      className="fixed inset-0 z-[5000] bg-[#05000a] flex items-center justify-center overflow-hidden pointer-events-auto"
     >
-      {/* --- ELITE CINEMATIC BACKGROUND LAYERS --- */}
-      <div className="absolute inset-0 z-0 select-none pointer-events-none">
+      {/* --- CINEMATIC AMBIENCE --- */}
+      <div className="absolute inset-0 z-0 select-none">
+        {/* Depth Nebula */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0c001a] via-[#1a0033] to-[#05000a]" />
         
-        {/* Multilayered Parallax Starfield */}
+        {/* Dynamic Starfield */}
         <div className="absolute inset-0">
-          {[...Array(150)].map((_, i) => (
+          {[...Array(100)].map((_, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0 }}
-              animate={{ 
-                opacity: [0, Math.random() * 0.8, 0],
-                scale: [0, Math.random() * 2, 0],
-                y: [0, Math.random() * -30]
-              }}
-              transition={{ 
-                duration: Math.random() * 5 + 3, 
-                repeat: Infinity,
-                delay: Math.random() * 5
-              }}
-              className="absolute bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"
-              style={{
-                width: Math.random() * 2 + 0.5 + 'px',
-                height: Math.random() * 2 + 0.5 + 'px',
-                left: Math.random() * 100 + '%',
-                top: Math.random() * 100 + '%',
-              }}
+              animate={{ opacity: [0, 0.7, 0] }}
+              transition={{ duration: Math.random() * 5 + 3, repeat: Infinity, delay: Math.random() * 5 }}
+              className="absolute w-[1.5px] h-[1.5px] bg-white rounded-full shadow-[0_0_10px_white]"
+              style={{ left: Math.random() * 100 + '%', top: Math.random() * 100 + '%' }}
             />
           ))}
         </div>
 
-        {/* Neural Vector Grid (Bottom Perspective) */}
-        <div className="absolute bottom-0 left-0 w-full h-1/2 opacity-20 bg-[linear-gradient(to_top,#050505,transparent)]">
-          <div 
-            className="w-full h-full" 
-            style={{ 
-              backgroundImage: 'linear-gradient(rgba(99,102,241,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.1) 1px, transparent 1px)',
-              backgroundSize: '60px 60px',
-              transform: 'perspective(500px) rotateX(60deg) translateY(50px)',
-              transformOrigin: 'bottom'
-            }} 
-          />
+        {/* Constellation Mesh */}
+        <div className="absolute inset-0 opacity-[0.15]">
+          <svg width="100%" height="100%">
+            {[...Array(12)].map((_, i) => (
+              <motion.line
+                key={i}
+                x1={Math.random() * 100 + '%'}
+                y1={Math.random() * 100 + '%'}
+                x2={Math.random() * 100 + '%'}
+                y2={Math.random() * 100 + '%'}
+                stroke="white"
+                strokeWidth="0.5"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1, opacity: [0, 0.3, 0] }}
+                transition={{ duration: 15, repeat: Infinity, delay: i * 1 }}
+              />
+            ))}
+          </svg>
         </div>
-
-        {/* Data Decryption Stream (Left/Right margins) */}
-        <div className="absolute inset-y-0 left-6 w-24 opacity-10 flex flex-col gap-1 font-mono text-[6px] overflow-hidden whitespace-nowrap">
-          {[...Array(25)].map((_, i) => (
-            <motion.div
-              key={i}
-              animate={{ x: [0, -120] }}
-              transition={{ duration: Math.random() * 3 + 2, repeat: Infinity, ease: "linear" }}
-            >
-              0x{Math.random().toString(16).substring(2, 10).toUpperCase()} &gt;&gt; SYNAPTIC_MAP_LOADED_{i}
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Pulsing Atmospheric Glows */}
-        <motion.div 
-          animate={{ 
-            opacity: [0.15, 0.4, 0.15],
-            scale: [1, 1.3, 1]
-          }}
-          transition={{ duration: 12, repeat: Infinity }}
-          className="absolute inset-0 bg-radial-gradient from-indigo-950/60 via-transparent to-transparent"
-        />
-
-        {/* Hexagonal Mesh Overlay */}
-        <div className="absolute inset-0 opacity-[0.04] bg-[url('https://www.transparenttextures.com/patterns/hexellence.png')] mix-blend-overlay" />
       </div>
 
-      {/* --- CENTRAL SYNTHESIS CORE --- */}
+      {/* --- CORE ANIMATION --- */}
       <div className="relative z-10 flex flex-col items-center justify-center">
         
-        {/* Dynamic HUD Technical Circles */}
-        <AnimatePresence>
-          {phase !== 'singularity' && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.1 }}
+        <AnimatePresence mode="wait">
+          {/* PHASE 1: PRECISION DRAWING */}
+          {(phase === 'draw' || phase === 'flash') && (
+            <motion.div
+              key="draw-phase"
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 4, filter: 'blur(40px)' }}
-              transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute flex items-center justify-center"
+              exit={{ opacity: 0, scale: 1.2, filter: 'blur(30px)' }}
+              className="relative flex items-center justify-center"
             >
-              {/* Spinning technical rings */}
-              <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-                className="w-[450px] h-[450px] border border-indigo-500/10 rounded-full"
-              >
-                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-8 bg-indigo-500/40" />
-                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-8 bg-indigo-500/40" />
-              </motion.div>
-              <motion.div 
-                animate={{ rotate: -360 }}
-                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                className="absolute w-[550px] h-[550px] border-[0.5px] border-white/5 rounded-full"
-              >
-                <div className="absolute top-1/2 left-0 -translate-y-1/2 w-8 h-[0.5px] bg-white/20" />
-                <div className="absolute top-1/2 right-0 -translate-y-1/2 w-8 h-[0.5px] bg-white/20" />
-              </motion.div>
-              
-              {/* Radial Marker Dots */}
-              {[...Array(12)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  animate={{ opacity: [0.1, 0.6, 0.1] }}
-                  transition={{ delay: i * 0.15, repeat: Infinity, duration: 2.5 }}
-                  className="absolute w-1 h-1 bg-indigo-400 rounded-full"
-                  style={{ transform: `rotate(${i * (360/12)}deg) translateY(-230px)` }}
+              <svg viewBox="0 0 100 100" className="w-56 h-56 md:w-80 md:h-80 overflow-visible">
+                {/* Circle Path */}
+                <motion.path
+                  d={paths.O_Circle}
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ 
+                    pathLength: 1,
+                    filter: phase === 'flash' ? 'drop-shadow(0 0 40px #fff)' : 'none'
+                  }}
+                  transition={{ duration: 1.8, ease: "easeInOut" }}
                 />
-              ))}
+                
+                {/* Long Slash Path */}
+                <motion.path
+                  d={paths.O_Slash}
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ 
+                    pathLength: 1,
+                    filter: phase === 'flash' ? 'drop-shadow(0 0 40px #fff)' : 'none'
+                  }}
+                  transition={{ duration: 0.8, delay: 1.4, ease: "anticipate" }}
+                />
+
+                {/* Light Tracer Head */}
+                <motion.circle
+                  r="2.5"
+                  fill="white"
+                  initial={{ offsetDistance: "0%" }}
+                  animate={{ offsetDistance: "100%", opacity: phase === 'draw' ? 1 : 0 }}
+                  transition={{ duration: 1.8, ease: "easeInOut" }}
+                  style={{
+                    offsetPath: `path("${paths.O_Circle}")`,
+                    filter: 'drop-shadow(0 0 12px #fff)'
+                  }}
+                />
+              </svg>
+
+              {/* Flash Radiance */}
+              {phase === 'flash' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: [0, 1, 0], scale: [0.8, 1.6, 2.2] }}
+                  transition={{ duration: 0.7 }}
+                  className="absolute w-80 h-80 bg-white rounded-full blur-[100px]"
+                />
+              )}
+            </motion.div>
+          )}
+
+          {/* PHASE 2: WORDMARK EXPANSION (The "NEURØN" Exact Font) */}
+          {phase === 'wordmark' && (
+            <motion.div
+              key="wordmark-phase"
+              className="flex items-center justify-center pointer-events-none"
+            >
+              <div className="flex items-center gap-3 md:gap-8">
+                {/* Left Part: NEUR */}
+                <div className="flex gap-3 md:gap-8">
+                  {['N', 'E', 'U', 'R'].map((char, i) => (
+                    <motion.div
+                      key={char}
+                      initial={{ opacity: 0, x: 100, scale: 0.5 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      transition={{ 
+                        type: "spring", stiffness: 80, damping: 15,
+                        delay: 0.4 + i * 0.1 
+                      }}
+                      className="w-12 h-12 md:w-24 md:h-24 lg:w-32 lg:h-32"
+                    >
+                      <svg viewBox="0 0 100 100">
+                        <path d={paths[char as keyof typeof paths]} fill="none" stroke="white" strokeWidth="10" strokeLinecap="square" />
+                      </svg>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Central Identity: Ø */}
+                <motion.div
+                  initial={{ scale: 1.8, filter: 'brightness(4) blur(15px)' }}
+                  animate={{ scale: 1, filter: 'brightness(1) blur(0px)' }}
+                  transition={{ duration: 0.9, ease: "anticipate" }}
+                  className="w-16 h-16 md:w-28 md:h-28 lg:w-40 lg:h-40 flex items-center justify-center relative"
+                >
+                  <svg viewBox="0 0 100 100" className="overflow-visible">
+                    <path d={paths.O_Circle} fill="none" stroke="#818cf8" strokeWidth="8" />
+                    <path d={paths.O_Slash} fill="none" stroke="#818cf8" strokeWidth="10" strokeLinecap="round" className="neon-text" />
+                  </svg>
+                  <motion.div 
+                    animate={{ opacity: [0, 0.4, 0], scale: [1, 1.3, 1] }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                    className="absolute inset-[-20%] bg-indigo-500/30 blur-[40px] rounded-full"
+                  />
+                </motion.div>
+
+                {/* Right Part: N */}
+                <motion.div
+                  initial={{ opacity: 0, x: -100, scale: 0.5 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 80, damping: 15, delay: 0.9 }}
+                  className="w-12 h-12 md:w-24 md:h-24 lg:w-32 lg:h-32"
+                >
+                  <svg viewBox="0 0 100 100">
+                    <path d={paths.N} fill="none" stroke="white" strokeWidth="10" strokeLinecap="square" />
+                  </svg>
+                </motion.div>
+              </div>
+
+              {/* Cinematic Scan Sweep */}
+              <motion.div
+                initial={{ x: '-200%', skewX: -25 }}
+                animate={{ x: '300%' }}
+                transition={{ duration: 2.5, ease: "easeInOut", delay: 1.5 }}
+                className="absolute inset-y-[-50%] w-[50%] bg-gradient-to-r from-transparent via-white/10 to-transparent blur-3xl"
+              />
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* THE CORE COMPONENT */}
-        <div className="relative flex items-center justify-center">
-          
-          {/* Phase 1: The Singularity Point */}
-          {phase === 'singularity' && (
-            <div className="relative flex items-center justify-center">
-              <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ 
-                  scale: [0, 2.5, 0.4, 1.2, 1], 
-                  opacity: 1,
-                  boxShadow: [
-                    "0 0 10px #fff",
-                    "0 0 100px #6366f1",
-                    "0 0 140px #a855f7",
-                    "0 0 40px #fff"
-                  ]
-                }}
-                transition={{ duration: 1.8 }}
-                className="w-5 h-5 bg-white rounded-full z-20"
-              />
-              <motion.div 
-                animate={{ scale: [1, 25], opacity: [0.6, 0] }}
-                transition={{ duration: 1.4, repeat: Infinity }}
-                className="absolute w-5 h-5 bg-indigo-500 rounded-full blur-xl"
-              />
-            </div>
-          )}
-
-          <AnimatePresence mode="wait">
-            {/* Phase 2: Synthesis - The Null Symbol Birth */}
-            {phase === 'synthesis' && (
-              <motion.div
-                key="symbol-reveal"
-                initial={{ opacity: 0, scale: 0.8, filter: 'blur(40px)' }}
-                animate={{ 
-                  opacity: 1, 
-                  scale: 1, 
-                  filter: 'blur(0px)',
-                }}
-                exit={{ opacity: 0, y: -80, filter: 'blur(25px)', transition: { duration: 0.8 } }}
-                className="relative flex items-center justify-center"
-              >
-                {/* Orbital Rings around Symbol */}
-                <motion.div 
-                  animate={{ rotateY: 360, rotateX: 45 }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                  className="absolute w-[300px] h-[300px] border-[0.5px] border-indigo-500/40 rounded-full"
-                  style={{ transformStyle: 'preserve-3d' }}
-                />
-                <motion.div 
-                  animate={{ rotateY: -360, rotateX: -45 }}
-                  transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
-                  className="absolute w-[350px] h-[350px] border-[0.5px] border-purple-500/30 rounded-full"
-                  style={{ transformStyle: 'preserve-3d' }}
-                />
-
-                <div className="text-[15rem] md:text-[20rem] font-black text-white relative font-mono select-none flex items-center justify-center">
-                  <span className="relative z-10 leading-none neon-text">Ø</span>
-                  
-                  {/* Glitch Shadows */}
-                  <motion.span 
-                    animate={{ x: [-5, 5, -2], opacity: [0, 0.4, 0] }}
-                    transition={{ repeat: Infinity, duration: 0.12 }}
-                    className="absolute inset-0 text-cyan-400 z-0 pointer-events-none"
-                  >Ø</motion.span>
-                  <motion.span 
-                    animate={{ x: [5, -5, 2], opacity: [0, 0.4, 0] }}
-                    transition={{ repeat: Infinity, duration: 0.12, delay: 0.06 }}
-                    className="absolute inset-0 text-rose-500 z-0 pointer-events-none"
-                  >Ø</motion.span>
-                  
-                  {/* Internal Glow Pulse */}
-                  <motion.div 
-                    animate={{ opacity: [0.2, 0.6, 0.2] }}
-                    transition={{ duration: 2.5, repeat: Infinity }}
-                    className="absolute inset-0 blur-[60px] bg-indigo-500/30 rounded-full"
-                  />
-                </div>
-              </motion.div>
-            )}
-
-            {/* Phase 3: Manifest - The NEURØN Wordmark */}
-            {phase === 'manifest' && (
-              <motion.div
-                key="wordmark-reveal"
-                className="flex items-center gap-2 md:gap-5 text-8xl md:text-[12rem] font-black tracking-tighter font-mono"
-              >
-                {['N', 'E', 'U', 'R', 'Ø', 'N'].map((char, i) => (
-                  <motion.span
-                    key={i}
-                    initial={{ 
-                      opacity: 0, 
-                      y: 100,
-                      rotateX: 90,
-                      filter: 'blur(40px)',
-                    }}
-                    animate={{ 
-                      opacity: 1, 
-                      y: 0, 
-                      rotateX: 0,
-                      filter: 'blur(0px)',
-                    }}
-                    transition={{ 
-                      type: "spring",
-                      stiffness: 90,
-                      damping: 18,
-                      delay: i * 0.15 
-                    }}
-                    className={char === 'Ø' ? 'text-indigo-500 neon-text relative px-2' : 'text-white'}
-                  >
-                    {char}
-                    {char === 'Ø' && (
-                      <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: [0, 1, 0], scale: [1, 1.5, 1] }}
-                        transition={{ duration: 4, repeat: Infinity }}
-                        className="absolute inset-0 blur-[80px] bg-indigo-600/50 rounded-full"
-                      />
-                    )}
-                  </motion.span>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* --- DYNAMIC SYSTEM LOGS --- */}
-        <div className="absolute bottom-[-180px] w-full max-w-3xl px-12">
-          <AnimatePresence>
-            {(phase === 'synthesis' || phase === 'manifest') && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col gap-5"
-              >
-                <div className="flex justify-between items-end font-mono text-[10px] uppercase tracking-[0.5em]">
-                  <div className="space-y-1.5">
-                    <motion.p animate={{ opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 1.8 }}>
-                      &gt;&gt; CALIBRATING_SYNAPTIC_NODES
-                    </motion.p>
-                    <p className="text-gray-600">NODE_01: <span className="text-indigo-400">AMRITA_SECURE_HUB</span></p>
-                  </div>
-                  <div className="text-right space-y-1.5">
-                    <p className="text-gray-600">AUTH: <span className="text-purple-400">LEVEL_V_ADMIN_CLEARANCE</span></p>
-                    <p className="text-indigo-500/60 font-bold">INTEGRITY_SHIELD: 100%_ACTIVE</p>
-                  </div>
-                </div>
-
-                {/* Technical Progress Bar */}
-                <div className="relative w-full h-[4px] bg-white/5 rounded-full overflow-hidden border border-white/5">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: phase === 'manifest' ? '100%' : '75%' }}
-                    transition={{ duration: 8, ease: "linear" }}
-                    className="h-full bg-gradient-to-r from-indigo-700 via-purple-600 to-indigo-500 shadow-[0_0_25px_rgba(99,102,241,1)]"
-                  />
-                  {/* Traveling Pulse Light */}
-                  <motion.div 
-                     animate={{ left: ['0%', '100%'] }}
-                     transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                     className="absolute top-0 w-32 h-full bg-gradient-to-r from-transparent via-white to-transparent opacity-60"
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
       </div>
 
-      {/* --- PHASE TEXT OVERLAY --- */}
-      <div className="absolute bottom-16 flex flex-col items-center gap-3">
+      {/* --- SYSTEM HUD ELEMENTS --- */}
+      <div className="absolute bottom-16 flex flex-col items-center">
+        {/* Loading Progress Bar */}
+        <div className="w-48 h-[1px] bg-white/5 relative overflow-hidden mb-6">
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: phase === 'exit' ? '100%' : '75%' }}
+            transition={{ duration: 7, ease: "linear" }}
+            className="h-full bg-indigo-500 shadow-[0_0_15px_#6366f1]"
+          />
+          <motion.div 
+            animate={{ x: ['-100%', '100%'] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+          />
+        </div>
+
         <motion.div 
-          animate={{ opacity: [0.4, 0.8, 0.4] }}
-          transition={{ duration: 4, repeat: Infinity }}
-          className="text-[12px] font-mono text-indigo-400 uppercase tracking-[1em] font-black"
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="text-[10px] font-mono tracking-[0.8em] text-indigo-400 uppercase font-black pl-[0.8em]"
         >
-          {phase === 'singularity' && "Initializing Digital Origin"}
-          {phase === 'synthesis' && "Processing Synaptic Mesh Grid"}
-          {phase === 'manifest' && "Access Protocol Securely Verified"}
-          {phase === 'exit' && "Gateway Fully Synchronized"}
+          {phase === 'draw' && 'Constructing Synaptic Core'}
+          {phase === 'flash' && 'Core Initialized'}
+          {phase === 'wordmark' && 'Synchronizing Interface'}
+          {phase === 'exit' && 'Protocol Verified'}
         </motion.div>
       </div>
 
-      {/* --- CORNER METADATA WIDGETS --- */}
-      <div className="absolute top-12 left-12 opacity-40 hidden lg:block select-none">
-        <div className="font-mono text-[9px] space-y-3 border-l border-indigo-500/40 pl-5">
-          <p>UPLINK_STABILITY: 100.00%</p>
-          <p>PACKET_LOSS: 0.00%</p>
-          <p>ENCRYPTION: SHIELD_AES-256-GCM</p>
-          <p>REGION: IND-AS-S1_AMRITA</p>
-          <p>LOAD_BALANCER: ACTIVE</p>
-        </div>
-      </div>
-      <div className="absolute top-12 right-12 opacity-40 hidden lg:block text-right select-none">
-        <div className="font-mono text-[9px] space-y-3 border-r border-indigo-500/40 pr-5">
-          <p>CPU_CORE_UTIL: 2.15%_V_THREAD</p>
-          <p>MEM_SYNC_HASH: VALID</p>
-          <p>GRID_LATENCY: 4ms</p>
-          <p>IDENT: NEURAL_CORE_U_01</p>
-          <p>STATUS: EXECUTING_SYNC</p>
-        </div>
-      </div>
-
-      {/* --- FULLSCREEN SCANLINE & NOISE --- */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.05] z-[100] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-      <motion.div 
-        animate={{ y: ['-100%', '250%'] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-        className="absolute top-0 left-0 w-full h-[40vh] bg-gradient-to-b from-transparent via-indigo-500/10 to-transparent z-[101]"
-      />
+      {/* Scanline Overlay */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay" />
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)]" />
     </motion.div>
   );
 };
