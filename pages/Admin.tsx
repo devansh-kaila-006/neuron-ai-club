@@ -1,5 +1,6 @@
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+// Fix: Import React to resolve React namespace usage including React.FC and React.FormEvent
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Users, Activity, Loader2, RefreshCw, ShieldCheck, Download, 

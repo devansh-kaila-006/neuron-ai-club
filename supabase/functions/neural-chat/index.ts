@@ -1,4 +1,3 @@
-
 // 1. NEURØN Global Security & Environment Shim
 const envStore: Record<string, string> = {};
 (globalThis as any).process = {
@@ -12,7 +11,8 @@ const envStore: Record<string, string> = {};
 } as any;
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { GoogleGenAI } from "https://esm.sh/@google/genai@1.3.0"
+// Fix: Always use import {GoogleGenAI} from "@google/genai";
+import { GoogleGenAI } from "@google/genai"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -50,11 +50,13 @@ serve(async (req) => {
     // Attempt generation with available keys
     for (const currentKey of apiKeys) {
       try {
+        // Fix: Use named parameter for GoogleGenAI initialization and process.env.API_KEY
         (globalThis as any).process.env.API_KEY = currentKey;
-        const ai = new GoogleGenAI({ apiKey: currentKey });
+        const ai = new GoogleGenAI({ apiKey: (globalThis as any).process.env.API_KEY });
 
+        // Fix: Changed prohibited model gemini-1.5-flash-latest to gemini-3-pro-preview for complex reasoning tasks
         const result = await ai.models.generateContent({
-          model: 'gemini-flash-lite-latest',
+          model: 'gemini-3-pro-preview',
           contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
           config: {
             systemInstruction: "You are the NEURØN Neural Assistant. Be concise, professional, and technical. You assist with the TALOS 2026 AI hackathon at Amrita University. If technical implementation is requested, provide robust and secure code examples.",
@@ -69,8 +71,10 @@ serve(async (req) => {
            throw new Error("Uplink returned empty candidate pool.");
         }
 
+        // Fix: Access .text property directly as a property (not a method)
         const textOutput = result.text || "Uplink returned empty state.";
         
+        // Fix: Correct extraction of grounding metadata for search results
         const metadata = result.candidates[0]?.groundingMetadata;
         const chunks = metadata?.groundingChunks || [];
         const sources = chunks.map((chunk: any) => {

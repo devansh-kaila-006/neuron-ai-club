@@ -1,5 +1,6 @@
 
-import { useState, useEffect } from 'react';
+// Fix: Import React to resolve React namespace usage
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CheckCircle, CreditCard, Loader2, Plus, Trash2, Cpu, ArrowRight, Printer, Mail, RefreshCw, AlertTriangle, ShieldCheck, Search, Database, Save, X, Send, Phone, RotateCcw

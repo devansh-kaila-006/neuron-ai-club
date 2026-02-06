@@ -1,10 +1,11 @@
 
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, Suspense, lazy, useEffect } from 'react';
 // @ts-ignore - Fixing react-router-dom member export false positive
 import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Navbar from './components/Navbar.tsx';
 import NeuralAssistant from './components/NeuralAssistant.tsx';
 import NeuralBackground from './components/NeuralBackground.tsx';
+import NeuralLoader from './components/NeuralLoader.tsx';
 import ProductionErrorBoundary from './components/ProductionErrorBoundary.tsx';
 import { ToastProvider } from './context/ToastContext.tsx';
 import ToastContainer from './components/ToastContainer.tsx';
@@ -29,15 +30,32 @@ const PageLoader = () => (
 
 const App: React.FC = () => {
   const [showLegal, setShowLegal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Lock body scroll while loading
+  useEffect(() => {
+    if (isLoading) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isLoading]);
 
   return (
     <ProductionErrorBoundary>
       <ToastProvider>
         <Router>
           <div className="min-h-screen text-white relative bg-[#050505]">
+            <AnimatePresence mode="wait">
+              {isLoading && (
+                <NeuralLoader onComplete={() => setIsLoading(false)} />
+              )}
+            </AnimatePresence>
+
             <NeuralBackground />
             <Navbar />
             <ToastContainer />
+            
             <main className="relative z-10 bg-transparent min-h-[80vh]">
               <Suspense fallback={<PageLoader />}>
                 <Routes>
@@ -49,6 +67,7 @@ const App: React.FC = () => {
                 </Routes>
               </Suspense>
             </main>
+            
             <NeuralAssistant />
             
             <footer className="relative z-20 py-16 px-6 border-t border-white/5 bg-[#030303]/60 backdrop-blur-md">

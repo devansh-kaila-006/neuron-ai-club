@@ -1,5 +1,6 @@
 
-import { useState, useEffect } from 'react';
+// Fix: Import React to resolve React namespace usage
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Calendar, MapPin, ChevronDown, ChevronUp, Sparkles, Trophy, Users, Lightbulb } from 'lucide-react';
 
@@ -66,7 +67,7 @@ const Hackathon: React.FC = () => {
 
         <section className="mb-20 text-center">
           {/* @ts-ignore - Fixing framer-motion type mismatch */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-400 rounded-full border border-indigo-500/20 mb-8">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-400 rounded-full border-indigo-500/20 mb-8">
             <Clock className="w-4 h-4" />
             <span className="text-sm font-bold">COUNTDOWN TO FEB 20, 2026</span>
           </motion.div>
