@@ -21,28 +21,35 @@ export const getNeuralResponse = async (prompt: string, history: MessageHistory[
 
     const adminHash = getEnv("ADMIN_HASH");
 
-    const { data, error } = await supabase.functions.invoke('neural-chat', {
+    // Attempt to call the Edge Function
+    const response = await supabase.functions.invoke('neural-chat', {
       body: { prompt, history },
       headers: {
         'x-neural-auth': adminHash || ''
       }
     });
 
-    if (error) {
-      // If Supabase returns an error, it's usually a connectivity or 404 issue
-      throw error;
+    // Supabase client handles non-2xx as 'error'
+    if (response.error) {
+      // Try to parse error body if it exists
+      let errorData;
+      try {
+        errorData = await response.error.context?.json();
+      } catch {
+        errorData = { error: response.error.message };
+      }
+      throw new Error(errorData?.error || response.error.message || "Uplink Error");
     }
 
-    if (data?.error) {
-      // If our Edge Function returns an error object, treat it as a service error
-      throw new Error(data.error);
+    if (response.data?.error) {
+      throw new Error(response.data.error);
     }
 
-    return data as NeuralResponse;
+    return response.data as NeuralResponse;
   } catch (err: any) {
-    console.error("Neural Service Error:", err.message);
+    console.error("Neural Service Error:", err);
     return { 
-      text: `Neural Link Error: ${err.message || "The uplink is currently unstable."}` 
+      text: `Neural Link Failure: ${err.message || "The uplink is currently shielded or offline."}` 
     };
   }
 };
