@@ -69,13 +69,24 @@ export const paymentService = {
       if (error) {
         let errorMsg = error.message;
         try {
-          const errorData = await error.context?.json();
-          if (errorData?.error) errorMsg = errorData.error;
+          // Attempt to extract detailed error from Edge Function response
+          const errorContext = await error.context?.json();
+          if (errorContext?.error) {
+            errorMsg = errorContext.error;
+            if (errorContext.details) {
+              console.warn(`Neural Diagnostic: ${errorContext.details}`);
+              errorMsg += ` (${errorContext.details})`;
+            }
+          }
         } catch { /* use original message */ }
         throw new Error(errorMsg);
       }
 
-      if (!data || !data.success) throw new Error(data?.error || "Neural verification sequence rejected.");
+      if (!data || !data.success) {
+        const serverError = data?.error || "Neural verification sequence rejected.";
+        const details = data?.details ? ` - ${data.details}` : "";
+        throw new Error(serverError + details);
+      }
 
       return data.data as Team;
     });

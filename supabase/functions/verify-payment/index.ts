@@ -36,10 +36,15 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseAdmin = createClient(
-      (globalThis as any).Deno.env.get("SUPABASE_URL") ?? '',
-      (globalThis as any).Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ''
-    );
+    const supabaseUrl = (globalThis as any).Deno.env.get("SUPABASE_URL");
+    const supabaseKey = (globalThis as any).Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("CRITICAL: Supabase internal environment variables missing.");
+      return new Response(JSON.stringify({ error: "Cloud Grid Misconfiguration." }), { status: 500, headers: corsHeaders });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
 
     const rzpWebhookSignature = req.headers.get('x-razorpay-signature');
     const clientAuth = req.headers.get('x-neural-auth');
@@ -50,12 +55,16 @@ serve(async (req) => {
 
     if (rzpWebhookSignature) {
       // WEBHOOK PATH
+      console.log("Processing Webhook Pulse...");
       const webhookSecret = (globalThis as any).Deno.env.get("RAZORPAY_WEBHOOK_SECRET");
-      if (!webhookSecret) throw new Error("Server Configuration Error: Webhook secret missing.");
+      if (!webhookSecret) {
+        console.error("WEBHOOK ERROR: RAZORPAY_WEBHOOK_SECRET missing.");
+        return new Response(JSON.stringify({ error: "Webhook secret missing." }), { status: 500, headers: corsHeaders });
+      }
       
       const isValid = await verifySignature(rawBody, rzpWebhookSignature, webhookSecret);
       if (!isValid) {
-        console.error("Security Alert: Invalid Webhook Signature.");
+        console.warn("Security Alert: Invalid Webhook Signature.");
         return new Response(JSON.stringify({ error: "Unauthorized Webhook Path." }), { status: 401, headers: corsHeaders });
       }
 
@@ -73,31 +82,35 @@ serve(async (req) => {
       orderId = body.orderId;
       paymentId = body.paymentId;
       signature = body.signature;
-      teamData = body.teamData;
+      teamData = body.teamData || {};
 
       const rzpSecret = (globalThis as any).Deno.env.get("RAZORPAY_SECRET");
       
-      // Verification logic:
-      // 1. If user provided a signature, verify it against Razorpay Secret.
-      // 2. If no signature, check if requester is an authorized Admin.
       if (orderId && signature && rzpSecret) {
+        console.log("Verifying standard Razorpay signature...");
         const isValid = await verifySignature(`${orderId}|${paymentId}`, signature, rzpSecret);
         if (!isValid) {
-          console.error("Security Alert: Invalid Client Payment Signature.");
+          console.warn(`Security Alert: Invalid Client Signature for Order ${orderId}`);
           return new Response(JSON.stringify({ error: "Invalid Payment Signature." }), { status: 400, headers: corsHeaders });
         }
       } else if (clientAuth && adminHash && clientAuth === adminHash) {
-        // Authorized Admin Override - Allow processing without signature
-        console.log("Admin Override: Processing payment record manually.");
+        console.log("Neural Authorization: Identity confirmed. Processing deployment.");
       } else {
-        console.warn("Security Alert: Blocked unauthorized verify-payment trigger (No signature or admin auth).");
-        return new Response(JSON.stringify({ error: "Unauthorized Access Path." }), { status: 401, headers: corsHeaders });
+        const reason = !adminHash ? "ADMIN_HASH missing in cloud." : 
+                       !clientAuth ? "x-neural-auth missing in request." : 
+                       "Admin identity mismatch.";
+        console.warn(`Security Alert: Blocked unauthorized trigger. Reason: ${reason}`);
+        return new Response(JSON.stringify({ 
+          error: "Unauthorized Access Path.", 
+          details: reason,
+          isConfigError: !adminHash 
+        }), { status: 401, headers: corsHeaders });
       }
     }
 
-    if (!paymentId) throw new Error("Missing Payment ID.");
+    if (!paymentId) throw new Error("Critical: Missing Payment ID in sequence.");
 
-    // Check for existing record to prevent duplicates
+    // Check for existing record
     const { data: existing } = await supabaseAdmin
       .from('teams')
       .select('*')
@@ -105,18 +118,19 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existing) {
+      console.log(`Duplicate suppression: Payment ${paymentId} already anchored.`);
       return new Response(JSON.stringify({ success: true, data: existing }), { headers: corsHeaders });
     }
 
-    // Generate new unique TALOS ID
+    // Generate TALOS ID
     const array = new Uint32Array(1);
     crypto.getRandomValues(array);
     const teamID = `TALOS-${array[0].toString(36).substring(0, 6).toUpperCase()}`;
     
     const fullTeam = {
-      teamname: teamData.teamname || teamData.teamName,
-      leademail: teamData.leademail || teamData.leadEmail,
-      members: teamData.members,
+      teamname: teamData.teamname || teamData.teamName || "Unnamed Squad",
+      leademail: teamData.leademail || teamData.leadEmail || "unknown@neuro.hub",
+      members: teamData.members || [],
       id: crypto.randomUUID(),
       teamid: teamID,
       paymentstatus: 'paid',
@@ -132,11 +146,20 @@ serve(async (req) => {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Database Upsert Failure:", error);
+      throw error;
+    }
 
+    console.log(`Neural Success: Squad ${fullTeam.teamid} deployed.`);
     return new Response(JSON.stringify({ success: true, data }), { headers: corsHeaders });
+
   } catch (error) {
     console.error("Payment Verification Fatal Error:", error);
-    return new Response(JSON.stringify({ success: false, error: "Validation processing failed." }), { status: 500, headers: corsHeaders });
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: "Validation processing failed.", 
+      details: error.message 
+    }), { status: 500, headers: corsHeaders });
   }
 })
