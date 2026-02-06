@@ -28,10 +28,21 @@ export const getNeuralResponse = async (prompt: string, history: MessageHistory[
       }
     });
 
-    if (error) throw error;
+    if (error) {
+      // If Supabase returns an error, it's usually a connectivity or 404 issue
+      throw error;
+    }
+
+    if (data?.error) {
+      // If our Edge Function returns an error object, treat it as a service error
+      throw new Error(data.error);
+    }
+
     return data as NeuralResponse;
-  } catch (err) {
-    console.error("Neural Error: Uplink unstable.");
-    return { text: "Neural Link Error: The uplink is currently unstable." };
+  } catch (err: any) {
+    console.error("Neural Service Error:", err.message);
+    return { 
+      text: `Neural Link Error: ${err.message || "The uplink is currently unstable."}` 
+    };
   }
 };
