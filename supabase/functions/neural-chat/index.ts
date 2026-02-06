@@ -1,4 +1,3 @@
-
 // 1. NEURØN Global Security & Environment Shim
 const envStore: Record<string, string> = {};
 (globalThis as any).process = {
@@ -12,8 +11,8 @@ const envStore: Record<string, string> = {};
 } as any;
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-// Always use import {GoogleGenAI} from "@google/genai";
-import { GoogleGenAI } from "@google/genai"
+// Use the explicit esm.sh URL for Deno/Supabase Edge Function compatibility
+import { GoogleGenAI } from "https://esm.sh/@google/genai@1.3.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
