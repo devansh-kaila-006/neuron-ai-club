@@ -1,18 +1,23 @@
-import React, { ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
 
-interface Props { children: ReactNode; }
-interface State { hasError: boolean; }
+interface Props {
+  children: ReactNode;
+}
 
-// Fix: Explicitly extend React.Component with Props and State generics to ensure this.props and this.state are correctly typed
-class ProductionErrorBoundary extends React.Component<Props, State> {
+interface State {
+  hasError: boolean;
+}
+
+// Fix: Extending Component directly from React and ensuring Props and State generics are explicitly provided to resolve 'props' property recognition issues.
+class ProductionErrorBoundary extends Component<Props, State> {
   public state: State = { hasError: false };
 
   public static getDerivedStateFromError(_: Error): State {
     return { hasError: true };
   }
 
-  // Fix: Use ErrorInfo type for componentDidCatch as per standard React error boundary implementation
+  // Use ErrorInfo type for componentDidCatch as per standard React error boundary implementation
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("[Neural Error Boundary]:", error, errorInfo);
   }
@@ -38,7 +43,7 @@ class ProductionErrorBoundary extends React.Component<Props, State> {
       );
     }
 
-    // Fix: Access children from this.props which is now correctly recognized due to inheritance from React.Component<Props, State>
+    // Accessing children from this.props which is now correctly recognized due to explicit inheritance from Component<Props, State>
     return this.props.children;
   }
 }

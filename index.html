@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -51,6 +50,23 @@
     .neon-text {
       text-shadow: 0 0 10px rgba(168, 85, 247, 0.5), 0 0 20px rgba(99, 102, 241, 0.3);
     }
+    
+    /* CRT Scanline Effect */
+    body::before {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      z-index: 10000;
+      background-size: 100% 4px, 3px 100%;
+      pointer-events: none;
+      opacity: 0.15;
+    }
+
     ::-webkit-scrollbar {
       width: 8px;
     }
@@ -67,6 +83,7 @@
 
     @media print {
       body { background: white !important; color: black !important; }
+      body::before { display: none !important; }
       .glass, nav, footer, button, .no-print { display: none !important; }
       #root { padding: 0 !important; }
       .print-only { display: block !important; }
