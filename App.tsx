@@ -19,6 +19,7 @@ const Team = lazy(() => import('./pages/Team.tsx'));
 const Hackathon = lazy(() => import('./pages/Hackathon.tsx'));
 const Register = lazy(() => import('./pages/Register.tsx'));
 const Admin = lazy(() => import('./pages/Admin.tsx'));
+const JoinClub = lazy(() => import('./pages/JoinClub.tsx'));
 
 /**
  * RouteChangeHandler: Forces a 2-second synchronization delay on every navigation
@@ -87,6 +88,7 @@ const App: React.FC = () => {
                     <Route path="/team" element={<Team />} />
                     <Route path="/hackathon" element={<Hackathon />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/join" element={<JoinClub />} />
                     <Route path="/admin" element={<Admin />} />
                   </Routes>
                 </RouteChangeHandler>
@@ -108,6 +110,7 @@ const App: React.FC = () => {
                       <Link to="/" className="text-xs text-gray-600 hover:text-indigo-400">Hub Hub</Link>
                       <Link to="/hackathon" className="text-xs text-gray-600 hover:text-indigo-400">TALOS 2026</Link>
                       <Link to="/team" className="text-xs text-gray-600 hover:text-indigo-400">The Core Council</Link>
+                      <Link to="/join" className="text-xs text-gray-600 hover:text-indigo-400 font-bold text-indigo-400">Join the Club</Link>
                     </div>
                     <div className="flex flex-col gap-3 text-left">
                       <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-1">System Links</p>

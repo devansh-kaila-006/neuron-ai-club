@@ -11,6 +11,7 @@ const Navbar: React.FC = () => {
 
   const navItems = [
     { label: 'Home', path: '/' },
+    { label: 'Join Club', path: '/join' },
     { label: 'TALOS Hackathon', path: '/hackathon' },
     { label: 'Team', path: '/team' },
     { label: 'Register', path: '/register' },
