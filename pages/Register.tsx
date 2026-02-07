@@ -1,9 +1,13 @@
 
-// Fix: Import React to resolve React namespace usage
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+// @ts-ignore
+import { Link } from 'react-router-dom';
 import { 
-  CheckCircle, CreditCard, Loader2, Plus, Trash2, Cpu, ArrowRight, Printer, Mail, RefreshCw, AlertTriangle, ShieldCheck, Search, Database, Save, X, Send, Phone, RotateCcw, FileDown
+  CheckCircle, CreditCard, Loader2, Plus, Trash2, Cpu, ArrowRight, 
+  Printer, Mail, RefreshCw, AlertTriangle, ShieldCheck, Search, 
+  Database, Save, X, Send, Phone, RotateCcw, FileDown,
+  Terminal, User, Hash, Zap, Fingerprint, ShieldAlert, ChevronRight
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { z } from 'zod';
@@ -40,9 +44,6 @@ const Register: React.FC = () => {
   const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
 
   const [isUpdateMode, setIsUpdateMode] = useState(false);
-  const [lookupID, setLookupID] = useState('');
-  const [isLookingUp, setIsLookingUp] = useState(false);
-  const [lookupError, setLookupError] = useState<string | null>(null);
 
   useEffect(() => {
     if (teamName.length < 3 || isUpdateMode) return setNameAvailability('idle');
@@ -64,33 +65,6 @@ const Register: React.FC = () => {
       const newErrors = { ...errors };
       delete newErrors.members[index][field];
       setErrors(newErrors);
-    }
-  };
-
-  const handleLookup = async () => {
-    if (!lookupID.startsWith('TALOS-')) {
-      setLookupError("Invalid ID. Format: TALOS-XXXXXX");
-      return;
-    }
-    setIsLookingUp(true);
-    setLookupError(null);
-    try {
-      const team = await storage.findTeamByTALOSID(lookupID);
-      if (team) {
-        setRegisteredTeam(team);
-        setTeamName(team.teamname);
-        setMembers(team.members);
-        setIsUpdateMode(true);
-        setErrors({});
-        setLookupID('');
-        toast.success("Manifest retrieved.");
-      } else {
-        setLookupError("Sequence not found.");
-      }
-    } catch (err) {
-      setLookupError("Grid failure.");
-    } finally {
-      setIsLookingUp(false);
     }
   };
 
@@ -164,7 +138,6 @@ const Register: React.FC = () => {
         onSuccess: async (response: any) => {
           toast.info("Synchronizing with Neural Grid...");
           try {
-            // Fix: Pass values safely, handling the lack of order_id in simple payments
             const verifyRes = await paymentService.verifyPayment(
               response.razorpay_order_id || null, 
               response.razorpay_payment_id, 
@@ -179,7 +152,6 @@ const Register: React.FC = () => {
             }
           } catch (err: any) {
             console.warn("Manual Neural Grid Re-sync initiated...");
-            // Final fallback: Check if the webhook already handled it
             const existing = await storage.getTeams();
             const found = existing.find(t => t.razorpaypaymentid === response.razorpay_payment_id);
             if (found) {
@@ -211,189 +183,302 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="pt-24 min-h-screen px-6 pb-20 relative bg-transparent">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-12 max-w-[280px] mx-auto relative no-print">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[1px] bg-white/10 -z-0" />
-          {[1, 2, 3].map(s => (
-            <div key={s} className="relative flex flex-col items-center z-10">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-700 border-2 ${
-                step >= s ? 'bg-indigo-600 border-indigo-400 shadow-[0_0_20px_rgba(79,70,229,0.5)]' : 'glass border-white/10 text-gray-600'
-              }`}>
-                {step > s ? <CheckCircle size={18} /> : s}
-              </div>
-              <span className="text-[10px] mt-2 uppercase tracking-tighter font-mono text-gray-500 opacity-60">
-                {s === 1 ? 'Registry' : s === 2 ? 'Escrow' : 'Deployed'}
-              </span>
-            </div>
-          ))}
+    <div className="pt-32 min-h-screen px-6 pb-40 bg-[#050505] relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-500/5 blur-[160px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 blur-[160px] rounded-full pointer-events-none -z-10" />
+
+      <div className="max-w-5xl mx-auto">
+        {/* Stepper HUD */}
+        <div className="flex justify-center mb-20 no-print">
+          <div className="relative flex items-center justify-between w-full max-w-lg">
+             {/* Progress Line */}
+             <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-white/5 z-0" />
+             <motion.div 
+               initial={{ width: 0 }}
+               animate={{ width: `${((step - 1) / 2) * 100}%` }}
+               className="absolute left-0 top-1/2 -translate-y-1/2 h-px bg-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.5)] z-0" 
+             />
+
+             {[1, 2, 3].map(s => (
+               <div key={s} className="relative flex flex-col items-center gap-4 z-10">
+                 <motion.div 
+                    animate={{ 
+                      scale: step === s ? 1.2 : 1,
+                      backgroundColor: step >= s ? 'rgba(79, 70, 229, 1)' : 'rgba(5, 5, 5, 1)',
+                      borderColor: step >= s ? 'rgba(129, 140, 248, 0.5)' : 'rgba(255, 255, 255, 0.1)'
+                    }}
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center border font-mono font-black text-sm transition-all duration-500 ${step >= s ? 'text-white' : 'text-gray-700'}`}
+                 >
+                   {step > s ? <CheckCircle size={20} /> : s}
+                 </motion.div>
+                 <span className={`text-[9px] font-mono font-bold uppercase tracking-[0.3em] ${step >= s ? 'text-indigo-400' : 'text-gray-700'}`}>
+                   {s === 1 ? 'REGISTRY' : s === 2 ? 'ESCROW' : 'DEPLOYED'}
+                 </span>
+               </div>
+             ))}
+          </div>
         </div>
 
         <AnimatePresence mode="wait">
           {step === 1 && (
-            /* @ts-ignore - Fixing framer-motion type mismatch */
-            <motion.div key="s1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }}>
-              {!isUpdateMode && (
-                <div className="max-w-2xl mx-auto mb-8">
-                  <div className="glass p-6 rounded-[2rem] border-white/5 flex flex-col md:flex-row items-center gap-4">
-                    <div className="flex items-center gap-3 shrink-0">
-                      <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400"><Database size={18}/></div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Edit Manifest</p>
-                    </div>
-                    <div className="flex-1 w-full relative">
-                      <input 
-                        value={lookupID}
-                        onChange={e => setLookupID(e.target.value.toUpperCase())}
-                        placeholder="TALOS-XXXXXX"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-4 text-xs font-mono outline-none focus:border-indigo-500 transition-all"
-                      />
-                      {lookupError && <p className="absolute -bottom-5 left-0 text-[8px] text-red-500 font-mono uppercase">{lookupError}</p>}
-                    </div>
-                    <button 
-                      onClick={handleLookup}
-                      disabled={isLookingUp}
-                      className="px-6 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-white/5 flex items-center gap-2"
-                    >
-                      {isLookingUp ? <Loader2 size={12} className="animate-spin"/> : <><Search size={12}/> Verify</>}
-                    </button>
-                  </div>
-                </div>
-              )}
+            <motion.div 
+              key="s1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }}
+              className="space-y-12"
+            >
+              <div className="text-center md:text-left space-y-4">
+                 <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full"
+                  >
+                    <Terminal size={14} className="text-indigo-400" />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">Mission Initialization Sequence</span>
+                  </motion.div>
+                  <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none text-white">
+                    {isUpdateMode ? 'MODIFY' : 'SQUAD'} <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">MANIFEST</span>
+                  </h1>
+                  <p className="text-gray-500 text-lg max-w-2xl font-light leading-relaxed">
+                    Provide the operational identity and personnel details for your squad. High-integrity data is required for neural grid anchoring.
+                  </p>
+              </div>
 
-              <div className="max-w-3xl mx-auto space-y-6">
-                <div className="glass p-8 md:p-12 rounded-3xl border-indigo-500/10 shadow-2xl relative overflow-hidden">
-                  <div className="flex justify-between items-start mb-10">
-                    <div className="flex items-center gap-3">
-                      <Cpu className="text-indigo-400" size={28} />
-                      <h2 className="text-2xl font-bold tracking-tight">
-                        {isUpdateMode ? 'Modify Manifest' : 'Neural Registry'}
-                      </h2>
+              <div className="grid lg:grid-cols-12 gap-12">
+                <div className="lg:col-span-8 space-y-8">
+                  {/* Squad Name Card */}
+                  <div className="glass p-10 rounded-[3.5rem] border-white/5 space-y-6 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-[0.02] group-hover:opacity-[0.06] transition-opacity">
+                      <Zap size={140} strokeWidth={0.5} />
                     </div>
-                    <div className="flex items-center gap-4">
-                      {isUpdateMode && (
-                        <button onClick={cancelUpdate} className="p-2 glass rounded-lg text-gray-500 hover:text-white">
-                          <X size={18} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="mb-10">
-                    <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-3 block">Squad Identity</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 block ml-2">Squad Identity Vector</label>
                     <div className="relative">
                       <input 
                         value={teamName} 
                         onChange={e => setTeamName(e.target.value)}
-                        className={`w-full bg-white/5 border rounded-2xl p-5 outline-none transition-all text-lg font-medium ${errors.teamName ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
-                        placeholder="Ex: CyberDynasty"
+                        placeholder="Ex: CYBER_SYNTH"
+                        className={`w-full bg-white/[0.02] border rounded-[2.5rem] p-8 pl-16 outline-none transition-all text-2xl font-black font-tech uppercase tracking-tighter ${errors.teamName ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500 focus:bg-white/[0.04]'}`}
                       />
-                      {errors.teamName && <p className="text-[10px] text-red-500 mt-2 font-mono uppercase">{errors.teamName}</p>}
+                      <Hash className="absolute left-7 top-1/2 -translate-y-1/2 text-gray-700" size={24} />
+                      {nameAvailability === 'checking' && <Loader2 className="absolute right-7 top-1/2 -translate-y-1/2 text-indigo-500 animate-spin" size={20} />}
+                      {nameAvailability === 'available' && <CheckCircle className="absolute right-7 top-1/2 -translate-y-1/2 text-green-500" size={20} />}
+                      {nameAvailability === 'taken' && <AlertTriangle className="absolute right-7 top-1/2 -translate-y-1/2 text-red-500" size={20} />}
                     </div>
+                    {errors.teamName && <p className="text-[10px] text-red-500 font-mono pl-4 uppercase tracking-widest">{errors.teamName}</p>}
                   </div>
 
-                  <div className="space-y-8">
-                    <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold block">Operator Access (Min 2, Max 4)</label>
-                    {members.map((m, i) => (
-                      <div key={i} className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl relative">
-                        <div className="flex justify-between items-center mb-4">
-                          <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-widest">Member 0{i+1} — {m.role}</span>
-                          {i > 1 && <button onClick={() => removeMember(i)} className="text-gray-600 hover:text-red-500"><Trash2 size={14} /></button>}
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="space-y-1">
-                            <input 
-                              placeholder="Name" 
-                              value={m.name} 
-                              onChange={e => updateMember(i, 'name', e.target.value)} 
-                              className={`w-full bg-white/[0.05] border rounded-xl p-3 text-sm outline-none transition-all ${errors.members?.[i]?.name ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`} 
-                            />
-                            {errors.members?.[i]?.name && <p className="text-[9px] text-red-500 font-mono pl-1 uppercase">{errors.members[i].name}</p>}
+                  {/* Personnel Cards */}
+                  <div className="space-y-6">
+                    <h3 className="text-2xl font-black uppercase tracking-tight flex items-center gap-3 px-4">
+                      <Fingerprint className="text-indigo-500" size={24} /> Personnel Manifest
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {members.map((m, i) => (
+                        <motion.div 
+                          key={i} 
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="glass p-8 rounded-[3rem] border-white/5 space-y-6 relative group/member"
+                        >
+                          <div className="flex justify-between items-center mb-2">
+                             <span className="text-[10px] font-mono font-black text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full uppercase tracking-widest">Operator 0{i+1} — {m.role}</span>
+                             {i > 1 && (
+                               <button onClick={() => removeMember(i)} className="p-2 glass rounded-xl text-gray-600 hover:text-red-500 transition-colors">
+                                 <Trash2 size={14} />
+                               </button>
+                             )}
                           </div>
-                          <div className="space-y-1">
-                            <input 
-                              placeholder="Email" 
-                              value={m.email} 
-                              onChange={e => updateMember(i, 'email', e.target.value)} 
-                              className={`w-full bg-white/[0.05] border rounded-xl p-3 text-sm outline-none transition-all ${errors.members?.[i]?.email ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`} 
-                            />
-                            {errors.members?.[i]?.email && <p className="text-[9px] text-red-500 font-mono pl-1 uppercase">{errors.members[i].email}</p>}
+                          
+                          <div className="space-y-4">
+                            <div className="relative group">
+                              <input 
+                                placeholder="Name" value={m.name} onChange={e => updateMember(i, 'name', e.target.value)}
+                                className={`w-full bg-white/[0.03] border rounded-2xl p-4 pl-12 text-xs outline-none transition-all ${errors.members?.[i]?.name ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`}
+                              />
+                              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500" size={14} />
+                            </div>
+                            <div className="relative group">
+                              <input 
+                                placeholder="Email" value={m.email} onChange={e => updateMember(i, 'email', e.target.value)}
+                                className={`w-full bg-white/[0.03] border rounded-2xl p-4 pl-12 text-xs outline-none transition-all ${errors.members?.[i]?.email ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`}
+                              />
+                              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500" size={14} />
+                            </div>
+                            <div className="relative group">
+                              <input 
+                                placeholder="Phone" value={m.phone} maxLength={10} onChange={e => updateMember(i, 'phone', e.target.value.replace(/\D/g, ''))}
+                                className={`w-full bg-white/[0.03] border rounded-2xl p-4 pl-12 text-xs outline-none transition-all ${errors.members?.[i]?.phone ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`}
+                              />
+                              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500" size={14} />
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            <input 
-                              placeholder="Phone" 
-                              value={m.phone} 
-                              maxLength={10} 
-                              onChange={e => updateMember(i, 'phone', e.target.value.replace(/\D/g, ''))} 
-                              className={`w-full bg-white/[0.05] border rounded-xl p-3 text-sm outline-none transition-all ${errors.members?.[i]?.phone ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`} 
-                            />
-                            {errors.members?.[i]?.phone && <p className="text-[9px] text-red-500 font-mono pl-1 uppercase">{errors.members[i].phone}</p>}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                        </motion.div>
+                      ))}
+                    </div>
+
                     {members.length < 4 && (
-                      <button onClick={addMember} className="w-full py-4 border border-dashed border-white/10 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-indigo-400 hover:border-indigo-500/50 flex items-center justify-center gap-2">
-                        <Plus size={14} /> Add Member
+                      <button onClick={addMember} className="w-full py-6 glass border-dashed border-white/10 rounded-[2.5rem] flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 hover:text-indigo-400 hover:border-indigo-500/50 transition-all group">
+                         <Plus size={18} className="group-hover:rotate-90 transition-transform duration-500" /> Append Operator Sequence
                       </button>
                     )}
                   </div>
+                </div>
 
-                  <button 
-                    onClick={handleProceedToPayment} 
-                    className={`w-full mt-12 py-5 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-xl group ${
-                      isUpdateMode ? 'bg-purple-600' : 'bg-indigo-600'
-                    }`}
-                  >
-                    {isUpdateMode ? <Save size={20}/> : <><ArrowRight size={20}/> Proceed to Escrow</>}
-                  </button>
+                <div className="lg:col-span-4 space-y-8">
+                  <div className="glass p-10 rounded-[3.5rem] border-white/5 space-y-8 h-fit sticky top-32">
+                     <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                        <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500">
+                           <ShieldCheck size={24} />
+                        </div>
+                        <div>
+                          <h4 className="text-xl font-black uppercase tracking-tight text-white">Registry Hub</h4>
+                          <p className="text-[9px] font-mono text-gray-600 uppercase tracking-widest italic">Authorization Required</p>
+                        </div>
+                     </div>
+
+                     <div className="space-y-6">
+                        <div className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl space-y-3">
+                           <p className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.2em]">Base Fee</p>
+                           <div className="flex justify-between items-end">
+                              <span className="text-3xl font-black text-white font-tech">₹1.00</span>
+                              <span className="text-[9px] font-mono text-indigo-500/60 uppercase tracking-widest mb-1">Per Squad</span>
+                           </div>
+                        </div>
+
+                        <div className="space-y-4">
+                           <div className="flex items-start gap-3">
+                              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5" />
+                              <p className="text-[11px] text-gray-500 leading-relaxed font-light">Minimum 2 operators per squad for system validation.</p>
+                           </div>
+                           <div className="flex items-start gap-3">
+                              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5" />
+                              <p className="text-[11px] text-gray-500 leading-relaxed font-light">Lead operator receives the secure digital manifest.</p>
+                           </div>
+                        </div>
+                     </div>
+
+                     <button 
+                       onClick={handleProceedToPayment} 
+                       className={`w-full py-8 rounded-[2.5rem] font-black uppercase tracking-[0.5em] text-xs flex items-center justify-center gap-4 shadow-2xl group transition-all duration-500 active:scale-95 ${
+                         isUpdateMode ? 'bg-purple-600 hover:bg-purple-500' : 'bg-indigo-600 hover:bg-indigo-500'
+                       }`}
+                     >
+                        {isUpdateMode ? <><Save size={20}/> Sync Change</> : <><ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /> Start Sync</>}
+                     </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
           )}
 
           {step === 2 && (
-            /* @ts-ignore - Fixing framer-motion type mismatch */
-            <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="glass p-12 rounded-[2.5rem] max-w-md mx-auto border-indigo-500/20 shadow-2xl">
-              <div className="flex justify-between items-center mb-10"><h2 className="text-2xl font-bold">Escrow Detail</h2><CreditCard className="text-indigo-400" size={28} /></div>
-              <div className="bg-white/5 rounded-3xl p-8 mb-10 border border-white/5 text-center">
-                <p className="text-5xl font-bold text-white">₹1</p>
+            <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-md mx-auto space-y-10">
+              <div className="text-center space-y-4">
+                <div className="w-20 h-20 bg-indigo-500/10 rounded-[2rem] flex items-center justify-center text-indigo-500 mx-auto border border-indigo-500/20">
+                   <CreditCard size={32} />
+                </div>
+                <h2 className="text-4xl font-black uppercase tracking-tight text-white">Sync Escrow</h2>
+                <p className="text-gray-500 font-light text-sm">Escrow link established. Finalize registry payment to anchor your manifest in the neural grid.</p>
               </div>
-              <button onClick={handlePayment} disabled={isSubmitting} className="w-full py-5 bg-indigo-600 rounded-2xl font-bold flex items-center justify-center gap-3">
-                {isSubmitting ? <Loader2 className="animate-spin" /> : "Initiate Checkout"}
-              </button>
+
+              <div className="glass p-12 rounded-[4rem] border-indigo-500/20 shadow-2xl space-y-12 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
+                
+                <div className="text-center space-y-2">
+                   <p className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.5em]">Registry Total</p>
+                   <p className="text-7xl font-black text-white font-tech tracking-tighter italic">₹1</p>
+                </div>
+
+                <div className="space-y-4">
+                   <div className="flex justify-between items-center text-xs border-b border-white/5 pb-4">
+                      <span className="text-gray-600 uppercase tracking-widest font-mono">Squad</span>
+                      <span className="text-white font-black">{teamName}</span>
+                   </div>
+                   <div className="flex justify-between items-center text-xs border-b border-white/5 pb-4">
+                      <span className="text-gray-600 uppercase tracking-widest font-mono">Lead</span>
+                      <span className="text-white font-black">{members[0].name}</span>
+                   </div>
+                </div>
+
+                <button 
+                  onClick={handlePayment} 
+                  disabled={isSubmitting} 
+                  className="w-full py-8 bg-indigo-600 rounded-[2.5rem] font-black uppercase tracking-[0.5em] text-xs flex items-center justify-center gap-4 hover:bg-indigo-500 shadow-2xl transition-all"
+                >
+                  {isSubmitting ? <Loader2 className="animate-spin" /> : <>Initiate Payment <Zap size={18}/></>}
+                </button>
+              </div>
             </motion.div>
           )}
 
           {step === 3 && (
-            /* @ts-ignore - Fixing framer-motion type mismatch */
-            <motion.div key="s3" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center max-w-2xl mx-auto">
-              <div className="glass p-16 rounded-[3.5rem] border-green-500/20 shadow-2xl manifest-card relative">
-                <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto mb-10"><CheckCircle size={48} /></div>
-                <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent uppercase">Deployed</h2>
-                <p className="text-gray-400 text-sm mb-6">Squad {registeredTeam?.teamname} sync complete.</p>
-                
-                <div className="bg-white p-8 rounded-3xl border border-white/5 mb-10 inline-block shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-                  <QRCodeSVG 
-                    value={registeredTeam?.teamid || ''} 
-                    size={180} 
-                    level="H" 
-                    includeMargin={false} 
-                    fgColor="#000000" 
-                    bgColor="#ffffff" 
-                  />
-                  <p className="text-2xl font-bold font-mono tracking-[0.3em] mt-6 text-black">{registeredTeam?.teamid}</p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row justify-center gap-4 no-print">
-                  <button onClick={() => window.location.href = '/'} className="px-10 py-4 glass rounded-2xl text-sm font-bold">Home Hub</button>
-                  <button 
-                    onClick={() => window.print()} 
-                    className="px-10 py-4 bg-indigo-600 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-indigo-500 transition-colors shadow-lg"
+            <motion.div key="s3" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl mx-auto text-center space-y-12">
+               {/* Deployed Header */}
+               <div className="space-y-4">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", damping: 10, delay: 0.2 }}
+                    className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto border border-green-500/20 mb-8"
                   >
-                    <FileDown size={18} /> Download Manifest (PDF)
-                  </button>
-                </div>
-              </div>
+                    <CheckCircle size={48} strokeWidth={1.5} />
+                  </motion.div>
+                  <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none text-white uppercase italic">
+                    DEPLOYED
+                  </h1>
+                  <p className="text-gray-500 text-lg font-light max-w-lg mx-auto leading-relaxed">
+                    Squad registry complete. Your neural manifest is now anchored in the TALOS persistent grid.
+                  </p>
+               </div>
+
+               {/* Physical Manifest Card */}
+               <div className="glass p-12 md:p-20 rounded-[4rem] border-white/5 shadow-2xl manifest-card relative bg-[#080808] overflow-hidden">
+                  <div className="absolute top-0 right-0 p-12 opacity-[0.03]">
+                    <ShieldCheck size={300} strokeWidth={0.5} />
+                  </div>
+                  
+                  <div className="relative z-10 space-y-12">
+                     <div className="flex flex-col items-center gap-6">
+                        <div className="bg-white p-10 rounded-[3rem] shadow-[0_0_40px_rgba(255,255,255,0.05)] border border-white/10 group hover:scale-105 transition-transform duration-700">
+                           <QRCodeSVG 
+                             value={registeredTeam?.teamid || ''} 
+                             size={200} 
+                             level="H" 
+                             includeMargin={false} 
+                             fgColor="#000000" 
+                             bgColor="#ffffff" 
+                           />
+                           <div className="mt-8 pt-8 border-t border-gray-100">
+                              <p className="text-3xl font-black font-mono tracking-[0.5em] text-black italic">{registeredTeam?.teamid}</p>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="grid grid-cols-2 gap-8 text-left border-t border-white/5 pt-12">
+                        <div className="space-y-2">
+                           <p className="text-[9px] font-mono text-gray-700 uppercase tracking-widest">Squad_Name</p>
+                           <p className="text-xl font-black text-white uppercase italic font-tech tracking-tight">{registeredTeam?.teamname}</p>
+                        </div>
+                        <div className="space-y-2">
+                           <p className="text-[9px] font-mono text-gray-700 uppercase tracking-widest">Registry_Date</p>
+                           <p className="text-xl font-black text-white font-tech italic">{new Date(registeredTeam?.registeredat || Date.now()).toLocaleDateString()}</p>
+                        </div>
+                     </div>
+
+                     <div className="pt-10 no-print flex flex-col sm:flex-row justify-center gap-6">
+                        <button onClick={() => window.location.href = '/'} className="px-12 py-5 glass border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-white/10 transition-all">Return Hub</button>
+                        <button 
+                          onClick={() => window.print()} 
+                          className="px-12 py-5 bg-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:bg-indigo-500 transition-all shadow-xl"
+                        >
+                          <FileDown size={18} /> Download Manifest
+                        </button>
+                     </div>
+                  </div>
+               </div>
+
+               <div className="text-[9px] font-mono text-gray-800 uppercase tracking-[1em] font-black pt-12">
+                  NEURAL_PERSISTENCE // GRID_ID_CONFIRMED
+               </div>
             </motion.div>
           )}
         </AnimatePresence>
