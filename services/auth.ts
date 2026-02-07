@@ -1,23 +1,36 @@
-
 import { api } from './api.ts';
 import CryptoJS from 'crypto-js';
+import { getEnv } from '../lib/env.ts';
 
 export const authService = {
   /**
    * Neural Authentication Gateway
-   * Moves verification logic to the server. The client no longer stores the 'Truth' (hash).
-   * Verification happens implicitly when calling Edge Functions.
+   * Verifies the provided credentials against the hashed system key.
    */
   async signIn(password: string) {
     return api.call(async () => {
-      // SECURITY: We generate the hash and store it as the session token.
+      // SECURITY: Compute the SHA-256 hash of the input
       const inputHash = CryptoJS.SHA256(password).toString();
+      
+      // Retrieve the master hash from environment
+      const adminHash = getEnv('ADMIN_HASH');
+
+      // Fail-safe check: If hash is not configured, deny all access for security
+      if (!adminHash) {
+        console.error("NEURØN Security Breach: VITE_ADMIN_HASH is not configured in the environment.");
+        throw new Error("System lockdown: Admin gateway is not initialized.");
+      }
+
+      // Comparison check
+      if (inputHash !== adminHash) {
+        throw new Error("Invalid access key: Authorization sequence rejected.");
+      }
       
       const payload = { 
         role: 'ADMIN', 
-        hash: inputHash, // This will be used in the x-neural-auth header
+        hash: inputHash, // Secure session token anchor
         iat: Date.now(), 
-        exp: Date.now() + (1000 * 60 * 60 * 24) 
+        exp: Date.now() + (1000 * 60 * 60 * 24) // 24 hour session duration
       };
 
       const token = `neuron_auth_v5_${btoa(JSON.stringify(payload))}`;
