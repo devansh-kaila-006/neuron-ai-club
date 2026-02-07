@@ -9,7 +9,7 @@ interface State {
   hasError: boolean;
 }
 
-// Fix: Extending Component directly from React and ensuring Props and State generics are explicitly provided to resolve 'props' property recognition issues.
+// Fix: Explicitly extending Component<Props, State> to resolve property recognition issues with TS where props were not correctly inherited from React.Component.
 class ProductionErrorBoundary extends Component<Props, State> {
   public state: State = { hasError: false };
 

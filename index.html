@@ -67,18 +67,37 @@
       opacity: 0.15;
     }
 
+    /* NEURØN CUSTOM SCROLLBAR - ELITE FILAMENT DESIGN */
     ::-webkit-scrollbar {
-      width: 8px;
+      width: 4px; /* Precision width */
+      height: 4px;
     }
     ::-webkit-scrollbar-track {
-      background: #050505;
+      background: rgba(2, 2, 2, 0.9);
+      border-left: 1px solid rgba(255, 255, 255, 0.02);
     }
     ::-webkit-scrollbar-thumb {
-      background: #333;
-      border-radius: 4px;
+      background: linear-gradient(to bottom, #6366f1, #a855f7);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background-clip: padding-box;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #444;
+      background: #818cf8;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(168, 85, 247, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    ::-webkit-scrollbar-thumb:active {
+      background: #c084fc;
+    }
+    ::-webkit-scrollbar-corner {
+      background: #020202;
+    }
+    
+    /* Firefox Scrollbar Support */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #6366f1 rgba(2, 2, 2, 0.9);
     }
 
     @media print {
