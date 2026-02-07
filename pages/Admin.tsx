@@ -1,4 +1,3 @@
-
 // Fix: Import React to resolve React namespace usage including React.FC and React.FormEvent
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -32,12 +31,17 @@ const Admin: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number | null>(null);
+  const teamsRef = useRef<Team[]>([]);
+
+  // Keep teamsRef in sync with state for the scanner loop
+  useEffect(() => {
+    teamsRef.current = teams;
+  }, [teams]);
 
   const addLog = useCallback((msg: string, type: 'info' | 'warn' | 'success' = 'info') => {
     setLogs(prev => [{ msg, time: new Date().toLocaleTimeString(), type }, ...prev].slice(0, 10));
   }, []);
 
-  // SECURITY FIX: Automatic Logout on 401
   const handleAuthFailure = useCallback(() => {
     authService.signOut();
     setIsAuthenticated(false);
@@ -49,7 +53,6 @@ const Admin: React.FC = () => {
     else setIsPolling(true);
     
     try {
-      // In this hardened version, storage calls will fail with 401 if the token is wrong
       const [data, s] = await Promise.all([
         storage.getTeams().catch(err => {
           if (err.status === 401) handleAuthFailure();
@@ -72,12 +75,12 @@ const Admin: React.FC = () => {
     }
   }, [addLog, handleAuthFailure]);
 
-  const handleCheckIn = async (id: string, status: boolean) => {
+  const handleCheckIn = useCallback(async (id: string, status: boolean) => {
     setActionLoading(id);
     try {
       await storage.updateCheckIn(id, status);
       await fetchData(true);
-      const team = teams.find(t => t.id === id);
+      const team = teamsRef.current.find(t => t.id === id);
       addLog(`${status ? 'Verified' : 'Unverified'}: ${team?.teamname}`, status ? 'success' : 'info');
       if (status) toast.success(`Checked in: ${team?.teamname}`);
     } catch (err: any) {
@@ -86,17 +89,23 @@ const Admin: React.FC = () => {
     } finally {
       setActionLoading(null);
     }
-  };
+  }, [fetchData, addLog, toast, handleAuthFailure]);
 
+  // Stable scanning tick that doesn't trigger camera restarts
   const tick = useCallback(() => {
+    if (!isScannerOpen) return;
+
     if (videoRef.current?.readyState === videoRef.current?.HAVE_ENOUGH_DATA && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
 
-      canvas.height = video.videoHeight;
-      canvas.width = video.videoWidth;
+      if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+      }
+
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(imageData.data, imageData.width, imageData.height, {
@@ -105,30 +114,36 @@ const Admin: React.FC = () => {
 
       if (code) {
         const talosID = code.data.trim().toUpperCase();
-        addLog(`QR Detected: ${talosID}`, 'info');
+        const team = teamsRef.current.find(t => t.teamid === talosID);
         
-        const team = teams.find(t => t.teamid === talosID);
         if (team) {
           if (!team.checkedin) {
             handleCheckIn(team.id, true);
             setIsScannerOpen(false);
+            return; // Stop animation loop
           } else {
             addLog(`Already Verified: ${team.teamname}`, 'warn');
             toast.info(`${team.teamname} is already checked in.`);
             setIsScannerOpen(false);
+            return; // Stop animation loop
           }
         } else {
-          toast.error("Unrecognized Manifest ID.");
+          // Prevent log spam for unrecognized codes
+          console.debug("Unrecognized QR:", talosID);
         }
       }
     }
     requestRef.current = requestAnimationFrame(tick);
-  }, [teams, handleCheckIn, addLog, toast]);
+  }, [isScannerOpen, handleCheckIn, addLog, toast]);
 
+  // Manage Camera Lifecycle independently of Data Polling
   useEffect(() => {
+    let stream: MediaStream | null = null;
+
     if (isScannerOpen) {
       navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then(stream => {
+        .then(s => {
+          stream = s;
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
             videoRef.current.setAttribute("playsinline", "true");
@@ -141,14 +156,15 @@ const Admin: React.FC = () => {
           toast.error("Optics Malfunction: Camera access denied.");
           setIsScannerOpen(false);
         });
-    } else {
-      if (videoRef.current?.srcObject) {
-        (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
-      }
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
     }
+
     return () => {
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
     };
   }, [isScannerOpen, tick, toast]);
 
@@ -187,7 +203,6 @@ const Admin: React.FC = () => {
       if (res.success) { 
         setIsAuthenticated(true); 
         setPassword(''); 
-        // Verification happens here:
         await fetchData(); 
         toast.success("Executive override successful.");
       } else {
@@ -282,7 +297,6 @@ const Admin: React.FC = () => {
   if (isAuthenticated === false) {
     return (
       <div className="pt-32 min-h-screen flex items-center justify-center px-6">
-        {/* @ts-ignore - Fixing framer-motion type mismatch */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass p-12 rounded-[2.5rem] w-full max-w-md text-center border-indigo-500/20 shadow-2xl">
           <ShieldCheck size={64} className="mx-auto text-indigo-500 mb-8" />
           <h1 className="text-2xl font-bold mb-8 uppercase tracking-widest font-mono">Executive Terminal</h1>
@@ -305,7 +319,6 @@ const Admin: React.FC = () => {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-4xl font-bold tracking-tight">Command Center</h1>
-              {/* @ts-ignore - Fixing framer-motion type mismatch */}
               {isPolling && <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }} className="w-2 h-2 rounded-full bg-indigo-500" />}
             </div>
             <p className="text-gray-500 text-sm font-mono uppercase tracking-widest">Neural Grid Active</p>
@@ -397,7 +410,6 @@ const Admin: React.FC = () => {
                 {logs.length === 0 ? (
                   <p className="text-[10px] text-gray-700 italic text-center py-10">Uplink Quiet...</p>
                 ) : logs.map((log, i) => (
-                  /* @ts-ignore - Fixing framer-motion type mismatch */
                   <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} key={i} className="flex gap-3 text-[11px] border-l-2 border-indigo-500/30 pl-3">
                     <div className="flex-1">
                       <p className="text-gray-600 font-mono text-[9px] mb-1">{log.time}</p>
@@ -411,7 +423,6 @@ const Admin: React.FC = () => {
 
         <AnimatePresence>
           {isScannerOpen && (
-            /* @ts-ignore - Fixing framer-motion type mismatch */
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/90 backdrop-blur-2xl"
@@ -426,7 +437,7 @@ const Admin: React.FC = () => {
                 </div>
                 
                 <div className="relative aspect-video bg-black flex items-center justify-center">
-                  <video ref={videoRef} className="w-full h-full object-cover" />
+                  <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
                   <canvas ref={canvasRef} className="hidden" />
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                      <div className="w-64 h-64 border-2 border-indigo-500/50 rounded-3xl relative">
@@ -434,7 +445,6 @@ const Admin: React.FC = () => {
                         <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-indigo-500 translate-x-1 -translate-y-1 rounded-tr-lg" />
                         <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-indigo-500 -translate-x-1 translate-y-1 rounded-bl-lg" />
                         <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-indigo-500 translate-x-1 translate-y-1 rounded-br-lg" />
-                        {/* @ts-ignore - Fixing framer-motion type mismatch */}
                         <motion.div 
                           animate={{ y: [0, 240, 0] }} 
                           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}

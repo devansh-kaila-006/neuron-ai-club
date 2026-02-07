@@ -1,9 +1,8 @@
-
 // Fix: Import React to resolve React namespace usage
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  CheckCircle, CreditCard, Loader2, Plus, Trash2, Cpu, ArrowRight, Printer, Mail, RefreshCw, AlertTriangle, ShieldCheck, Search, Database, Save, X, Send, Phone, RotateCcw
+  CheckCircle, CreditCard, Loader2, Plus, Trash2, Cpu, ArrowRight, Printer, Mail, RefreshCw, AlertTriangle, ShieldCheck, Search, Database, Save, X, Send, Phone, RotateCcw, FileDown
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { z } from 'zod';
@@ -371,14 +370,28 @@ const Register: React.FC = () => {
                 <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent uppercase">Deployed</h2>
                 <p className="text-gray-400 text-sm mb-6">Squad {registeredTeam?.teamname} sync complete.</p>
                 
-                <div className="bg-white/[0.03] p-8 rounded-3xl border border-white/5 mb-10 block">
-                  <QRCodeSVG value={registeredTeam?.teamid || ''} size={180} level="H" includeMargin={true} fgColor="#ffffff" bgColor="transparent" />
-                  <p className="text-2xl font-bold font-mono tracking-[0.3em] mt-6 text-indigo-400">{registeredTeam?.teamid}</p>
+                {/* QR Block - Uses high contrast white background to ensure visibility when printing/PDF saving */}
+                <div className="bg-white p-8 rounded-3xl border border-white/5 mb-10 inline-block shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+                  <QRCodeSVG 
+                    value={registeredTeam?.teamid || ''} 
+                    size={180} 
+                    level="H" 
+                    includeMargin={false} 
+                    fgColor="#000000" 
+                    bgColor="#ffffff" 
+                  />
+                  <p className="text-2xl font-bold font-mono tracking-[0.3em] mt-6 text-black">{registeredTeam?.teamid}</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-center gap-4 no-print">
                   <button onClick={() => window.location.href = '/'} className="px-10 py-4 glass rounded-2xl text-sm font-bold">Home Hub</button>
-                  <button onClick={() => window.print()} className="px-10 py-4 bg-indigo-600 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"><Printer size={18} /> Print Manifest</button>
+                  {/* window.print() is the cross-platform way to generate a PDF in modern browsers */}
+                  <button 
+                    onClick={() => window.print()} 
+                    className="px-10 py-4 bg-indigo-600 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-indigo-500 transition-colors shadow-lg"
+                  >
+                    <FileDown size={18} /> Download Manifest (PDF)
+                  </button>
                 </div>
               </div>
             </motion.div>
