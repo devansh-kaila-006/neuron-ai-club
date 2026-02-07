@@ -1,11 +1,10 @@
-
 // Fix: Import React to resolve React namespace usage including React.FC and React.FormEvent
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Users, Activity, Loader2, RefreshCw, ShieldCheck, Download, 
   CheckCircle2, TrendingUp, LogOut, Scan, X, Terminal, Flame, ArrowRight,
-  AlertCircle
+  AlertCircle, ShieldAlert, Check
 } from 'lucide-react';
 import jsQR from 'jsqr';
 import { storage } from '../lib/storage.ts';
@@ -28,6 +27,7 @@ const Admin: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'paid' | 'pending'>('all');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isScanSuccess, setIsScanSuccess] = useState(false);
   const [manualID, setManualID] = useState('');
   const [logs, setLogs] = useState<{msg: string, time: string, type: 'info' | 'warn' | 'success'}[]>([]);
 
@@ -52,7 +52,6 @@ const Admin: React.FC = () => {
     toast.error("Session De-authorized.");
   }, [toast]);
 
-  // Fix: Added handleLogout to clear session and redirect user to login view
   const handleLogout = useCallback(() => {
     authService.signOut();
     setIsAuthenticated(false);
@@ -87,16 +86,25 @@ const Admin: React.FC = () => {
   }, [addLog, handleAuthFailure]);
 
   const handleCheckIn = useCallback(async (id: string, status: boolean) => {
+    // Optimistic Update: Reflect change immediately in the local state
+    setTeams(prev => prev.map(t => t.id === id ? { ...t, checkedin: status } : t));
+    
     setActionLoading(id);
     try {
       await storage.updateCheckIn(id, status);
+      // Silently re-sync to ensure everything is matched with server
       await fetchData(true);
+      
       const team = teamsRef.current.find(t => t.id === id);
       addLog(`${status ? 'Verified' : 'Unverified'}: ${team?.teamname}`, status ? 'success' : 'info');
-      if (status) toast.success(`Checked in: ${team?.teamname}`);
+      if (status) toast.success(`${team?.teamname} Verified.`);
     } catch (err: any) {
       if (err.status === 401) handleAuthFailure();
-      else toast.error("Check-in sync failure.");
+      else {
+        // Rollback optimistic update on failure
+        setTeams(prev => prev.map(t => t.id === id ? { ...t, checkedin: !status } : t));
+        toast.error("Sync Failure: Verification rolled back.");
+      }
     } finally {
       setActionLoading(null);
     }
@@ -106,7 +114,6 @@ const Admin: React.FC = () => {
     const rawInput = manualID.trim().toUpperCase();
     if (!rawInput) return;
 
-    // Smart Prefix Handling: If user types 6 chars like 'A1B2C3', convert to 'TALOS-A1B2C3'
     let fullID = rawInput;
     if (!rawInput.startsWith('TALOS-')) {
       fullID = `TALOS-${rawInput}`;
@@ -114,24 +121,27 @@ const Admin: React.FC = () => {
     
     const team = teamsRef.current.find(t => t.teamid === fullID);
     if (!team) {
-      toast.error(`ID ${fullID} not found.`);
+      toast.error(`Sequence ${fullID} not found.`);
       return;
     }
 
     if (team.checkedin) {
       toast.info(`${team.teamname} already verified.`);
-    } else {
-      await handleCheckIn(team.id, true);
-      setManualID('');
       setIsScannerOpen(false);
+    } else {
+      setIsScanSuccess(true);
+      await handleCheckIn(team.id, true);
+      setTimeout(() => {
+        setIsScanSuccess(false);
+        setIsScannerOpen(false);
+        setManualID('');
+      }, 1200);
     }
   };
 
-  // Robust scanning tick with optimized processing
   const tick = useCallback(() => {
-    if (!isScannerOpen) return;
+    if (!isScannerOpen || isScanSuccess) return;
 
-    // Scan every 2nd frame to reduce CPU load while maintaining responsiveness
     scanCountRef.current++;
     if (scanCountRef.current % 2 !== 0) {
       requestRef.current = requestAnimationFrame(tick);
@@ -144,7 +154,6 @@ const Admin: React.FC = () => {
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
 
-      // Downscaling slightly for jsQR performance and better accuracy on small QRs
       const scale = 0.8;
       const sw = Math.floor(video.videoWidth * scale);
       const sh = Math.floor(video.videoHeight * scale);
@@ -157,7 +166,6 @@ const Admin: React.FC = () => {
       ctx.drawImage(video, 0, 0, sw, sh);
       const imageData = ctx.getImageData(0, 0, sw, sh);
       
-      // 'attemptBoth' is critical for robust scanning in varying light
       const code = jsQR(imageData.data, imageData.width, imageData.height, {
         inversionAttempts: "attemptBoth",
       });
@@ -167,23 +175,27 @@ const Admin: React.FC = () => {
         const team = teamsRef.current.find(t => t.teamid === talosID);
         
         if (team) {
+          // Visual feedback in scanner
+          setIsScanSuccess(true);
+          
           if (!team.checkedin) {
             handleCheckIn(team.id, true);
-            setIsScannerOpen(false);
-            return; // Exit loop immediately on success
           } else {
             addLog(`Already Verified: ${team.teamname}`, 'warn');
-            toast.info(`${team.teamname} already verified.`);
-            setIsScannerOpen(false);
-            return;
           }
+
+          // Delay closing to show success message
+          setTimeout(() => {
+            setIsScanSuccess(false);
+            setIsScannerOpen(false);
+          }, 1200);
+          return;
         }
       }
     }
     requestRef.current = requestAnimationFrame(tick);
-  }, [isScannerOpen, handleCheckIn, addLog, toast]);
+  }, [isScannerOpen, isScanSuccess, handleCheckIn, addLog]);
 
-  // Handle Camera initialization with specific constraints
   useEffect(() => {
     let stream: MediaStream | null = null;
 
@@ -208,8 +220,7 @@ const Admin: React.FC = () => {
         })
         .catch(err => {
           console.error("Camera Error:", err);
-          toast.error("Optics Failure. Use Manual Entry.");
-          // Don't close, let manual entry work
+          toast.error("Scanner Link Offline. Use Manual Entry.");
         });
     }
 
@@ -297,7 +308,7 @@ const Admin: React.FC = () => {
       <div className="pt-32 min-h-screen flex items-center justify-center bg-[#050505]">
         <div className="text-center">
           <Loader2 className="animate-spin text-indigo-500 mb-4 mx-auto" size={32} />
-          <p className="text-xs font-mono text-gray-600 uppercase tracking-widest">Linking Terminal...</p>
+          <p className="text-xs font-mono text-gray-600 uppercase tracking-widest text-indigo-400">Linking Terminal...</p>
         </div>
       </div>
     );
@@ -397,8 +408,16 @@ const Admin: React.FC = () => {
                           <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase ${team.paymentstatus === PaymentStatus.PAID ? 'bg-green-500/10 text-green-500' : 'bg-orange-500/10 text-orange-500'}`}>{team.paymentstatus}</span>
                         </td>
                         <td className="px-8 py-6">
-                           <button disabled={actionLoading === team.id} onClick={() => handleCheckIn(team.id, !team.checkedin)} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all flex items-center gap-2 ${team.checkedin ? 'bg-indigo-600 text-white' : 'bg-white/5 text-gray-500 hover:text-white'}`}>
-                              {actionLoading === team.id ? <Loader2 size={12} className="animate-spin" /> : team.checkedin ? <CheckCircle2 size={12} /> : null}
+                           <button 
+                             disabled={actionLoading === team.id} 
+                             onClick={() => handleCheckIn(team.id, !team.checkedin)} 
+                             className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all flex items-center gap-2 ${
+                               team.checkedin 
+                               ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.4)]' 
+                               : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'
+                             }`}
+                           >
+                              {actionLoading === team.id ? <Loader2 size={12} className="animate-spin" /> : team.checkedin ? <CheckCircle2 size={12} /> : <ShieldAlert size={12} />}
                               {team.checkedin ? 'Verified' : 'Verify'}
                            </button>
                         </td>
@@ -453,13 +472,11 @@ const Admin: React.FC = () => {
                   {/* Scanner HUD Overlay */}
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                      <div className="w-72 h-72 border border-indigo-500/30 rounded-3xl relative">
-                        {/* Corners */}
                         <div className="absolute -top-1 -left-1 w-12 h-12 border-t-4 border-l-4 border-indigo-500 rounded-tl-2xl" />
                         <div className="absolute -top-1 -right-1 w-12 h-12 border-t-4 border-r-4 border-indigo-500 rounded-tr-2xl" />
                         <div className="absolute -bottom-1 -left-1 w-12 h-12 border-b-4 border-l-4 border-indigo-500 rounded-bl-2xl" />
                         <div className="absolute -bottom-1 -right-1 w-12 h-12 border-b-4 border-r-4 border-indigo-500 rounded-br-2xl" />
                         
-                        {/* Scanning Line */}
                         <motion.div 
                           animate={{ y: [0, 280, 0] }} 
                           transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
@@ -467,6 +484,27 @@ const Admin: React.FC = () => {
                         />
                      </div>
                   </div>
+
+                  {/* SUCCESS OVERLAY */}
+                  <AnimatePresence>
+                    {isScanSuccess && (
+                      <motion.div 
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 1 }} 
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-green-600/90 z-50 flex flex-col items-center justify-center text-white"
+                      >
+                         <motion.div
+                           initial={{ scale: 0.5 }} animate={{ scale: 1 }}
+                           className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4"
+                         >
+                            <Check size={48} strokeWidth={3} />
+                         </motion.div>
+                         <h3 className="text-3xl font-black uppercase tracking-widest font-display">Access Granted</h3>
+                         <p className="text-[10px] font-mono mt-2 opacity-70">SQUAD_VERIFIED // SESSION_SYNC</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <div className="p-10 space-y-8 bg-[#080808]">
@@ -475,7 +513,7 @@ const Admin: React.FC = () => {
                         <AlertCircle className="text-indigo-400" size={16} />
                       </div>
                       <p className="text-[11px] text-gray-400 leading-relaxed font-mono">
-                        Center the QR manifest within the scanning zone. If detection fails due to low light, use the manual override below.
+                        Verification instant sync is active. Dashboard will update in real-time.
                       </p>
                    </div>
                    
