@@ -1,3 +1,4 @@
+
 // Fix: Import React to resolve React namespace usage including React.FC and React.FormEvent
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -63,16 +64,8 @@ const Admin: React.FC = () => {
     else setIsPolling(true);
     
     try {
-      const [data, s] = await Promise.all([
-        storage.getTeams().catch(err => {
-          if (err.status === 401) handleAuthFailure();
-          throw err;
-        }),
-        storage.getStats().catch(err => {
-          if (err.status === 401) handleAuthFailure();
-          throw err;
-        })
-      ]);
+      const data = await storage.getTeams();
+      const s = await storage.getStats();
       setTeams(data);
       setStats(s);
     } catch (err: any) {
@@ -83,32 +76,32 @@ const Admin: React.FC = () => {
       setIsLoading(false);
       setIsPolling(false);
     }
-  }, [addLog, handleAuthFailure]);
+  }, [addLog]);
 
   const handleCheckIn = useCallback(async (id: string, status: boolean) => {
-    // Optimistic Update: Reflect change immediately in the local state
+    // 1. Optimistic UI update for instant feedback
     setTeams(prev => prev.map(t => t.id === id ? { ...t, checkedin: status } : t));
     
     setActionLoading(id);
     try {
+      // 2. Persistent update via secure edge function
       await storage.updateCheckIn(id, status);
-      // Silently re-sync to ensure everything is matched with server
-      await fetchData(true);
       
       const team = teamsRef.current.find(t => t.id === id);
       addLog(`${status ? 'Verified' : 'Unverified'}: ${team?.teamname}`, status ? 'success' : 'info');
       if (status) toast.success(`${team?.teamname} Verified.`);
+      
+      // 3. Sync stats after update
+      const newStats = await storage.getStats();
+      setStats(newStats);
     } catch (err: any) {
-      if (err.status === 401) handleAuthFailure();
-      else {
-        // Rollback optimistic update on failure
-        setTeams(prev => prev.map(t => t.id === id ? { ...t, checkedin: !status } : t));
-        toast.error("Sync Failure: Verification rolled back.");
-      }
+      // Rollback on failure
+      setTeams(prev => prev.map(t => t.id === id ? { ...t, checkedin: !status } : t));
+      toast.error("Cloud Sync Error: Check-in failed.");
     } finally {
       setActionLoading(null);
     }
-  }, [fetchData, addLog, toast, handleAuthFailure]);
+  }, [addLog, toast]);
 
   const handleManualEntry = async () => {
     const rawInput = manualID.trim().toUpperCase();
@@ -175,7 +168,6 @@ const Admin: React.FC = () => {
         const team = teamsRef.current.find(t => t.teamid === talosID);
         
         if (team) {
-          // Visual feedback in scanner
           setIsScanSuccess(true);
           
           if (!team.checkedin) {
@@ -184,7 +176,6 @@ const Admin: React.FC = () => {
             addLog(`Already Verified: ${team.teamname}`, 'warn');
           }
 
-          // Delay closing to show success message
           setTimeout(() => {
             setIsScanSuccess(false);
             setIsScannerOpen(false);
@@ -469,7 +460,6 @@ const Admin: React.FC = () => {
                   <video ref={videoRef} className="w-full h-full object-cover opacity-80" muted playsInline />
                   <canvas ref={canvasRef} className="hidden" />
                   
-                  {/* Scanner HUD Overlay */}
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                      <div className="w-72 h-72 border border-indigo-500/30 rounded-3xl relative">
                         <div className="absolute -top-1 -left-1 w-12 h-12 border-t-4 border-l-4 border-indigo-500 rounded-tl-2xl" />
@@ -485,7 +475,6 @@ const Admin: React.FC = () => {
                      </div>
                   </div>
 
-                  {/* SUCCESS OVERLAY */}
                   <AnimatePresence>
                     {isScanSuccess && (
                       <motion.div 
