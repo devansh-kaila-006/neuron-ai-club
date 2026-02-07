@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Users, Activity, Loader2, RefreshCw, ShieldCheck, Download, 
-  CheckCircle2, TrendingUp, LogOut, Scan, X, Terminal, Flame
+  CheckCircle2, TrendingUp, LogOut, Scan, X, Terminal, Flame, ArrowRight
 } from 'lucide-react';
 import jsQR from 'jsqr';
 import { storage } from '../lib/storage.ts';
@@ -26,6 +26,7 @@ const Admin: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'paid' | 'pending'>('all');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [manualID, setManualID] = useState('');
   const [logs, setLogs] = useState<{msg: string, time: string, type: 'info' | 'warn' | 'success'}[]>([]);
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -91,6 +92,25 @@ const Admin: React.FC = () => {
     }
   }, [fetchData, addLog, toast, handleAuthFailure]);
 
+  const handleManualEntry = async () => {
+    const formattedID = manualID.trim().toUpperCase();
+    const fullID = formattedID.startsWith('TALOS-') ? formattedID : `TALOS-${formattedID}`;
+    
+    const team = teamsRef.current.find(t => t.teamid === fullID);
+    if (!team) {
+      toast.error("ID not found in manifest.");
+      return;
+    }
+
+    if (team.checkedin) {
+      toast.info(`${team.teamname} already verified.`);
+    } else {
+      await handleCheckIn(team.id, true);
+      setManualID('');
+      setIsScannerOpen(false);
+    }
+  };
+
   // Stable scanning tick that doesn't trigger camera restarts
   const tick = useCallback(() => {
     if (!isScannerOpen) return;
@@ -127,9 +147,6 @@ const Admin: React.FC = () => {
             setIsScannerOpen(false);
             return; // Stop animation loop
           }
-        } else {
-          // Prevent log spam for unrecognized codes
-          console.debug("Unrecognized QR:", talosID);
         }
       }
     }
@@ -154,7 +171,7 @@ const Admin: React.FC = () => {
         .catch(err => {
           console.error("Camera Access Failed:", err);
           toast.error("Optics Malfunction: Camera access denied.");
-          setIsScannerOpen(false);
+          // We don't close the scanner, let user use manual entry
         });
     }
 
@@ -425,15 +442,15 @@ const Admin: React.FC = () => {
           {isScannerOpen && (
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/90 backdrop-blur-2xl"
+              className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/90 backdrop-blur-2xl overflow-y-auto"
             >
-              <div className="relative w-full max-w-lg glass border-indigo-500/30 rounded-[2.5rem] overflow-hidden shadow-2xl">
-                <div className="p-8 border-b border-white/10 flex justify-between items-center">
+              <div className="relative w-full max-w-lg glass border-indigo-500/30 rounded-[2.5rem] overflow-hidden shadow-2xl my-auto">
+                <div className="p-6 border-b border-white/10 flex justify-between items-center">
                    <div className="flex items-center gap-3">
                      <Scan className="text-indigo-500" />
-                     <h2 className="text-xl font-bold uppercase tracking-widest font-mono">Neural Scanner</h2>
+                     <h2 className="text-lg font-bold uppercase tracking-widest font-mono">Verification Terminal</h2>
                    </div>
-                   <button onClick={() => setIsScannerOpen(false)} className="text-gray-500 hover:text-white"><X /></button>
+                   <button onClick={() => setIsScannerOpen(false)} className="text-gray-500 hover:text-white transition-colors"><X /></button>
                 </div>
                 
                 <div className="relative aspect-video bg-black flex items-center justify-center">
@@ -453,10 +470,35 @@ const Admin: React.FC = () => {
                      </div>
                   </div>
                 </div>
-                <div className="p-8 bg-white/2 text-center">
-                   <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
-                     Place QR manifest within scanning zone
-                   </p>
+
+                <div className="p-8 space-y-6">
+                   <div className="text-center">
+                      <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-4">
+                        Scanning active — or override manually
+                      </p>
+                   </div>
+                   
+                   <div className="space-y-4">
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          placeholder="TALOS-XXXXXX" 
+                          value={manualID}
+                          onChange={(e) => setManualID(e.target.value.toUpperCase())}
+                          onKeyPress={(e) => e.key === 'Enter' && handleManualEntry()}
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-6 text-xl font-mono outline-none focus:border-indigo-500 transition-all placeholder:text-gray-700"
+                        />
+                        <button 
+                          onClick={handleManualEntry}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg hover:bg-indigo-500 transition-colors"
+                        >
+                          <ArrowRight size={20} />
+                        </button>
+                      </div>
+                      <p className="text-[9px] font-mono text-gray-600 uppercase text-center tracking-tighter">
+                        Input the 6-character sequence after 'TALOS-' if scanner fails.
+                      </p>
+                   </div>
                 </div>
               </div>
             </motion.div>
