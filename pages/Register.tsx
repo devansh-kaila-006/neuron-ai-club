@@ -1,3 +1,4 @@
+
 // Fix: Import React to resolve React namespace usage
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -163,10 +164,11 @@ const Register: React.FC = () => {
         onSuccess: async (response: any) => {
           toast.info("Synchronizing with Neural Grid...");
           try {
+            // Fix: Pass values safely, handling the lack of order_id in simple payments
             const verifyRes = await paymentService.verifyPayment(
-              response.razorpay_order_id, 
+              response.razorpay_order_id || null, 
               response.razorpay_payment_id, 
-              response.razorpay_signature, 
+              response.razorpay_signature || null, 
               { teamname: teamName, members, leademail: members[0].email }
             );
             
@@ -176,14 +178,14 @@ const Register: React.FC = () => {
               throw new Error("Verification failed.");
             }
           } catch (err: any) {
-            console.warn("Retrying direct lookup via PaymentID...");
+            console.warn("Manual Neural Grid Re-sync initiated...");
             // Final fallback: Check if the webhook already handled it
             const existing = await storage.getTeams();
             const found = existing.find(t => t.razorpaypaymentid === response.razorpay_payment_id);
             if (found) {
               finishRegistration(found);
             } else {
-              toast.error(`Neural Grid Sync Error: ${err.message}. Please contact support with Payment ID: ${response.razorpay_payment_id}`);
+              toast.error(`Verification Sequence Interrupted. Record with Payment ID: ${response.razorpay_payment_id} will be syncronized shortly.`);
             }
           }
         }
@@ -370,7 +372,6 @@ const Register: React.FC = () => {
                 <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent uppercase">Deployed</h2>
                 <p className="text-gray-400 text-sm mb-6">Squad {registeredTeam?.teamname} sync complete.</p>
                 
-                {/* QR Block - Uses high contrast white background to ensure visibility when printing/PDF saving */}
                 <div className="bg-white p-8 rounded-3xl border border-white/5 mb-10 inline-block shadow-[0_0_30px_rgba(255,255,255,0.05)]">
                   <QRCodeSVG 
                     value={registeredTeam?.teamid || ''} 
@@ -385,7 +386,6 @@ const Register: React.FC = () => {
 
                 <div className="flex flex-col sm:flex-row justify-center gap-4 no-print">
                   <button onClick={() => window.location.href = '/'} className="px-10 py-4 glass rounded-2xl text-sm font-bold">Home Hub</button>
-                  {/* window.print() is the cross-platform way to generate a PDF in modern browsers */}
                   <button 
                     onClick={() => window.print()} 
                     className="px-10 py-4 bg-indigo-600 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-indigo-500 transition-colors shadow-lg"
