@@ -1,9 +1,11 @@
+
 // Fix: Import React to resolve React namespace usage including React.FC and React.FormEvent
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Users, Activity, Loader2, RefreshCw, ShieldCheck, Download, 
-  CheckCircle2, TrendingUp, LogOut, Scan, X, Terminal, Flame, ArrowRight
+  CheckCircle2, TrendingUp, LogOut, Scan, X, Terminal, Flame, ArrowRight,
+  AlertCircle
 } from 'lucide-react';
 import jsQR from 'jsqr';
 import { storage } from '../lib/storage.ts';
@@ -33,6 +35,7 @@ const Admin: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number | null>(null);
   const teamsRef = useRef<Team[]>([]);
+  const scanCountRef = useRef(0);
 
   // Keep teamsRef in sync with state for the scanner loop
   useEffect(() => {
@@ -46,7 +49,14 @@ const Admin: React.FC = () => {
   const handleAuthFailure = useCallback(() => {
     authService.signOut();
     setIsAuthenticated(false);
-    toast.error("Session De-authorized: Invalid or expired access key.");
+    toast.error("Session De-authorized.");
+  }, [toast]);
+
+  // Fix: Added handleLogout to clear session and redirect user to login view
+  const handleLogout = useCallback(() => {
+    authService.signOut();
+    setIsAuthenticated(false);
+    toast.success("Terminal Session Terminated.");
   }, [toast]);
 
   const fetchData = useCallback(async (silent = false) => {
@@ -93,12 +103,18 @@ const Admin: React.FC = () => {
   }, [fetchData, addLog, toast, handleAuthFailure]);
 
   const handleManualEntry = async () => {
-    const formattedID = manualID.trim().toUpperCase();
-    const fullID = formattedID.startsWith('TALOS-') ? formattedID : `TALOS-${formattedID}`;
+    const rawInput = manualID.trim().toUpperCase();
+    if (!rawInput) return;
+
+    // Smart Prefix Handling: If user types 6 chars like 'A1B2C3', convert to 'TALOS-A1B2C3'
+    let fullID = rawInput;
+    if (!rawInput.startsWith('TALOS-')) {
+      fullID = `TALOS-${rawInput}`;
+    }
     
     const team = teamsRef.current.find(t => t.teamid === fullID);
     if (!team) {
-      toast.error("ID not found in manifest.");
+      toast.error(`ID ${fullID} not found.`);
       return;
     }
 
@@ -111,9 +127,16 @@ const Admin: React.FC = () => {
     }
   };
 
-  // Stable scanning tick that doesn't trigger camera restarts
+  // Robust scanning tick with optimized processing
   const tick = useCallback(() => {
     if (!isScannerOpen) return;
+
+    // Scan every 2nd frame to reduce CPU load while maintaining responsiveness
+    scanCountRef.current++;
+    if (scanCountRef.current % 2 !== 0) {
+      requestRef.current = requestAnimationFrame(tick);
+      return;
+    }
 
     if (videoRef.current?.readyState === videoRef.current?.HAVE_ENOUGH_DATA && canvasRef.current) {
       const video = videoRef.current;
@@ -121,18 +144,25 @@ const Admin: React.FC = () => {
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
 
-      if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+      // Downscaling slightly for jsQR performance and better accuracy on small QRs
+      const scale = 0.8;
+      const sw = Math.floor(video.videoWidth * scale);
+      const sh = Math.floor(video.videoHeight * scale);
+
+      if (canvas.width !== sw || canvas.height !== sh) {
+        canvas.width = sw;
+        canvas.height = sh;
       }
 
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(video, 0, 0, sw, sh);
+      const imageData = ctx.getImageData(0, 0, sw, sh);
+      
+      // 'attemptBoth' is critical for robust scanning in varying light
       const code = jsQR(imageData.data, imageData.width, imageData.height, {
-        inversionAttempts: "dontInvert",
+        inversionAttempts: "attemptBoth",
       });
 
-      if (code) {
+      if (code && code.data) {
         const talosID = code.data.trim().toUpperCase();
         const team = teamsRef.current.find(t => t.teamid === talosID);
         
@@ -140,12 +170,12 @@ const Admin: React.FC = () => {
           if (!team.checkedin) {
             handleCheckIn(team.id, true);
             setIsScannerOpen(false);
-            return; // Stop animation loop
+            return; // Exit loop immediately on success
           } else {
             addLog(`Already Verified: ${team.teamname}`, 'warn');
-            toast.info(`${team.teamname} is already checked in.`);
+            toast.info(`${team.teamname} already verified.`);
             setIsScannerOpen(false);
-            return; // Stop animation loop
+            return;
           }
         }
       }
@@ -153,12 +183,20 @@ const Admin: React.FC = () => {
     requestRef.current = requestAnimationFrame(tick);
   }, [isScannerOpen, handleCheckIn, addLog, toast]);
 
-  // Manage Camera Lifecycle independently of Data Polling
+  // Handle Camera initialization with specific constraints
   useEffect(() => {
     let stream: MediaStream | null = null;
 
     if (isScannerOpen) {
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      const constraints = {
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia(constraints)
         .then(s => {
           stream = s;
           if (videoRef.current) {
@@ -169,9 +207,9 @@ const Admin: React.FC = () => {
           }
         })
         .catch(err => {
-          console.error("Camera Access Failed:", err);
-          toast.error("Optics Malfunction: Camera access denied.");
-          // We don't close the scanner, let user use manual entry
+          console.error("Camera Error:", err);
+          toast.error("Optics Failure. Use Manual Entry.");
+          // Don't close, let manual entry work
         });
     }
 
@@ -221,81 +259,35 @@ const Admin: React.FC = () => {
         setIsAuthenticated(true); 
         setPassword(''); 
         await fetchData(); 
-        toast.success("Executive override successful.");
+        toast.success("Terminal Authenticated.");
       } else {
         setLoginError(res.error || "Access Denied");
       }
     } catch (err: any) {
-      setLoginError(err.message || "Auth uplink failure");
+      setLoginError(err.message || "Auth failure");
     } finally {
       setIsLoggingIn(false);
     }
   };
 
   const handleDownloadCSV = () => {
-    if (teams.length === 0) {
-      toast.error("Manifest empty. No data to export.");
-      return;
-    }
-
-    const headers = ["Team Name", "TALOS ID", "Status", "Checked In", "Lead Name", "Lead Email", "Lead Phone", "Members Count"];
-    const rows = teams.map(t => [
-      t.teamname,
-      t.teamid,
-      t.paymentstatus,
-      t.checkedin ? "Yes" : "No",
-      t.members[0]?.name || "N/A",
-      t.members[0]?.email || "N/A",
-      t.members[0]?.phone || "N/A",
-      t.members.length
-    ]);
-
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(r => r.map(field => `"${field}"`).join(","))
-    ].join("\n");
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    if (teams.length === 0) return;
+    const headers = ["Team", "ID", "Status", "Checked In", "Lead", "Email", "Phone"];
+    const rows = teams.map(t => [t.teamname, t.teamid, t.paymentstatus, t.checkedin ? "Y" : "N", t.members[0]?.name, t.members[0]?.email, t.members[0]?.phone]);
+    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `TALOS_2026_Manifest_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
+    const link = document.body.appendChild(document.createElement("a"));
+    link.href = url;
+    link.download = `TALOS_MANIFEST_${Date.now()}.csv`;
     link.click();
     document.body.removeChild(link);
-    
-    addLog("Manifest Exported (CSV)", 'success');
-    toast.success("Manifest downloaded.");
-  };
-
-  const handlePurge = async () => {
-    if (window.confirm("CRITICAL: This will permanently purge the entire neural manifest. Proceed?")) {
-      setIsLoading(true);
-      try {
-        await storage.clearAllData();
-        addLog("SYSTEM WIPE COMPLETE", 'warn');
-        toast.error("Grid Manifest Purged.");
-        await fetchData();
-      } catch (err: any) {
-        if (err.status === 401) handleAuthFailure();
-        else toast.error(`Purge Failed: ${err.message}`);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const handleLogout = async () => {
-    await authService.signOut();
-    setIsAuthenticated(false);
-    setIsLoading(false);
-    toast.info("Terminal session terminated.");
+    toast.success("Manifest exported.");
   };
 
   const filteredTeams = teams.filter(t => {
     const searchStr = searchTerm.toLowerCase();
-    const matchesSearch = t.teamname.toLowerCase().includes(searchStr) || 
-                         t.teamid.toLowerCase().includes(searchStr);
+    const matchesSearch = t.teamname.toLowerCase().includes(searchStr) || t.teamid.toLowerCase().includes(searchStr);
     if (filter === 'all') return matchesSearch;
     return matchesSearch && t.paymentstatus === (filter === 'paid' ? PaymentStatus.PAID : PaymentStatus.PENDING);
   });
@@ -305,7 +297,7 @@ const Admin: React.FC = () => {
       <div className="pt-32 min-h-screen flex items-center justify-center bg-[#050505]">
         <div className="text-center">
           <Loader2 className="animate-spin text-indigo-500 mb-4 mx-auto" size={32} />
-          <p className="text-xs font-mono text-gray-600 uppercase tracking-widest">Uplinking Terminal...</p>
+          <p className="text-xs font-mono text-gray-600 uppercase tracking-widest">Linking Terminal...</p>
         </div>
       </div>
     );
@@ -316,12 +308,12 @@ const Admin: React.FC = () => {
       <div className="pt-32 min-h-screen flex items-center justify-center px-6">
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass p-12 rounded-[2.5rem] w-full max-w-md text-center border-indigo-500/20 shadow-2xl">
           <ShieldCheck size={64} className="mx-auto text-indigo-500 mb-8" />
-          <h1 className="text-2xl font-bold mb-8 uppercase tracking-widest font-mono">Executive Terminal</h1>
+          <h1 className="text-2xl font-bold mb-8 uppercase tracking-widest font-mono">Executive Hub</h1>
           <form onSubmit={handleLogin} className="space-y-6">
             <input type="password" placeholder="Access Key" className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-center text-xl outline-none focus:border-indigo-500 transition-all font-mono" value={password} onChange={e => setPassword(e.target.value)} />
             {loginError && <p className="text-red-500 text-xs font-mono uppercase">{loginError}</p>}
-            <button disabled={isLoggingIn} className="w-full py-4 bg-indigo-600 rounded-2xl font-bold hover:bg-indigo-500 transition-all shadow-lg disabled:opacity-50">
-              {isLoggingIn ? <Loader2 className="animate-spin mx-auto" /> : "Authorize Link"}
+            <button disabled={isLoggingIn} className="w-full py-4 bg-indigo-600 rounded-2xl font-bold hover:bg-indigo-500 shadow-lg disabled:opacity-50">
+              {isLoggingIn ? <Loader2 className="animate-spin mx-auto" /> : "Authorize"}
             </button>
           </form>
         </motion.div>
@@ -336,24 +328,20 @@ const Admin: React.FC = () => {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-4xl font-bold tracking-tight">Command Center</h1>
-              {isPolling && <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }} className="w-2 h-2 rounded-full bg-indigo-500" />}
+              {isPolling && <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />}
             </div>
-            <p className="text-gray-500 text-sm font-mono uppercase tracking-widest">Neural Grid Active</p>
+            <p className="text-gray-500 text-sm font-mono uppercase tracking-widest">Registry Sync Live</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button onClick={() => setIsScannerOpen(true)} className="p-3 bg-indigo-600 border border-indigo-400/30 text-white rounded-xl hover:bg-indigo-500 transition-all flex items-center gap-2 group shadow-[0_0_15px_rgba(79,70,229,0.3)]">
+            <button onClick={() => setIsScannerOpen(true)} className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-all flex items-center gap-2 group shadow-lg">
               <Scan size={20} className="group-hover:scale-110 transition-transform" />
-              <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest">Scan Manifest</span>
+              <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest">Verify QR</span>
             </button>
-            <button onClick={handleDownloadCSV} className="p-3 glass border-white/10 rounded-xl hover:bg-white/5 transition-all text-indigo-400 flex items-center gap-2 group">
-              <Download size={20} className="group-hover:translate-y-0.5 transition-transform" />
-              <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest">Export CSV</span>
+            <button onClick={handleDownloadCSV} className="p-3 glass border-white/10 rounded-xl hover:bg-white/5 transition-all text-indigo-400">
+              <Download size={20} />
             </button>
             <button onClick={() => fetchData()} className="p-3 glass border-white/10 rounded-xl hover:bg-white/5 transition-all text-indigo-400">
               <RefreshCw className={isLoading ? 'animate-spin' : ''} size={20} />
-            </button>
-            <button onClick={handlePurge} className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl hover:bg-red-500/20 transition-all flex items-center gap-2">
-              <Flame size={20} />
             </button>
             <button onClick={handleLogout} className="p-3 bg-white/5 border border-white/10 text-gray-400 rounded-xl hover:bg-white/10 transition-all">
               <LogOut size={20} />
@@ -363,15 +351,15 @@ const Admin: React.FC = () => {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {[
-            { icon: <Users className="text-blue-400" />, label: "Squads", val: stats.totalTeams },
-            { icon: <CheckCircle2 className="text-green-400" />, label: "Paid", val: stats.paidTeams },
-            { icon: <Activity className="text-purple-400" />, label: "Check-ins", val: stats.checkedIn },
-            { icon: <TrendingUp className="text-emerald-400" />, label: "Revenue", val: `₹${stats.revenue}` },
+            { icon: <Users />, label: "Squads", val: stats.totalTeams },
+            { icon: <CheckCircle2 />, label: "Paid", val: stats.paidTeams },
+            { icon: <Activity />, label: "Verified", val: stats.checkedIn },
+            { icon: <TrendingUp />, label: "Revenue", val: `₹${stats.revenue}` },
           ].map((s, i) => (
             <div key={i} className="glass p-6 rounded-3xl border-white/5">
-              <div className="flex items-center gap-4 mb-2">
-                <div className="p-2 bg-white/5 rounded-xl">{s.icon}</div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{s.label}</p>
+              <div className="flex items-center gap-3 mb-2 opacity-50">
+                <div className="p-1">{s.icon}</div>
+                <p className="text-[10px] uppercase tracking-widest font-bold">{s.label}</p>
               </div>
               <p className="text-2xl font-bold">{isLoading ? '...' : s.val}</p>
             </div>
@@ -384,32 +372,32 @@ const Admin: React.FC = () => {
               <div className="p-6 border-b border-white/5 flex flex-col md:flex-row gap-4 justify-between items-center">
                 <div className="relative flex-1 w-full">
                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-                   <input placeholder="Search Manifests..." className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-6 text-sm outline-none focus:border-indigo-500" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                   <input placeholder="Filter by Name or TALOS ID..." className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-6 text-sm outline-none focus:border-indigo-500" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${filter === 'all' ? 'bg-indigo-600 text-white' : 'glass border-white/5 text-gray-500'}`}>All</button>
-                  <button onClick={() => setFilter('paid')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${filter === 'paid' ? 'bg-green-600 text-white' : 'glass border-white/5 text-gray-500'}`}>Paid</button>
+                  <button onClick={() => setFilter('paid')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${filter === 'paid' ? 'bg-indigo-600 text-white' : 'glass border-white/5 text-gray-500'}`}>Paid</button>
                 </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-white/2 font-mono text-[9px] uppercase tracking-widest text-gray-500">
-                    <tr><th className="px-8 py-4 text-left">Squad</th><th className="px-8 py-4 text-left">Status</th><th className="px-8 py-4 text-left">Action</th></tr>
+                    <tr><th className="px-8 py-4 text-left">Identity</th><th className="px-8 py-4 text-left">Sync</th><th className="px-8 py-4 text-left">Status</th></tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {isLoading ? Array(5).fill(0).map((_, i) => <tr key={i}><td colSpan={3} className="px-8 py-6"><Skeleton className="h-12 w-full" /></td></tr>) : filteredTeams.length === 0 ? (
-                      <tr><td colSpan={3} className="px-8 py-20 text-center text-gray-600 font-mono text-xs uppercase tracking-widest">No Manifests Found</td></tr>
+                      <tr><td colSpan={3} className="px-8 py-20 text-center text-gray-600 font-mono text-xs">No Records Found</td></tr>
                     ) : filteredTeams.map(team => (
-                      <tr key={team.id} className="hover:bg-white/2 transition-colors group">
+                      <tr key={team.id} className="hover:bg-white/2 transition-colors">
                         <td className="px-8 py-6">
-                          <p className="font-bold text-sm group-hover:text-indigo-400 transition-colors">{team.teamname}</p>
+                          <p className="font-bold text-sm">{team.teamname}</p>
                           <span className="text-[10px] text-gray-500 font-mono">{team.teamid}</span>
                         </td>
                         <td className="px-8 py-6">
                           <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase ${team.paymentstatus === PaymentStatus.PAID ? 'bg-green-500/10 text-green-500' : 'bg-orange-500/10 text-orange-500'}`}>{team.paymentstatus}</span>
                         </td>
                         <td className="px-8 py-6">
-                           <button disabled={actionLoading === team.id} onClick={() => handleCheckIn(team.id, !team.checkedin)} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all flex items-center gap-2 ${team.checkedin ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.3)]' : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'}`}>
+                           <button disabled={actionLoading === team.id} onClick={() => handleCheckIn(team.id, !team.checkedin)} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all flex items-center gap-2 ${team.checkedin ? 'bg-indigo-600 text-white' : 'bg-white/5 text-gray-500 hover:text-white'}`}>
                               {actionLoading === team.id ? <Loader2 size={12} className="animate-spin" /> : team.checkedin ? <CheckCircle2 size={12} /> : null}
                               {team.checkedin ? 'Verified' : 'Verify'}
                            </button>
@@ -422,17 +410,15 @@ const Admin: React.FC = () => {
             </div>
           </div>
           <div className="glass p-6 rounded-[2rem] border-white/5 h-fit">
-             <h3 className="text-[10px] font-bold uppercase font-mono mb-6 flex items-center gap-2 border-b border-white/5 pb-4"><Terminal size={14} className="text-indigo-400" /> Neural Feed</h3>
+             <h3 className="text-[10px] font-bold uppercase font-mono mb-6 flex items-center gap-2 border-b border-white/5 pb-4">Neural Feed</h3>
              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {logs.length === 0 ? (
-                  <p className="text-[10px] text-gray-700 italic text-center py-10">Uplink Quiet...</p>
+                  <p className="text-[10px] text-gray-700 italic text-center py-10">Waiting for signals...</p>
                 ) : logs.map((log, i) => (
-                  <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} key={i} className="flex gap-3 text-[11px] border-l-2 border-indigo-500/30 pl-3">
-                    <div className="flex-1">
+                  <div key={i} className="flex flex-col text-[11px] border-l-2 border-indigo-500/30 pl-3">
                       <p className="text-gray-600 font-mono text-[9px] mb-1">{log.time}</p>
                       <p className={`font-medium ${log.type === 'warn' ? 'text-red-400' : log.type === 'success' ? 'text-green-400' : 'text-gray-300'}`}>{log.msg}</p>
-                    </div>
-                  </motion.div>
+                  </div>
                 ))}
              </div>
           </div>
@@ -442,62 +428,83 @@ const Admin: React.FC = () => {
           {isScannerOpen && (
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/90 backdrop-blur-2xl overflow-y-auto"
+              className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/95 backdrop-blur-3xl overflow-y-auto"
             >
-              <div className="relative w-full max-w-lg glass border-indigo-500/30 rounded-[2.5rem] overflow-hidden shadow-2xl my-auto">
-                <div className="p-6 border-b border-white/10 flex justify-between items-center">
+              <div className="relative w-full max-w-xl glass border-indigo-500/40 rounded-[3rem] overflow-hidden shadow-[0_0_100px_rgba(79,70,229,0.2)] my-auto">
+                <div className="p-8 border-b border-white/10 flex justify-between items-center">
                    <div className="flex items-center gap-3">
-                     <Scan className="text-indigo-500" />
-                     <h2 className="text-lg font-bold uppercase tracking-widest font-mono">Verification Terminal</h2>
+                     <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
+                       <Scan className="text-white" size={20} />
+                     </div>
+                     <div>
+                       <h2 className="text-xl font-bold uppercase tracking-widest font-mono">NEURAL VERIFIER</h2>
+                       <p className="text-[10px] text-gray-500 uppercase tracking-tighter">Optical & Manual Interface</p>
+                     </div>
                    </div>
-                   <button onClick={() => setIsScannerOpen(false)} className="text-gray-500 hover:text-white transition-colors"><X /></button>
+                   <button onClick={() => setIsScannerOpen(false)} className="w-10 h-10 glass rounded-full flex items-center justify-center text-gray-500 hover:text-white transition-colors">
+                     <X size={20} />
+                   </button>
                 </div>
                 
-                <div className="relative aspect-video bg-black flex items-center justify-center">
-                  <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
+                <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
+                  <video ref={videoRef} className="w-full h-full object-cover opacity-80" muted playsInline />
                   <canvas ref={canvasRef} className="hidden" />
+                  
+                  {/* Scanner HUD Overlay */}
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                     <div className="w-64 h-64 border-2 border-indigo-500/50 rounded-3xl relative">
-                        <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-indigo-500 -translate-x-1 -translate-y-1 rounded-tl-lg" />
-                        <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-indigo-500 translate-x-1 -translate-y-1 rounded-tr-lg" />
-                        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-indigo-500 -translate-x-1 translate-y-1 rounded-bl-lg" />
-                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-indigo-500 translate-x-1 translate-y-1 rounded-br-lg" />
+                     <div className="w-72 h-72 border border-indigo-500/30 rounded-3xl relative">
+                        {/* Corners */}
+                        <div className="absolute -top-1 -left-1 w-12 h-12 border-t-4 border-l-4 border-indigo-500 rounded-tl-2xl" />
+                        <div className="absolute -top-1 -right-1 w-12 h-12 border-t-4 border-r-4 border-indigo-500 rounded-tr-2xl" />
+                        <div className="absolute -bottom-1 -left-1 w-12 h-12 border-b-4 border-l-4 border-indigo-500 rounded-bl-2xl" />
+                        <div className="absolute -bottom-1 -right-1 w-12 h-12 border-b-4 border-r-4 border-indigo-500 rounded-br-2xl" />
+                        
+                        {/* Scanning Line */}
                         <motion.div 
-                          animate={{ y: [0, 240, 0] }} 
-                          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                          className="absolute top-0 left-0 w-full h-0.5 bg-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.8)]"
+                          animate={{ y: [0, 280, 0] }} 
+                          transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+                          className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent shadow-[0_0_25px_rgba(79,70,229,1)]"
                         />
                      </div>
                   </div>
                 </div>
 
-                <div className="p-8 space-y-6">
-                   <div className="text-center">
-                      <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-4">
-                        Scanning active — or override manually
+                <div className="p-10 space-y-8 bg-[#080808]">
+                   <div className="flex items-center gap-4 p-4 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl">
+                      <div className="p-2 bg-indigo-500/20 rounded-lg">
+                        <AlertCircle className="text-indigo-400" size={16} />
+                      </div>
+                      <p className="text-[11px] text-gray-400 leading-relaxed font-mono">
+                        Center the QR manifest within the scanning zone. If detection fails due to low light, use the manual override below.
                       </p>
                    </div>
                    
                    <div className="space-y-4">
-                      <div className="relative">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 block ml-1">Manual Override Sequence</label>
+                      <div className="relative group">
                         <input 
                           type="text" 
                           placeholder="TALOS-XXXXXX" 
                           value={manualID}
                           onChange={(e) => setManualID(e.target.value.toUpperCase())}
                           onKeyPress={(e) => e.key === 'Enter' && handleManualEntry()}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-6 text-xl font-mono outline-none focus:border-indigo-500 transition-all placeholder:text-gray-700"
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 pl-8 text-2xl font-mono outline-none focus:border-indigo-500 focus:bg-white/[0.08] transition-all placeholder:text-gray-800"
                         />
                         <button 
                           onClick={handleManualEntry}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg hover:bg-indigo-500 transition-colors"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-xl hover:bg-indigo-500 hover:scale-105 active:scale-95 transition-all"
                         >
-                          <ArrowRight size={20} />
+                          <ArrowRight size={24} />
                         </button>
                       </div>
-                      <p className="text-[9px] font-mono text-gray-600 uppercase text-center tracking-tighter">
-                        Input the 6-character sequence after 'TALOS-' if scanner fails.
-                      </p>
+                      <div className="flex justify-between items-center px-2">
+                        <p className="text-[9px] font-mono text-gray-600 uppercase tracking-widest">
+                          (Accepts 6-character code directly)
+                        </p>
+                        <p className="text-[9px] font-mono text-gray-600 uppercase tracking-widest">
+                          ID: {manualID.length}/12
+                        </p>
+                      </div>
                    </div>
                 </div>
               </div>
