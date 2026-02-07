@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,7 +61,7 @@
       left: 0;
       bottom: 0;
       right: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03));
       z-index: 10000;
       background-size: 100% 4px, 3px 100%;
       pointer-events: none;
@@ -103,14 +104,41 @@
     @media print {
       body { background: white !important; color: black !important; }
       body::before { display: none !important; }
-      .glass, nav, footer, button, .no-print { display: none !important; }
+      canvas { display: none !important; } /* Hide dynamic particles */
+      nav, footer, button, .no-print { display: none !important; }
+      
+      /* Ensure glass doesn't hide everything, but override manifest-card specifically */
+      .glass:not(.manifest-card) { display: none !important; }
+      
       #root { padding: 0 !important; }
       .print-only { display: block !important; }
+      
       .manifest-card {
+        display: block !important;
         border: 2px solid black !important;
         padding: 40px !important;
         color: black !important;
         background: white !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: none !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+
+      .manifest-card * {
+        color: black !important;
+        visibility: visible !important;
+      }
+      
+      /* Ensure the QR container is explicitly styled for print */
+      .manifest-card div[class*="bg-white"] {
+        border: 1px solid #eee !important;
+        box-shadow: none !important;
+        background-color: white !important;
       }
     }
   </style>
