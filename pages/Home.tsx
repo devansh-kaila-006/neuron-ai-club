@@ -1,238 +1,406 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-// @ts-ignore - Fixing react-router-dom Link export false positive
+// @ts-ignore
 import { Link } from 'react-router-dom';
 import { 
-  Bot, Zap, Shield, Code, ChevronRight, Target, Eye, Rocket, BookOpen, 
-  Globe, Briefcase, Activity, Radio, Layers, Users, Cpu, Terminal, 
-  Lightbulb, GraduationCap, Microscope, Share2
+  Zap, Code, ChevronRight, Eye, Rocket, BrainCircuit, 
+  Microscope, Network, Compass, Sparkles, 
+  Target, Workflow, GraduationCap, Megaphone, Lightbulb,
+  Activity, Globe, Users, LayoutGrid, Database, FileText,
+  Library, GitBranch, Terminal, BookOpen, ShieldAlert,
+  Briefcase, Info, Share2, Layers, ShieldCheck
 } from 'lucide-react';
-import { storage } from '../lib/storage.ts';
 
 const Home: React.FC = () => {
-  const [liveStats, setLiveStats] = useState({ total: 0, checkedIn: 0 });
-
-  useEffect(() => {
-    storage.getStats().then(s => setLiveStats({ total: s.totalTeams, checkedIn: s.checkedIn }));
-    const interval = setInterval(() => {
-      storage.getStats().then(s => setLiveStats({ total: s.totalTeams, checkedIn: s.checkedIn }));
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <div className="pt-24 min-h-screen bg-transparent">
-      {/* Hero Section */}
-      <section className="relative px-6 py-20 overflow-hidden bg-transparent">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-indigo-600/10 blur-[120px] rounded-full -z-10" />
+    <div className="min-h-screen bg-transparent overflow-x-hidden font-display text-white selection:bg-indigo-500/30 pb-32">
+      
+      {/* 1. IDENTITY & HERO - THE INITIALIZATION */}
+      <section className="relative px-6 pt-32 pb-16 md:pt-48 md:pb-24 flex flex-col items-center">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-gradient-to-b from-indigo-600/10 to-transparent blur-[120px] -z-10" />
         
-        <div className="max-w-5xl mx-auto text-center">
-          {/* @ts-ignore - Fixing framer-motion type mismatch */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            {/* Live Network Status */}
-            <div className="inline-flex items-center gap-3 px-4 py-1.5 mb-8 bg-indigo-500/10 border border-indigo-500/20 rounded-full">
+        <div className="max-w-6xl mx-auto text-center relative">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ staggerChildren: 0.1 }}>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-3 px-4 py-1.5 mb-10 bg-white/[0.03] border border-white/10 rounded-full backdrop-blur-md">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
               </span>
-              <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">
-                Grid Status: {liveStats.total} Squads Syncronized
+              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.5em] font-mono">
+                Amrita Vishwa Vidyapeetham
               </span>
-            </div>
+            </motion.div>
 
-            <h1 className="text-6xl md:text-8xl font-bold tracking-tight mb-8">
-              NEUR<span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">Ø</span>N
-            </h1>
-            <p className="text-xl md:text-2xl font-medium text-indigo-300 italic mb-6">
-              “Built by students. Driven by curiosity. Powered by AI.”
-            </p>
-            <p className="text-lg text-gray-400 mb-10 max-w-3xl mx-auto leading-relaxed">
-              NEURØN is Amrita Vishwa Vidyapeetham’s dedicated Artificial Intelligence Community of Practice (CoP). 
-              A collaborative platform for structured learning, experimentation, research, and innovation.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/register"
-                className="group relative px-8 py-4 bg-indigo-600 rounded-lg font-bold overflow-hidden transition-all hover:scale-105 active:scale-95"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span className="relative z-10 flex items-center gap-2">
-                  Uplink to TALOS <ChevronRight className="w-5 h-5" />
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative mb-14 flex justify-center items-center select-none">
+              <h1 className="text-8xl md:text-[14rem] font-black leading-none flex items-center justify-center tracking-tighter">
+                <span className="z-10 -mr-2 md:-mr-6 drop-shadow-2xl">NEUR</span>
+                <span className="relative inline-block text-indigo-500 italic z-20 scale-[1.1] px-1 md:px-4">
+                  Ø
+                  <motion.div 
+                    animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.3, 0.1] }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                    className="absolute inset-0 blur-3xl bg-indigo-500/40 -z-10"
+                  />
                 </span>
+                <span className="z-10 -ml-2 md:-ml-6 drop-shadow-2xl">N</span>
+              </h1>
+            </motion.div>
+
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-lg md:text-2xl font-tech tracking-[0.2em] text-gray-400 mb-6 uppercase">
+              Artificial Intelligence Community of Practice
+            </motion.p>
+
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] md:text-sm text-indigo-500/60 mb-12 max-w-2xl mx-auto font-mono uppercase tracking-[0.4em] italic font-bold">
+              "Built by students. Driven by curiosity. Powered by AI."
+            </motion.p>
+            
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center">
+              <Link to="/join" className="group relative px-14 py-6 bg-indigo-600 rounded-2xl font-black text-[11px] uppercase tracking-[0.5em] overflow-hidden transition-all hover:scale-105 shadow-[0_25px_50px_rgba(79,70,229,0.35)] text-white">
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="relative z-10 flex items-center gap-3">Join The Collective <ChevronRight className="w-4 h-4" /></span>
               </Link>
-              <Link
-                to="/hackathon"
-                className="px-8 py-4 border border-white/10 rounded-lg font-bold hover:bg-white/5 transition-colors"
-              >
-                System Specs
-              </Link>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Vision & Mission Section */}
-      <section className="px-6 py-20 bg-transparent">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8">
-          {/* @ts-ignore - Fixing framer-motion type mismatch */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+      {/* 2. THE GENESIS (INTRO & ABOUT) - SEAMLESS FLOW */}
+      <div className="max-w-7xl mx-auto px-6 space-y-32 md:space-y-48">
+        
+        {/* Intro Flow */}
+        <div className="grid lg:grid-cols-12 gap-16 items-start">
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }} 
+            whileInView={{ opacity: 1, x: 0 }} 
             viewport={{ once: true }}
-            className="glass p-10 rounded-3xl border-indigo-500/20 shadow-xl"
+            className="lg:col-span-7 space-y-8"
           >
-            <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 mb-6">
-              <Eye size={32} />
+            <div className="inline-block px-4 py-1 border-l-2 border-indigo-500 bg-indigo-500/5">
+               <span className="text-[10px] font-mono font-bold tracking-widest text-indigo-400 uppercase">Initialization_Protocol</span>
             </div>
-            <h2 className="text-3xl font-bold mb-4">Our Vision</h2>
-            <p className="text-gray-400 leading-relaxed italic">
-              "To establish a strong, inclusive, and innovative Artificial Intelligence ecosystem at Amrita that empowers students to become skilled AI practitioners, researchers, and responsible technology leaders."
-            </p>
-          </motion.div>
-
-          {/* @ts-ignore - Fixing framer-motion type mismatch */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="glass p-10 rounded-3xl border-purple-500/20 shadow-xl"
-          >
-            <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500 mb-6">
-              <Rocket size={32} />
+            <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.9]">
+              The AI <span className="text-indigo-500 italic">Evolution</span>
+            </h2>
+            <div className="space-y-6 text-gray-400 font-light leading-relaxed text-lg">
+              <p>
+                Artificial Intelligence (AI) has emerged as the most transformative technology of the 21st century, reshaping healthcare, finance, transportation, and scientific research. 
+              </p>
+              <p>
+                While students are exposed to AI tools, many lack structured guidance. <span className="text-white font-bold">NEURØN</span> bridge this gap as Amrita’s dedicated <span className="text-indigo-400 font-tech">Community of Practice (CoP)</span>.
+              </p>
             </div>
-            <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
-            <ul className="text-gray-400 space-y-3">
-              <li className="flex gap-3"><ChevronRight className="text-purple-500 shrink-0" size={18}/> Learn AI concepts through practical exposure</li>
-              <li className="flex gap-3"><ChevronRight className="text-purple-500 shrink-0" size={18}/> Apply AI across diverse domains</li>
-              <li className="flex gap-3"><ChevronRight className="text-purple-500 shrink-0" size={18}/> Share knowledge and experiences</li>
-              <li className="flex gap-3"><ChevronRight className="text-purple-500 shrink-0" size={18}/> Innovate responsibly and ethically</li>
-            </ul>
           </motion.div>
-        </div>
-      </section>
-
-      {/* CoP Framework Section */}
-      <section className="px-6 py-20 bg-transparent">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-[10px] uppercase tracking-[0.5em] text-indigo-500 font-bold mb-4">The CoP Framework</h2>
-            <h3 className="text-4xl font-bold">Community of Practice Pillars</h3>
-          </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { 
-                icon: <Layers className="text-blue-400" />, 
-                title: "Domain", 
-                desc: "Artificial Intelligence, Machine Learning, Data Science, and Intelligent Systems." 
-              },
-              { 
-                icon: <Users className="text-indigo-400" />, 
-                title: "Community", 
-                desc: "A network of students, faculty mentors, researchers, alumni, and industry professionals." 
-              },
-              { 
-                icon: <Activity className="text-purple-400" />, 
-                title: "Practice", 
-                desc: "Hands-on projects, workshops, hackathons, research initiatives, and shared resources." 
-              },
-            ].map((pillar, i) => (
-              /* @ts-ignore - Fixing framer-motion type mismatch */
-              <motion.div 
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="glass p-8 rounded-[2.5rem] border-white/5 text-center group hover:border-indigo-500/30 transition-all shadow-lg"
-              >
-                <div className="w-16 h-16 mx-auto bg-white/5 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  {pillar.icon}
+          <motion.div 
+            initial={{ opacity: 0, x: 30 }} 
+            whileInView={{ opacity: 1, x: 0 }} 
+            viewport={{ once: true }}
+            className="lg:col-span-5 relative"
+          >
+             <div className="glass p-10 rounded-[3rem] border-white/5 bg-white/[0.01] relative z-10">
+                <Info className="text-indigo-500 mb-6" size={32} />
+                <h3 className="text-2xl font-black uppercase tracking-tight mb-4">Framework</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-6">
+                  Student-led and faculty-mentored, NEURØN promotes continuous learning and applied problem-solving. We bring together students from diverse backgrounds to share a common interest in emerging technologies.
+                </p>
+                <div className="flex items-center gap-4 text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest italic">
+                  <div className="h-px w-8 bg-indigo-500/30" />
+                  Uplink Active
                 </div>
-                <h4 className="text-xl font-bold mb-3">{pillar.title}</h4>
-                <p className="text-sm text-gray-500 leading-relaxed">{pillar.desc}</p>
+             </div>
+             <div className="absolute -top-10 -right-10 w-48 h-48 bg-indigo-600/10 blur-[100px] -z-0 rounded-full" />
+          </motion.div>
+        </div>
+
+        {/* 3. STRATEGIC INTENT (VISION & MISSION) */}
+        <div className="grid lg:grid-cols-2 gap-8">
+           <motion.div 
+             initial={{ opacity: 0, y: 20 }} 
+             whileInView={{ opacity: 1, y: 0 }} 
+             viewport={{ once: true }}
+             className="glass p-12 md:p-16 rounded-[4rem] border-indigo-500/10 bg-indigo-500/[0.01] flex flex-col justify-center relative overflow-hidden group"
+           >
+              <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+                <Target size={240} strokeWidth={0.5} />
+              </div>
+              <h3 className="text-[10px] font-mono font-black text-indigo-400 uppercase tracking-[0.5em] mb-10 flex items-center gap-4">
+                <Compass size={18} /> Strategic Vision
+              </h3>
+              <p className="text-3xl md:text-5xl font-black leading-[1.1] tracking-tighter text-white">
+                To establish a strong, inclusive, and <span className="text-indigo-500 italic">innovative AI ecosystem</span> at Amrita that empowers students as practitioners and leaders.
+              </p>
+           </motion.div>
+
+           <motion.div 
+             initial={{ opacity: 0, y: 20 }} 
+             whileInView={{ opacity: 1, y: 0 }} 
+             transition={{ delay: 0.1 }} 
+             viewport={{ once: true }}
+             className="glass p-10 md:p-14 rounded-[4rem] border-white/5 bg-white/[0.01] relative overflow-hidden group/mission"
+           >
+              {/* Mission Header */}
+              <div className="flex items-center justify-between mb-12">
+                <h3 className="text-[10px] font-mono font-black text-gray-500 uppercase tracking-[0.5em] flex items-center gap-4">
+                  <Rocket size={18} className="text-indigo-500" /> Mission Vector
+                </h3>
+                <div className="flex gap-1">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-indigo-500/20 group-hover/mission:bg-indigo-500 transition-colors" />
+                  ))}
+                </div>
+              </div>
+
+              {/* Mission List */}
+              <div className="grid gap-8">
+                {[
+                  { 
+                    t: "Practical Exposure", 
+                    d: "Learn complex AI concepts through hands-on implementation.", 
+                    icon: <BookOpen className="text-indigo-400" /> 
+                  },
+                  { 
+                    t: "Diverse Domains", 
+                    d: "Apply AI solutions across multi-disciplinary landscapes.", 
+                    icon: <Layers className="text-cyan-400" /> 
+                  },
+                  { 
+                    t: "Knowledge Sync", 
+                    d: "Collaborative transfer of experiences and insights.", 
+                    icon: <Share2 className="text-purple-400" /> 
+                  },
+                  { 
+                    t: "Ethical Innovation", 
+                    d: "Responsible problem-solving for a sustainable future.", 
+                    icon: <ShieldCheck className="text-emerald-400" /> 
+                  }
+                ].map((m, i) => (
+                  <div key={i} className="flex items-center gap-8 group/item">
+                    <div className="shrink-0 w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-center transition-all duration-500 group-hover/item:border-indigo-500/30 group-hover/item:bg-indigo-500/5 group-hover/item:scale-110">
+                      {React.cloneElement(m.icon as React.ReactElement<any>, { size: 20, strokeWidth: 1.5 })}
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-xs font-black uppercase tracking-[0.2em] text-white block group-hover/item:text-indigo-400 transition-colors">
+                        {m.t}
+                      </span>
+                      <span className="text-[10px] font-medium text-gray-500 group-hover/item:text-gray-400 transition-colors">
+                        {m.d}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Decorative Scanline */}
+              <div className="absolute top-0 left-0 w-[1px] h-full bg-gradient-to-b from-transparent via-indigo-500/20 to-transparent group-hover/mission:via-indigo-500 transition-all duration-1000" />
+           </motion.div>
+        </div>
+
+        {/* 5. CO-P PILLARS (DNA) */}
+        <div className="space-y-20">
+           <div className="flex flex-col items-center text-center">
+              <span className="text-[10px] font-mono font-black text-indigo-500 uppercase tracking-[0.6em] mb-4">Neural_Architecture</span>
+              <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none">
+                CoP <span className="text-indigo-500 italic">PILLARS</span>
+              </h2>
+           </div>
+           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { t: "Domain", d: "AI, ML, Data Science, and Intelligent Systems.", icon: <Globe className="text-indigo-500" />, sub: "5.1 Core Focus" },
+              { t: "Community", d: "Network of students, mentors, and industry pros.", icon: <Users className="text-purple-500" />, sub: "5.2 Human Grid" },
+              { t: "Practice", d: "Hands-on projects, workshops, and research labs.", icon: <Code className="text-cyan-500" />, sub: "5.3 Tactical Layer" },
+              { t: "Growth", d: "Sustained innovation and evolutionary community scale.", icon: <Activity className="text-indigo-400" />, sub: "5.4 Neural Pulse" }
+            ].map((p, i) => (
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, scale: 0.98 }} 
+                whileInView={{ opacity: 1, scale: 1 }} 
+                viewport={{ once: true }} 
+                className="glass p-10 rounded-[3rem] border-white/5 bg-transparent hover:bg-white/[0.02] transition-all group"
+              >
+                <div className="mb-8 p-4 bg-white/[0.03] rounded-2xl w-fit group-hover:scale-110 transition-transform">
+                  {p.icon}
+                </div>
+                <h4 className="text-[9px] font-mono font-bold text-gray-500 uppercase tracking-[0.4em] mb-2">{p.sub}</h4>
+                <h4 className="text-2xl font-black uppercase tracking-tight mb-4 text-white">{p.t}</h4>
+                <p className="text-sm font-medium text-gray-500 group-hover:text-gray-300 transition-colors">{p.d}</p>
               </motion.div>
             ))}
           </div>
         </div>
-      </section>
 
-      {/* Objectives Grid */}
-      <section className="px-6 py-20 bg-transparent">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-4xl font-bold mb-8">Strategic Objectives</h2>
-              <div className="grid sm:grid-cols-2 gap-6">
+        {/* 7. ACTIVITIES - TACTICAL HUB (CLEAN 8 NODES) */}
+        <div className="relative pt-12">
+           <div className="flex flex-col items-center mb-16 text-center">
+              <span className="text-[10px] font-mono font-black text-indigo-500 uppercase tracking-[0.6em] mb-4">Tactical_Operations</span>
+              <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none">
+                CLUB <span className="text-indigo-500 italic">ACTIVITIES</span>
+              </h2>
+              <p className="mt-6 text-gray-500 max-w-xl text-sm leading-relaxed">
+                A symmetrical synchronization of structured learning, experimentation, and industry bridging.
+              </p>
+           </div>
+
+           <div className="relative h-[650px] md:h-[800px] flex items-center justify-center">
+              {/* Central HUB (Sized correctly and perfectly centered) */}
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }} 
+                whileInView={{ scale: 1, opacity: 1 }}
+                className="relative z-30 w-32 h-32 md:w-[180px] md:h-[180px] rounded-full border border-indigo-500/20 flex items-center justify-center bg-black/60 backdrop-blur-3xl shadow-[0_0_80px_rgba(79,70,229,0.1)]"
+              >
+                <div className="absolute inset-0 rounded-full border border-indigo-500/10 animate-pulse scale-[1.1]" />
+                <span className="text-[6rem] md:text-[9rem] font-black text-indigo-500 italic drop-shadow-[0_0_40px_rgba(79,70,229,0.4)] select-none leading-none translate-y-[-2px]">Ø</span>
+              </motion.div>
+
+              {/* TACTICAL NODES (All 8 Symmetrical Positions) */}
+              <div className="absolute inset-0 pointer-events-none">
                 {[
-                  { icon: <Globe size={20}/>, text: "Create awareness and interest in AI" },
-                  { icon: <GraduationCap size={20}/>, text: "Provide foundational and advanced knowledge" },
-                  { icon: <Cpu size={20}/>, text: "Enable hands-on learning through projects" },
-                  { icon: <Briefcase size={20}/>, text: "Promote interdisciplinary AI applications" },
-                  { icon: <Lightbulb size={20}/>, text: "Encourage innovation" },
-                  { icon: <Microscope size={20}/>, text: "Prepare students for AI-related careers" },
-                ].map((obj, i) => (
-                  <div key={i} className="flex items-start gap-4 p-4 glass rounded-2xl border-white/5 shadow-md">
-                    <div className="text-indigo-500 mt-1">{obj.icon}</div>
-                    <p className="text-sm text-gray-300 font-medium">{obj.text}</p>
-                  </div>
+                  { pos: "top-[2%] left-1/2 -translate-x-1/2", icon: <Sparkles />, label: "INTRO SESSIONS", d: "AI concepts overview" },
+                  { pos: "top-[12%] right-[10%] md:top-[15%] md:right-[15%]", icon: <Terminal />, label: "TECH WORKSHOPS", d: "Python & Deep Learning" },
+                  { pos: "top-1/2 right-[2%] -translate-y-1/2 md:right-[5%]", icon: <Layers />, label: "AI PLATFORMS", d: "Vision & Automation" },
+                  { pos: "bottom-[12%] right-[10%] md:bottom-[15%] md:right-[15%]", icon: <Rocket />, label: "MINI PROJECTS", d: "Guided build sessions" },
+                  { pos: "bottom-[2%] left-1/2 -translate-x-1/2", icon: <Users />, label: "GUEST LECTURES", d: "Industry expert insights" },
+                  { pos: "bottom-[12%] left-[10%] md:bottom-[15%] md:left-[15%]", icon: <Share2 />, label: "PEER CIRCLES", d: "Mentoring sync" },
+                  { pos: "top-1/2 left-[2%] -translate-y-1/2 md:left-[5%]", icon: <Microscope />, label: "RESEARCH", d: "Case studies & papers" },
+                  { pos: "top-[12%] left-[10%] md:top-[15%] md:left-[15%]", icon: <Target />, label: "SOLVING", d: "Ideation events" }
+                ].map((n, i) => (
+                  <motion.div 
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.05 }}
+                    className={`absolute ${n.pos} pointer-events-auto group flex flex-col items-center text-center gap-2 w-32 md:w-44`}
+                  >
+                    <div className="w-14 h-14 md:w-20 md:h-20 bg-transparent border border-white/10 rounded-[1.8rem] flex items-center justify-center transition-all duration-700 group-hover:border-indigo-500/50 group-hover:shadow-[0_0_30px_rgba(79,70,229,0.2)]">
+                      {React.cloneElement(n.icon as React.ReactElement<any>, { size: 28, strokeWidth: 1.2, className: "text-gray-500 group-hover:text-indigo-400 group-hover:scale-110 transition-all duration-500" })}
+                    </div>
+                    <div className="hidden md:block">
+                      <p className="text-[8px] font-mono font-black text-indigo-400 uppercase tracking-[0.3em] mb-1">{n.label}</p>
+                      <p className="text-[8px] text-gray-600 group-hover:text-gray-400 transition-colors leading-tight px-4">{n.d}</p>
+                    </div>
+                    <div className="md:hidden">
+                       <p className="text-[7px] font-mono font-black text-indigo-400 uppercase tracking-[0.2em]">{n.label}</p>
+                    </div>
+                  </motion.div>
                 ))}
               </div>
-            </div>
-            <div className="glass p-10 rounded-[3rem] border-indigo-500/10 relative overflow-hidden shadow-2xl">
-               <div className="absolute top-0 right-0 p-8 opacity-10"><Cpu size={120} /></div>
-               <h3 className="text-2xl font-bold mb-6 flex items-center gap-3"><Terminal className="text-indigo-400"/> Club Activities</h3>
-               <ul className="space-y-4">
-                 {[
-                   "Introductory sessions on AI concepts and tools",
-                   "Workshops on Python, ML, and Deep Learning",
-                   "Sessions on Vision, Language, and Automation",
-                   "Guided mini-projects and build sessions",
-                   "Guest lectures by industry experts",
-                   "Peer learning circles and mentoring",
-                   "Research paper discussions",
-                   "Interdisciplinary problem-solving events"
-                 ].map((act, i) => (
-                   <li key={i} className="flex items-center gap-3 text-sm text-gray-400">
-                     <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
-                     {act}
-                   </li>
-                 ))}
-               </ul>
-            </div>
-          </div>
+           </div>
         </div>
-      </section>
 
-      {/* Impact Section */}
-      <section className="px-6 py-20 bg-transparent">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-12">Expected Impact</h2>
-          <div className="flex flex-wrap justify-center gap-4">
+        {/* 8. KNOWLEDGE MODEL (PERSISTENCE) */}
+        <div className="relative pt-24">
+           <div className="glass p-12 md:p-20 rounded-[4rem] border-white/5 bg-white/[0.01] relative overflow-hidden">
+              <div className="grid lg:grid-cols-2 gap-16 items-center">
+                 <div>
+                    <div className="flex items-center gap-3 mb-6">
+                       <GitBranch className="text-indigo-500" size={24} />
+                       <span className="text-[10px] font-mono font-black text-gray-500 uppercase tracking-widest">Growth_Model</span>
+                    </div>
+                    <h3 className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-8">Neural Persistence</h3>
+                    <p className="text-gray-500 text-lg font-light leading-relaxed mb-10">
+                      NEURØN maintains a shared knowledge base to ensure long-term community growth and sustained learning.
+                    </p>
+                    <div className="flex flex-wrap gap-4">
+                       {["Code Repositories", "Project Documentation", "Datasets", "Model Libraries", "Tutorials"].map((t, i) => (
+                         <div key={i} className="px-5 py-2 rounded-full border border-white/5 text-[9px] font-mono text-indigo-400 uppercase tracking-[0.2em] bg-indigo-500/5">
+                           {t}
+                         </div>
+                       ))}
+                    </div>
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { icon: <Database />, t: "Sync Repos" },
+                      { icon: <FileText />, t: "Docs Hub" },
+                      { icon: <Network />, t: "Data Grids" },
+                      { icon: <Library />, t: "Asset Library" }
+                    ].map((item, i) => (
+                      <div key={i} className="glass p-8 rounded-[2.5rem] border-white/5 flex flex-col items-center gap-4 hover:border-indigo-500/20 transition-all hover:-translate-y-1">
+                        <div className="text-indigo-500 group-hover:scale-110 transition-transform">{item.icon}</div>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-500">{item.t}</span>
+                      </div>
+                    ))}
+                 </div>
+              </div>
+           </div>
+        </div>
+
+        {/* 6. OBJECTIVES - GROWTH ENGINE */}
+        <div className="space-y-16 pt-24">
+           <div className="text-center">
+              <span className="text-[10px] font-mono font-bold text-gray-600 uppercase tracking-[0.5em] block mb-4">Core_Directives</span>
+              <h2 className="text-5xl font-black uppercase tracking-tighter mb-4">SYSTEM <span className="text-indigo-500 italic">OBJECTIVES</span></h2>
+              <div className="h-[1px] w-32 bg-indigo-500/50 mx-auto" />
+           </div>
+           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              "Increased AI Awareness",
-              "Improved Technical Skills",
-              "Strong Research Culture",
-              "Interdisciplinary Collaboration",
-              "Industry Readiness",
-              "Leadership Development"
-            ].map((impact, i) => (
-              <span key={i} className="px-6 py-3 glass rounded-full border-indigo-500/20 text-xs font-bold text-indigo-400 uppercase tracking-widest shadow-sm">
-                {impact}
-              </span>
+              { t: "Create Awareness", d: "Building AI interest across campus.", icon: <Megaphone className="text-indigo-500" /> },
+              { t: "Knowledge Transfer", d: "Foundational and advanced AI insights.", icon: <GraduationCap className="text-purple-500" /> },
+              { t: "Applied Learning", d: "Hands-on projects and laboratory work.", icon: <Code className="text-cyan-500" /> },
+              { t: "Cross-Disciplinary", d: "Promoting interdisciplinary AI usage.", icon: <Workflow className="text-emerald-500" /> },
+              { t: "Drive Innovation", d: "Encouraging next-gen problem solving.", icon: <Lightbulb className="text-yellow-500" /> },
+              { t: "Career Readiness", d: "Preparing for AI careers and research.", icon: <Briefcase className="text-indigo-400" /> }
+            ].map((obj, i) => (
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, y: 15 }} 
+                whileInView={{ opacity: 1, y: 0 }} 
+                viewport={{ once: true }} 
+                className="glass p-10 rounded-[3rem] border-white/5 flex flex-col gap-6 group hover:border-white/20 transition-all"
+              >
+                <div className="p-4 bg-white/5 rounded-2xl w-fit group-hover:scale-110 transition-transform">{obj.icon}</div>
+                <div>
+                  <h4 className="text-xl font-bold uppercase tracking-tight text-white mb-2">{obj.t}</h4>
+                  <p className="text-xs text-gray-500 leading-relaxed">{obj.d}</p>
+                </div>
+              </motion.div>
             ))}
           </div>
-          <p className="mt-16 text-gray-500 text-sm leading-relaxed max-w-2xl mx-auto italic">
-            "By functioning as a Community of Practice, the club will transform curiosity into competence and ideas into impactful solutions."
-          </p>
         </div>
-      </section>
+
+        {/* 10. EXPECTED IMPACT - THE MATRIX */}
+        <div className="pt-32 pb-12 space-y-24">
+           <div className="text-center">
+              <h2 className="text-6xl md:text-9xl font-black uppercase tracking-tighter mb-14 leading-none text-white/90">
+                IMPACT <span className="text-indigo-500 italic">MATRIX</span>
+              </h2>
+              <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
+                {[
+                  "Increased Awareness", 
+                  "Improved Skills", 
+                  "Strong Research Culture", 
+                  "Interdisciplinary Sync", 
+                  "Industry Readiness", 
+                  "Leadership Development"
+                ].map((impact, i) => (
+                  <motion.div 
+                    key={i} 
+                    initial={{ opacity: 0, scale: 0.9 }} 
+                    whileInView={{ opacity: 1, scale: 1 }} 
+                    transition={{ delay: i * 0.05 }}
+                    className="px-10 py-5 glass rounded-2xl border-white/5 text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] hover:text-indigo-400 hover:border-indigo-500/30 transition-all cursor-default shadow-sm"
+                  >
+                    {impact}
+                  </motion.div>
+                ))}
+              </div>
+           </div>
+
+           {/* 11. CONCLUSION - FINAL TRANSMISSION */}
+           <div className="text-center space-y-12">
+              <div className="w-32 h-2 bg-indigo-500 mx-auto rounded-full shadow-[0_0_25px_rgba(79,70,229,0.6)]" />
+              <div className="max-w-4xl mx-auto px-6">
+                <p className="text-gray-400 text-xl md:text-4xl font-light leading-[1.3] italic font-tech">
+                 "Transforming <span className="text-white font-bold">curiosity</span> into <span className="text-indigo-500 font-bold">competence</span> and ideas into impactful solutions."
+                </p>
+                <div className="mt-12 text-[10px] font-mono text-gray-700 uppercase tracking-[1em] font-black">
+                   TERMINAL_CONNECTED // SYSTEM_HUB_STABLE
+                </div>
+              </div>
+           </div>
+        </div>
+
+      </div>
     </div>
   );
 };

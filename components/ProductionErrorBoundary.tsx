@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
 
 interface Props {
@@ -9,8 +9,8 @@ interface State {
   hasError: boolean;
 }
 
-// Fix: Explicitly extending Component<Props, State> to resolve property recognition issues with TS where props were not correctly inherited from React.Component.
-class ProductionErrorBoundary extends Component<Props, State> {
+// Fix: Explicitly extending React.Component<Props, State> to ensure 'props' and 'state' are correctly recognized and inherited by the TypeScript compiler.
+class ProductionErrorBoundary extends React.Component<Props, State> {
   public state: State = { hasError: false };
 
   public static getDerivedStateFromError(_: Error): State {
@@ -43,7 +43,7 @@ class ProductionErrorBoundary extends Component<Props, State> {
       );
     }
 
-    // Accessing children from this.props which is now correctly recognized due to explicit inheritance from Component<Props, State>
+    // Accessing children from this.props which is inherited from React.Component<Props, State>
     return this.props.children;
   }
 }

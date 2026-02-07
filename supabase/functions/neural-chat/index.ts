@@ -12,7 +12,7 @@ const envStore: Record<string, string> = {};
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 // Fix: Always use import {GoogleGenAI} from "@google/genai";
-import { GoogleGenAI } from "@google/genai"
+import { GoogleGenAI } from "@google/genai";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -50,11 +50,11 @@ serve(async (req) => {
     // Attempt generation with available keys
     for (const currentKey of apiKeys) {
       try {
-        // Fix: Use named parameter for GoogleGenAI initialization and process.env.API_KEY
+        // Fix: Use named parameter for GoogleGenAI initialization and process.env.API_KEY directly
         (globalThis as any).process.env.API_KEY = currentKey;
-        const ai = new GoogleGenAI({ apiKey: (globalThis as any).process.env.API_KEY });
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-        // Fix: Changed prohibited model gemini-1.5-flash-latest to gemini-3-pro-preview for complex reasoning tasks
+        // Fix: Use gemini-3-pro-preview for complex reasoning and technical assistance tasks
         const result = await ai.models.generateContent({
           model: 'gemini-3-pro-preview',
           contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
