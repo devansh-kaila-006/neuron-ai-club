@@ -1,32 +1,55 @@
 
 import React, { useState, Suspense, lazy, useEffect } from 'react';
 // @ts-ignore - Fixing react-router-dom member export false positive
-import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar.tsx';
 import NeuralAssistant from './components/NeuralAssistant.tsx';
 import NeuralBackground from './components/NeuralBackground.tsx';
 import NeuralLoader from './components/NeuralLoader.tsx';
+import NeuralPageLoader from './components/NeuralPageLoader.tsx';
 import ProductionErrorBoundary from './components/ProductionErrorBoundary.tsx';
 import { ToastProvider } from './context/ToastContext.tsx';
 import ToastContainer from './components/ToastContainer.tsx';
 import { Shield, X, Scale, Lock, RefreshCcw, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Lazy loaded page components with explicit extensions for ESM compatibility
+// Lazy loaded page components
 const Home = lazy(() => import('./pages/Home.tsx'));
 const Team = lazy(() => import('./pages/Team.tsx'));
 const Hackathon = lazy(() => import('./pages/Hackathon.tsx'));
 const Register = lazy(() => import('./pages/Register.tsx'));
 const Admin = lazy(() => import('./pages/Admin.tsx'));
 
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-[#050505]">
-    <div className="text-center">
-      <Loader2 className="animate-spin text-indigo-500 mb-4 mx-auto" size={32} />
-      <p className="text-xs font-mono text-gray-600 uppercase tracking-widest">Synchronizing Neural Path...</p>
-    </div>
-  </div>
-);
+/**
+ * RouteChangeHandler: Forces a 2-second synchronization delay on every navigation
+ */
+const RouteChangeHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [currentPath, setCurrentPath] = useState(location.pathname);
+
+  useEffect(() => {
+    if (location.pathname !== currentPath) {
+      setIsSyncing(true);
+      const timer = setTimeout(() => {
+        setCurrentPath(location.pathname);
+        setIsSyncing(false);
+      }, 2000); 
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname, currentPath]);
+
+  return (
+    <>
+      <AnimatePresence>
+        {isSyncing && <NeuralPageLoader />}
+      </AnimatePresence>
+      <div className={isSyncing ? 'hidden' : 'block'}>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const App: React.FC = () => {
   const [showLegal, setShowLegal] = useState(false);
@@ -57,14 +80,16 @@ const App: React.FC = () => {
             <ToastContainer />
             
             <main className="relative z-10 bg-transparent min-h-[80vh]">
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/team" element={<Team />} />
-                  <Route path="/hackathon" element={<Hackathon />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/admin" element={<Admin />} />
-                </Routes>
+              <Suspense fallback={<NeuralPageLoader />}>
+                <RouteChangeHandler>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/team" element={<Team />} />
+                    <Route path="/hackathon" element={<Hackathon />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/admin" element={<Admin />} />
+                  </Routes>
+                </RouteChangeHandler>
               </Suspense>
             </main>
             
@@ -116,7 +141,6 @@ const App: React.FC = () => {
                   exit={{ opacity: 0 }} 
                   className="fixed inset-0 z-[1000] flex items-center justify-center px-6 bg-black/90 backdrop-blur-2xl overflow-y-auto"
                 >
-                  {/* @ts-ignore - Fixing framer-motion type mismatch */}
                   <motion.div 
                     initial={{ scale: 0.95, y: 20 }} 
                     animate={{ scale: 1, y: 0 }} 
