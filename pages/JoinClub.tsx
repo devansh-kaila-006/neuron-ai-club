@@ -194,7 +194,7 @@ const JoinClub: React.FC = () => {
                     <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">NEURØN Recruitment Sequence</span>
                   </motion.div>
                   
-                  <h3 className="text-3xl sm:text-5xl md:text-6xl lg:text-[6.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none mb-6 md:mb-12 uppercase">
+                  <h3 className="text-3xl sm:text-5xl md:text-6xl lg:text-[6.0rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none mb-6 md:mb-12 uppercase">
                     <span className="block">SYNC TO THE</span>
                     <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
                       COLLECTIVE
@@ -307,7 +307,7 @@ const JoinClub: React.FC = () => {
                     {/* Phase Navigator */}
                     <div className="flex justify-between items-center mb-16">
                       {[1, 2, 3].map(s => (
-                        <div key={s} className="flex flex-col items-center gap-3 relative flex-1 last:flex-none">
+                        <div key={s} className="flex flex-col items-center gap-3 relative flex-1">
                           <motion.div 
                             animate={{ 
                               scale: phase === s ? 1.1 : 1,
