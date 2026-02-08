@@ -125,16 +125,16 @@ const App: React.FC = () => {
                       <Link to="/admin" className="text-xs text-gray-600 hover:text-indigo-400">Terminal Access</Link>
                     </div>
 
-                    {/* Architectural Blueprint Component - Moved further Right */}
-                    <div className="flex items-center self-center ml-auto md:ml-48 opacity-70 hover:opacity-100 transition-all duration-1000 pointer-events-none select-none relative group/blueprint min-w-[200px] md:min-w-[400px] min-h-[140px] md:min-h-[240px]">
+                    {/* Architectural Blueprint Component - Further Right, Reduced Size, White Glow */}
+                    <div className="flex items-center self-center ml-auto md:ml-48 opacity-80 hover:opacity-100 transition-all duration-1000 pointer-events-none select-none relative group/blueprint min-w-[200px] md:min-w-[360px] min-h-[120px] md:min-h-[220px]">
                       <motion.div
                         animate={{ 
-                          y: [0, -12, 0],
-                          rotateY: [-4, 4, -4],
-                          rotateX: [2, -2, 2]
+                          y: [0, -10, 0],
+                          rotateY: [-3, 3, -3],
+                          rotateX: [1, -1, 1]
                         }}
                         transition={{ 
-                          duration: 10, 
+                          duration: 12, 
                           repeat: Infinity, 
                           ease: "easeInOut" 
                         }}
@@ -143,7 +143,7 @@ const App: React.FC = () => {
                         <img 
                           src="https://lh3.googleusercontent.com/d/1vdS01wW-7hwDaKG77TK4juDo4gW-FySb" 
                           alt="Amrita Infrastructure Manifest" 
-                          className="h-44 md:h-72 lg:h-96 w-auto object-contain grayscale brightness-[1.45] contrast-[1.25] saturate-0 sepia-[0.35] hue-rotate-[185deg] drop-shadow-[0_0_35px_rgba(99,102,241,0.35)] transition-all duration-1000"
+                          className="h-36 md:h-60 lg:h-72 w-auto object-contain grayscale brightness-[2.5] contrast-[1.5] saturate-0 invert drop-shadow-[0_0_20px_rgba(255,255,255,0.6)] transition-all duration-1000"
                           onLoad={(e) => {
                             e.currentTarget.style.opacity = '1';
                           }}
@@ -151,17 +151,17 @@ const App: React.FC = () => {
                             e.currentTarget.style.display = 'none';
                           }}
                         />
-                        {/* Scanning Line Effect */}
+                        {/* Scanning Line Effect - Subtle White */}
                         <motion.div 
                           animate={{ y: ['-5%', '105%', '-5%'] }}
-                          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                          className="absolute inset-x-0 h-[2px] bg-indigo-500/70 blur-[2px] z-10"
+                          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                          className="absolute inset-x-0 h-[1.5px] bg-white/40 blur-[2px] z-10"
                         />
-                        {/* Holographic Atmosphere */}
+                        {/* White Holographic Atmosphere */}
                         <motion.div 
-                          animate={{ opacity: [0.05, 0.2, 0.05], scale: [0.95, 1.05, 0.95] }}
-                          transition={{ duration: 5, repeat: Infinity }}
-                          className="absolute inset-0 bg-indigo-600/10 blur-[80px] rounded-full -z-10"
+                          animate={{ opacity: [0.05, 0.15, 0.05], scale: [0.95, 1.05, 0.95] }}
+                          transition={{ duration: 7, repeat: Infinity }}
+                          className="absolute inset-0 bg-white/5 blur-[100px] rounded-full -z-10"
                         />
                       </motion.div>
                     </div>
