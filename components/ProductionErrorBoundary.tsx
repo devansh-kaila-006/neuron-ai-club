@@ -9,9 +9,12 @@ interface State {
   hasError: boolean;
 }
 
-// Fix: Explicitly extending React.Component<Props, State> to ensure 'props' and 'state' are correctly recognized and inherited by the TypeScript compiler.
+// Explicitly extending React.Component with Props and State generics and using a constructor to ensure the compiler correctly identifies inherited members like 'props'.
 class ProductionErrorBoundary extends React.Component<Props, State> {
-  public state: State = { hasError: false };
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
   public static getDerivedStateFromError(_: Error): State {
     return { hasError: true };
@@ -43,7 +46,7 @@ class ProductionErrorBoundary extends React.Component<Props, State> {
       );
     }
 
-    // Accessing children from this.props which is inherited from React.Component<Props, State>
+    // Accessing children from this.props which is correctly inherited when extending React.Component<Props, State>
     return this.props.children;
   }
 }
