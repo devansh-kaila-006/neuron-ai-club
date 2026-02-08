@@ -465,7 +465,7 @@ const JoinClub: React.FC = () => {
                               ))}
                             </div>
 
-                            <div className="flex gap-4 pt-4">
+                            <div className="flex gap-2 pt-4">
                               <button type="button" onClick={prevPhase} className="w-24 py-6 glass border-white/10 rounded-[2rem] flex items-center justify-center hover:bg-white/10 transition-all text-gray-400">
                                 <ArrowLeft size={24} />
                               </button>
