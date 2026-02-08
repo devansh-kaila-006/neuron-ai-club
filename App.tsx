@@ -124,16 +124,21 @@ const App: React.FC = () => {
                       <Link to="/admin" className="text-xs text-gray-600 hover:text-indigo-400">Terminal Access</Link>
                     </div>
 
-                    {/* Architectural Sketch Image - Fixed reference to local asset */}
-                    <div className="flex items-center self-center ml-auto md:ml-8 opacity-25 hover:opacity-80 transition-all duration-700 pointer-events-none select-none">
+                    {/* Architectural Blueprint Component */}
+                    <div className="flex items-center self-center ml-auto md:ml-8 opacity-30 hover:opacity-90 transition-all duration-1000 pointer-events-none select-none relative group/blueprint">
                       <img 
                         src="./amrita_banglore.jpeg" 
                         alt="Amrita Blueprint" 
-                        className="h-24 md:h-36 w-auto object-contain grayscale invert brightness-110 contrast-125 mix-blend-screen"
+                        className="h-24 md:h-40 w-auto object-contain grayscale invert brightness-110 contrast-125 mix-blend-screen drop-shadow-[0_0_8px_rgba(79,70,229,0.5)]"
                         onError={(e) => {
-                          // If local path is not yet available, we hide the container to maintain layout integrity
                           e.currentTarget.style.display = 'none';
                         }}
+                      />
+                      {/* Scanning Line Effect */}
+                      <motion.div 
+                        animate={{ y: ['0%', '100%', '0%'] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                        className="absolute inset-x-0 h-[1px] bg-indigo-500/40 blur-[1px] hidden group-hover/blueprint:block"
                       />
                     </div>
                   </div>
