@@ -22,30 +22,32 @@ const JoinClub = lazy(() => import('./pages/JoinClub.tsx'));
 const Departments = lazy(() => import('./pages/Departments.tsx'));
 
 /**
- * RouteChangeHandler: Forces a 2-second synchronization delay on every navigation
+ * RouteChangeHandler: Orchestrates path transitions with a non-blocking neural scan.
+ * Optimized to remove 'hidden' flicker and reduce artificial latency.
  */
 const RouteChangeHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const [isSyncing, setIsSyncing] = useState(false);
-  const [currentPath, setCurrentPath] = useState(location.pathname);
+  const [lastPath, setLastPath] = useState(location.pathname);
 
   useEffect(() => {
-    if (location.pathname !== currentPath) {
+    if (location.pathname !== lastPath) {
       setIsSyncing(true);
       const timer = setTimeout(() => {
-        setCurrentPath(location.pathname);
+        setLastPath(location.pathname);
         setIsSyncing(false);
-      }, 2000); 
+      }, 800); // Reduced from 2000ms for snappier performance
       return () => clearTimeout(timer);
     }
-  }, [location.pathname, currentPath]);
+  }, [location.pathname, lastPath]);
 
   return (
     <>
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isSyncing && <NeuralPageLoader />}
       </AnimatePresence>
-      <div className={isSyncing ? 'hidden' : 'block'}>
+      {/* Content remains rendered but slightly dimmed during sync to prevent flickering */}
+      <div className={`transition-opacity duration-500 ${isSyncing ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
         {children}
       </div>
     </>
@@ -56,7 +58,7 @@ const App: React.FC = () => {
   const [showLegal, setShowLegal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Lock body scroll while loading
+  // Lock body scroll while initial loading sequence is active
   useEffect(() => {
     if (isLoading) {
       document.body.style.overflow = 'hidden';
@@ -98,7 +100,7 @@ const App: React.FC = () => {
             
             <NeuralAssistant />
             
-            <footer className="relative z-20 py-16 px-6 border-t border-white/5 bg-[#030303]/60 backdrop-blur-md">
+            <footer className="relative z-20 py-16 px-6 border-t border-white/5 bg-[#030303]/80 backdrop-blur-xl">
               <div className="max-w-7xl mx-auto text-center md:text-left">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
                   <div className="col-span-1 text-left">
@@ -124,27 +126,22 @@ const App: React.FC = () => {
                       <Link to="/admin" className="text-xs text-gray-600 hover:text-indigo-400">Terminal Access</Link>
                     </div>
 
-                    {/* Architectural Blueprint Component - Fixed Visibility */}
-                    <div className="flex items-center self-center ml-auto md:ml-12 opacity-40 hover:opacity-100 transition-all duration-1000 pointer-events-none select-none relative group/blueprint min-w-[150px]">
+                    {/* Architectural Blueprint Component - Visual Fixes */}
+                    <div className="flex items-center self-center ml-auto md:ml-12 opacity-50 hover:opacity-100 transition-all duration-700 pointer-events-none select-none relative group/blueprint min-w-[140px] min-h-[100px]">
                       <img 
-                        src="https://lh3.googleusercontent.com/u/0/d/1EJ-PMklHn6goHfflo7256aZ7EUDuYMEv" 
+                        src="https://drive.google.com/uc?export=view&id=1EJ-PMklHn6goHfflo7256aZ7EUDuYMEv" 
                         alt="Amrita Infrastructure" 
-                        className="h-28 md:h-48 w-auto object-contain grayscale brightness-110 contrast-125 sepia-[0.3] hue-rotate-[200deg] drop-shadow-[0_0_15px_rgba(99,102,241,0.3)] transition-all duration-1000 group-hover:sepia-0 group-hover:hue-rotate-0"
-                        onLoad={(e) => {
-                          e.currentTarget.style.opacity = '1';
-                        }}
+                        className="h-24 md:h-40 w-auto object-contain grayscale brightness-125 contrast-125 saturate-0 sepia-[0.4] hue-rotate-[190deg] drop-shadow-[0_0_10px_rgba(99,102,241,0.3)]"
                         onError={(e) => {
-                          // Fallback to local file if the drive link fails
-                          if (e.currentTarget.src !== "./amrita_banglore.jpeg") {
-                             e.currentTarget.src = "./amrita_banglore.jpeg";
-                          }
+                          // Ultimate fallback if Drive blocks the request
+                          e.currentTarget.style.display = 'none';
                         }}
                       />
                       {/* Scanning Line Effect */}
                       <motion.div 
                         animate={{ y: ['0%', '100%', '0%'] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                        className="absolute inset-x-0 h-[2px] bg-indigo-500/40 blur-[2px] z-10"
+                        transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                        className="absolute inset-x-0 h-[2px] bg-indigo-500/50 blur-[1px] z-10"
                       />
                     </div>
                   </div>
