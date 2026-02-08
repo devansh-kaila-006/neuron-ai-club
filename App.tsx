@@ -127,7 +127,7 @@ const App: React.FC = () => {
                     {/* Architectural Sketch Image - Embedded next to System Links */}
                     <div className="hidden lg:flex items-center self-center ml-8 opacity-20 hover:opacity-70 transition-all duration-700 pointer-events-none select-none">
                       <img 
-                        src="https://raw.githubusercontent.com/Stackblitz-Labs/neuron-assets/main/amrita-building-sketch.png" 
+                        src="amrita_banglore.jpeg" 
                         alt="Amrita HQ Blueprint" 
                         className="h-32 w-auto object-contain invert grayscale brightness-125 contrast-110 mix-blend-screen"
                         onError={(e) => {
