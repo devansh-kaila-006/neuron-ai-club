@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 // @ts-ignore
@@ -229,82 +228,98 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* 7. ACTIVITIES - TACTICAL HUB (OCTAGONAL ALIGNMENT) */}
+        {/* 7. ACTIVITIES - TACTICAL HUB (OCTAGONAL ALIGNMENT) - ADJUSTED POSITIONING AND SCALE FOR PHONE */}
         <div className="relative pt-12 flex flex-col items-center">
            <div className="flex flex-col items-center mb-16 text-center">
               <span className="text-[10px] font-mono font-black text-indigo-500 uppercase tracking-[0.6em] mb-4">Tactical_Operations</span>
               <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none">
                 CLUB <span className="text-indigo-500 italic">ACTIVITIES</span>
               </h2>
-              <p className="mt-6 text-gray-500 max-w-xl text-sm leading-relaxed">
+              <p className="mt-6 text-gray-500 max-w-xl text-sm leading-relaxed px-4">
                 A perfectly symmetrical synchronization of structured learning, experimentation, and industry bridging.
               </p>
            </div>
 
-           <div className="relative h-[700px] md:h-[900px] w-full flex items-center justify-center">
-              {/* Central HUB - Positioned exactly at center of container */}
-              <motion.div 
-                initial={{ scale: 0.9, opacity: 0 }} 
-                whileInView={{ scale: 1, opacity: 1 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-32 h-32 md:w-[220px] md:h-[220px] rounded-full border border-indigo-500/20 flex items-center justify-center bg-black/60 backdrop-blur-3xl shadow-[0_0_100px_rgba(79,70,229,0.15)]"
-              >
-                <div className="absolute inset-0 rounded-full border border-indigo-500/10 animate-pulse scale-[1.1]" />
-                <span className="text-[6rem] md:text-[11rem] font-black text-indigo-500 select-none leading-none translate-y-[-4px]">Ø</span>
-              </motion.div>
+           {/* Tactical Hub Container - Increased leftward shift to -translate-x-10 for phone per user request */}
+           <div className="relative h-[650px] md:h-[900px] w-full flex items-center justify-center -translate-x-10 md:-translate-x-32 transition-transform duration-700">
+              
+              {/* Responsive Scaling Wrapper - High scale for readability on phones */}
+              <div className="relative w-full h-full flex items-center justify-center scale-[0.88] xs:scale-[0.92] sm:scale-95 md:scale-100 transition-transform duration-500 origin-center">
+                
+                {/* Central HUB */}
+                <motion.div 
+                  initial={{ scale: 0.9, opacity: 0 }} 
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-24 h-24 md:w-[220px] md:h-[220px] rounded-full border border-indigo-500/20 flex items-center justify-center bg-black/60 backdrop-blur-3xl shadow-[0_0_100px_rgba(79,70,229,0.15)]"
+                >
+                  <div className="absolute inset-0 rounded-full border border-indigo-500/10 animate-pulse scale-[1.1]" />
+                  <span className="text-[4rem] md:text-[11rem] font-black text-indigo-500 select-none leading-none translate-y-[-4px]">Ø</span>
+                </motion.div>
 
-              {/* TACTICAL NODES (PERFECT OCTAGONAL POSITIONING AROUND CENTER) */}
-              <div className="absolute inset-0 pointer-events-none">
-                {[
-                  { style: { top: '10%', left: '50%', transform: 'translate(-50%, -50%)' }, icon: <Sparkles />, label: "INTRO SESSIONS", d: "Foundational AI concepts overview" },
-                  { style: { top: '21.7%', left: '78.3%', transform: 'translate(-50%, -50%)' }, icon: <Terminal />, label: "TECH WORKSHOPS", d: "Python & Deep Learning implementation" },
-                  { style: { top: '50%', left: '90%', transform: 'translate(-50%, -50%)' }, icon: <Layers />, label: "AI PLATFORMS", d: "Computer Vision & Process Automation" },
-                  { style: { top: '78.3%', left: '78.3%', transform: 'translate(-50%, -50%)' }, icon: <Rocket />, label: "MINI PROJECTS", d: "Rapid prototype guided build sessions" },
-                  { style: { top: '90%', left: '50%', transform: 'translate(-50%, -50%)' }, icon: <Users />, label: "GUEST LECTURES", d: "Direct industry expert tech insights" },
-                  { style: { top: '78.3%', left: '21.7%', transform: 'translate(-50%, -50%)' }, icon: <Share2 />, label: "PEER CIRCLES", d: "Collaborative mentoring & sync" },
-                  { style: { top: '50%', left: '10%', transform: 'translate(-50%, -50%)' }, icon: <Microscope />, label: "RESEARCH", d: "Case studies & scientific paper synthesis" },
-                  { style: { top: '21.7%', left: '21.7%', transform: 'translate(-50%, -50%)' }, icon: <Target />, label: "SOLVING", d: "Competitive ideation & problem events" }
-                ].map((n, i) => (
-                  <motion.div 
-                    key={i}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.05 }}
-                    style={n.style}
-                    className="absolute pointer-events-auto group flex flex-col items-center text-center gap-4 w-40 md:w-56 z-40"
-                  >
-                    <div className="w-16 h-16 md:w-24 md:h-24 bg-transparent border border-white/10 rounded-[2rem] flex items-center justify-center transition-all duration-700 group-hover:border-indigo-500/50 group-hover:shadow-[0_0_40px_rgba(79,70,229,0.25)] relative">
-                      {React.cloneElement(n.icon as React.ReactElement<any>, { size: 36, strokeWidth: 1.2, className: "text-gray-500 group-hover:text-indigo-400 group-hover:scale-110 transition-all duration-500" })}
-                      
-                      {/* DETAIL HOVER CARD - Gap increased slightly for better focus and hierarchy */}
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 md:w-80 opacity-0 group-hover:opacity-100 group-hover:translate-y-[-135%] transition-all duration-500 pointer-events-none z-50">
-                        <div className="glass p-8 rounded-[3rem] border-indigo-500/40 bg-[#080808]/98 backdrop-blur-3xl shadow-[0_30px_60px_rgba(0,0,0,0.9)] border border-white/5">
-                          <div className="flex items-center gap-3 mb-6">
-                            <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-400">
-                              {React.cloneElement(n.icon as React.ReactElement<any>, { size: 24 })}
+                {/* TACTICAL NODES (PERFECT OCTAGONAL POSITIONING AROUND CENTER) */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {[
+                    { style: { top: '10%', left: '50%', transform: 'translate(-50%, -50%)' }, icon: <Sparkles />, label: "INTRO SESSIONS", d: "Foundational AI concepts overview" },
+                    { style: { top: '21.7%', left: '78.3%', transform: 'translate(-50%, -50%)' }, icon: <Terminal />, label: "TECH WORKSHOPS", d: "Python & Deep Learning implementation" },
+                    { style: { top: '50%', left: '90%', transform: 'translate(-50%, -50%)' }, icon: <Layers />, label: "AI PLATFORMS", d: "Computer Vision & Process Automation" },
+                    { style: { top: '78.3%', left: '78.3%', transform: 'translate(-50%, -50%)' }, icon: <Rocket />, label: "MINI PROJECTS", d: "Rapid prototype guided build sessions" },
+                    { style: { top: '90%', left: '50%', transform: 'translate(-50%, -50%)' }, icon: <Users />, label: "GUEST LECTURES", d: "Direct industry expert tech insights" },
+                    { style: { top: '78.3%', left: '21.7%', transform: 'translate(-50%, -50%)' }, icon: <Share2 />, label: "PEER CIRCLES", d: "Collaborative mentoring & sync" },
+                    { style: { top: '50%', left: '10%', transform: 'translate(-50%, -50%)' }, icon: <Microscope />, label: "RESEARCH", d: "Case studies & scientific paper synthesis" },
+                    { style: { top: '21.7%', left: '21.7%', transform: 'translate(-50%, -50%)' }, icon: <Target />, label: "SOLVING", d: "Competitive ideation & problem events" }
+                  ].map((n, i) => {
+                    // Logic to adjust hover card alignment based on its position in the hub
+                    const cardAlignmentClass = [5, 6, 7].includes(i) 
+                      ? 'translate-x-[0%] md:translate-x-[-15%]' 
+                      : [1, 2, 3].includes(i) 
+                      ? 'translate-x-[-100%] md:translate-x-[-85%]' 
+                      : '-translate-x-1/2';
+
+                    return (
+                      <motion.div 
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.05 }}
+                        style={n.style}
+                        className="absolute pointer-events-auto group flex flex-col items-center text-center gap-4 w-32 md:w-56 z-40"
+                      >
+                        {/* Larger icon boxes for phone presence */}
+                        <div className="w-20 h-20 md:w-24 md:h-24 bg-transparent border border-white/10 rounded-[2rem] flex items-center justify-center transition-all duration-700 group-hover:border-indigo-500/50 group-hover:shadow-[0_0_40px_rgba(79,70,229,0.25)] relative">
+                          {React.cloneElement(n.icon as React.ReactElement<any>, { size: 32, strokeWidth: 1.2, className: "text-gray-500 group-hover:text-indigo-400 group-hover:scale-110 transition-all duration-500 md:w-9 md:h-9" })}
+                          
+                          {/* DETAIL HOVER CARD */}
+                          <div className={`absolute top-1/2 left-1/2 ${cardAlignmentClass} -translate-y-1/2 w-64 md:w-80 opacity-0 group-hover:opacity-100 group-hover:translate-y-[-135%] transition-all duration-500 pointer-events-none z-50`}>
+                            <div className="glass p-8 rounded-[3rem] border-indigo-500/40 bg-[#080808]/98 backdrop-blur-3xl shadow-[0_30px_60px_rgba(0,0,0,0.9)] border border-white/5">
+                              <div className="flex items-center gap-3 mb-6">
+                                <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-400">
+                                  {React.cloneElement(n.icon as React.ReactElement<any>, { size: 24 })}
+                                </div>
+                                <span className="text-sm md:text-xl font-mono font-black text-indigo-300 uppercase tracking-widest leading-none">{n.label}</span>
+                              </div>
+                              <p className="text-sm md:text-lg text-gray-400 font-light leading-relaxed text-left border-t border-white/5 pt-6">
+                                {n.d}
+                              </p>
+                              <div className="mt-6 flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                                <span className="text-[10px] font-mono text-indigo-500/60 uppercase tracking-[0.2em]">NODE_OPERATIONAL</span>
+                              </div>
                             </div>
-                            <span className="text-sm md:text-xl font-mono font-black text-indigo-300 uppercase tracking-widest leading-none">{n.label}</span>
-                          </div>
-                          <p className="text-sm md:text-lg text-gray-400 font-light leading-relaxed text-left border-t border-white/5 pt-6">
-                            {n.d}
-                          </p>
-                          <div className="mt-6 flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-                            <span className="text-[10px] font-mono text-indigo-500/60 uppercase tracking-[0.2em]">NODE_OPERATIONAL</span>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                    
-                    {/* ORIGINAL LABEL */}
-                    <div className="hidden md:block transition-all duration-500 group-hover:opacity-0 group-hover:translate-y-4">
-                      <p className="text-sm md:text-lg font-mono font-black text-indigo-400 uppercase tracking-[0.2em] mb-2">{n.label}</p>
-                      <p className="text-xs md:text-sm text-gray-500 group-hover:text-gray-400 transition-colors leading-tight px-2">{n.d}</p>
-                    </div>
-                    <div className="md:hidden group-hover:opacity-0 transition-opacity">
-                       <p className="text-xs font-mono font-black text-indigo-400 uppercase tracking-[0.15em]">{n.label}</p>
-                    </div>
-                  </motion.div>
-                ))}
+                        
+                        {/* ORIGINAL LABEL - Increased font size on mobile to text-[11px] */}
+                        <div className="hidden md:block transition-all duration-500 group-hover:opacity-0 group-hover:translate-y-4">
+                          <p className="text-sm md:text-lg font-mono font-black text-indigo-400 uppercase tracking-[0.2em] mb-2">{n.label}</p>
+                          <p className="text-xs md:text-sm text-gray-500 group-hover:text-gray-400 transition-colors leading-tight px-2">{n.d}</p>
+                        </div>
+                        <div className="md:hidden group-hover:opacity-0 transition-opacity">
+                           <p className="text-[11px] font-mono font-black text-indigo-400 uppercase tracking-[0.1em]">{n.label}</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
            </div>
         </div>
