@@ -23,7 +23,7 @@ const Departments = lazy(() => import('./pages/Departments.tsx'));
 
 /**
  * RouteChangeHandler: Orchestrates path transitions with a non-blocking neural scan.
- * Optimized to remove 'hidden' flicker and reduce artificial latency.
+ * Unified with Suspense to prevent placeholder flickering during lazy loading.
  */
 const RouteChangeHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -36,7 +36,7 @@ const RouteChangeHandler: React.FC<{ children: React.ReactNode }> = ({ children 
       const timer = setTimeout(() => {
         setLastPath(location.pathname);
         setIsSyncing(false);
-      }, 800); // Reduced from 2000ms for snappier performance
+      }, 600); // Optimized for feel vs visual feedback
       return () => clearTimeout(timer);
     }
   }, [location.pathname, lastPath]);
@@ -46,9 +46,10 @@ const RouteChangeHandler: React.FC<{ children: React.ReactNode }> = ({ children 
       <AnimatePresence mode="wait">
         {isSyncing && <NeuralPageLoader />}
       </AnimatePresence>
-      {/* Content remains rendered but slightly dimmed during sync to prevent flickering */}
-      <div className={`transition-opacity duration-500 ${isSyncing ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
-        {children}
+      <div className={`transition-all duration-700 ${isSyncing ? 'blur-sm saturate-0' : 'blur-0 saturate-100'}`}>
+        <Suspense fallback={<NeuralPageLoader />}>
+          {children}
+        </Suspense>
       </div>
     </>
   );
@@ -83,35 +84,33 @@ const App: React.FC = () => {
             <ToastContainer />
             
             <main className="relative z-10 bg-transparent min-h-[80vh]">
-              <Suspense fallback={<NeuralPageLoader />}>
-                <RouteChangeHandler>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/team" element={<Team />} />
-                    <Route path="/hackathon" element={<Hackathon />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/join" element={<JoinClub />} />
-                    <Route path="/admin" element={<Admin />} />
-                    <Route path="/departments" element={<Departments />} />
-                  </Routes>
-                </RouteChangeHandler>
-              </Suspense>
+              <RouteChangeHandler>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/team" element={<Team />} />
+                  <Route path="/hackathon" element={<Hackathon />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/join" element={<JoinClub />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/departments" element={<Departments />} />
+                </Routes>
+              </RouteChangeHandler>
             </main>
             
             <NeuralAssistant />
             
-            <footer className="relative z-20 py-16 px-6 border-t border-white/5 bg-[#030303]/80 backdrop-blur-xl">
+            <footer className="relative z-20 py-16 px-6 border-t border-white/5 bg-[#030303]/90 backdrop-blur-xl">
               <div className="max-w-7xl mx-auto text-center md:text-left">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
                   <div className="col-span-1 text-left">
                     <div className="text-2xl font-bold tracking-tighter mb-4 font-mono text-indigo-500">NEURØN</div>
-                    <p className="text-sm text-gray-500">The premier AI research and innovation student collective at Amrita Vishwa Vidyapeetham.</p>
+                    <p className="text-sm text-gray-500 font-light">The flagship Artificial Intelligence Community of Practice at Amrita Vishwa Vidyapeetham.</p>
                   </div>
                   
                   {/* Navigation & Sketch Group */}
                   <div className="flex flex-wrap md:flex-nowrap justify-center md:justify-start gap-12 items-start relative">
                     <div className="flex flex-col gap-3 text-left">
-                      <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-1">Grid Navigation</p>
+                      <p className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-1">Grid Navigation</p>
                       <Link to="/" className="text-xs text-gray-600 hover:text-indigo-400">Hub Hub</Link>
                       <Link to="/hackathon" className="text-xs text-gray-600 hover:text-indigo-400">TALOS 2026</Link>
                       <Link to="/departments" className="text-xs text-gray-600 hover:text-indigo-400">Squad Divisions</Link>
@@ -120,28 +119,30 @@ const App: React.FC = () => {
                     </div>
                     
                     <div className="flex flex-col gap-3 text-left">
-                      <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-1">System Links</p>
+                      <p className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-1">System Links</p>
                       <Link to="/register" className="text-xs text-gray-600 hover:text-indigo-400">Registry Manifest</Link>
                       <button onClick={() => setShowLegal(true)} className="text-left text-xs text-gray-600 hover:text-indigo-400">Legal Manifest</button>
                       <Link to="/admin" className="text-xs text-gray-600 hover:text-indigo-400">Terminal Access</Link>
                     </div>
 
-                    {/* Architectural Blueprint Component - Visual Fixes */}
-                    <div className="flex items-center self-center ml-auto md:ml-12 opacity-50 hover:opacity-100 transition-all duration-700 pointer-events-none select-none relative group/blueprint min-w-[140px] min-h-[100px]">
+                    {/* Architectural Blueprint Component - Fixed URL & Flicker */}
+                    <div className="flex items-center self-center ml-auto md:ml-12 opacity-60 hover:opacity-100 transition-all duration-1000 pointer-events-none select-none relative group/blueprint min-w-[160px] min-h-[110px]">
                       <img 
-                        src="https://drive.google.com/uc?export=view&id=1EJ-PMklHn6goHfflo7256aZ7EUDuYMEv" 
-                        alt="Amrita Infrastructure" 
-                        className="h-24 md:h-40 w-auto object-contain grayscale brightness-125 contrast-125 saturate-0 sepia-[0.4] hue-rotate-[190deg] drop-shadow-[0_0_10px_rgba(99,102,241,0.3)]"
+                        src="https://lh3.googleusercontent.com/d/1vdS01wW-7hwDaKG77TK4juDo4gW-FySb" 
+                        alt="Amrita Infrastructure Manifest" 
+                        className="h-28 md:h-44 w-auto object-contain grayscale brightness-125 contrast-[1.1] saturate-0 sepia-[0.3] hue-rotate-[185deg] drop-shadow-[0_0_15px_rgba(99,102,241,0.25)]"
+                        onLoad={(e) => {
+                          e.currentTarget.style.opacity = '1';
+                        }}
                         onError={(e) => {
-                          // Ultimate fallback if Drive blocks the request
                           e.currentTarget.style.display = 'none';
                         }}
                       />
                       {/* Scanning Line Effect */}
                       <motion.div 
                         animate={{ y: ['0%', '100%', '0%'] }}
-                        transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                        className="absolute inset-x-0 h-[2px] bg-indigo-500/50 blur-[1px] z-10"
+                        transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                        className="absolute inset-x-0 h-[1.5px] bg-indigo-500/40 blur-[1px] z-10"
                       />
                     </div>
                   </div>
@@ -156,7 +157,7 @@ const App: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between gap-4 text-[9px] text-gray-700 font-mono uppercase tracking-[0.2em]">
+                <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between gap-4 text-[9px] text-gray-800 font-mono uppercase tracking-[0.2em]">
                   <p>© 2026 NEURØN CORE UNIT | ALL RIGHTS RESERVED</p>
                   <p>Designed for the next generation of synthetic intelligence</p>
                 </div>
@@ -165,7 +166,6 @@ const App: React.FC = () => {
 
             <AnimatePresence>
               {showLegal && (
-                /* @ts-ignore - Fixing framer-motion type mismatch */
                 <motion.div 
                   initial={{ opacity: 0 }} 
                   animate={{ opacity: 1 }} 
