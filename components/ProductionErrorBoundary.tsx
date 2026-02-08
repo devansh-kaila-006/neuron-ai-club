@@ -1,26 +1,26 @@
-import React, { ErrorInfo, ReactNode } from 'react';
+
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
 
 interface Props {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 interface State {
   hasError: boolean;
 }
 
-// Explicitly extending React.Component with Props and State generics and using a constructor to ensure the compiler correctly identifies inherited members like 'props'.
-class ProductionErrorBoundary extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false };
-  }
+// Fixed: Inheriting from Component directly to ensure 'props' is correctly typed and recognized by the TypeScript compiler.
+// Making children optional to fix 'Property children is missing' error in App.tsx.
+class ProductionErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false
+  };
 
   public static getDerivedStateFromError(_: Error): State {
     return { hasError: true };
   }
 
-  // Use ErrorInfo type for componentDidCatch as per standard React error boundary implementation
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("[Neural Error Boundary]:", error, errorInfo);
   }
@@ -46,8 +46,8 @@ class ProductionErrorBoundary extends React.Component<Props, State> {
       );
     }
 
-    // Accessing children from this.props which is correctly inherited when extending React.Component<Props, State>
-    return this.props.children;
+    // Fixed: Use standard access to this.props.children
+    return this.props.children || null;
   }
 }
 
