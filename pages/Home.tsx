@@ -33,9 +33,9 @@ const Home: React.FC = () => {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative mb-14 flex justify-center items-center select-none">
-              <h1 className="text-8xl md:text-[14rem] font-black leading-none flex items-center justify-center tracking-tighter">
-                <span className="z-10 -mr-2 md:-mr-6 drop-shadow-2xl">NEUR</span>
-                <span className="relative inline-block text-indigo-500 italic z-20 scale-[1.1] px-1 md:px-4">
+              <h1 className="text-7xl md:text-[13rem] font-black leading-none flex items-center justify-center tracking-tighter">
+                <span className="z-10 -mr-1 md:-mr-4 drop-shadow-2xl">NEUR</span>
+                <span className="relative inline-block text-indigo-500 z-20 scale-[1.05] px-1 md:px-3">
                   Ø
                   <motion.div 
                     animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.3, 0.1] }}
@@ -43,7 +43,7 @@ const Home: React.FC = () => {
                     className="absolute inset-0 blur-3xl bg-indigo-500/40 -z-10"
                   />
                 </span>
-                <span className="z-10 -ml-2 md:-ml-6 drop-shadow-2xl">N</span>
+                <span className="z-10 -ml-1 md:-ml-4 drop-shadow-2xl">N</span>
               </h1>
             </motion.div>
 
@@ -249,36 +249,58 @@ const Home: React.FC = () => {
                 className="relative z-30 w-32 h-32 md:w-[180px] md:h-[180px] rounded-full border border-indigo-500/20 flex items-center justify-center bg-black/60 backdrop-blur-3xl shadow-[0_0_80px_rgba(79,70,229,0.1)]"
               >
                 <div className="absolute inset-0 rounded-full border border-indigo-500/10 animate-pulse scale-[1.1]" />
-                <span className="text-[6rem] md:text-[9rem] font-black text-indigo-500 italic drop-shadow-[0_0_40px_rgba(79,70,229,0.4)] select-none leading-none translate-y-[-2px]">Ø</span>
+                <span className="text-[6rem] md:text-[9rem] font-black text-indigo-500 select-none leading-none translate-y-[-2px]">Ø</span>
               </motion.div>
 
-              {/* TACTICAL NODES (All 8 Symmetrical Positions) */}
+              {/* TACTICAL NODES (All 8 Symmetrical Positions - PULLED CLOSER) */}
               <div className="absolute inset-0 pointer-events-none">
                 {[
-                  { pos: "top-[2%] left-1/2 -translate-x-1/2", icon: <Sparkles />, label: "INTRO SESSIONS", d: "AI concepts overview" },
-                  { pos: "top-[12%] right-[10%] md:top-[15%] md:right-[15%]", icon: <Terminal />, label: "TECH WORKSHOPS", d: "Python & Deep Learning" },
-                  { pos: "top-1/2 right-[2%] -translate-y-1/2 md:right-[5%]", icon: <Layers />, label: "AI PLATFORMS", d: "Vision & Automation" },
-                  { pos: "bottom-[12%] right-[10%] md:bottom-[15%] md:right-[15%]", icon: <Rocket />, label: "MINI PROJECTS", d: "Guided build sessions" },
-                  { pos: "bottom-[2%] left-1/2 -translate-x-1/2", icon: <Users />, label: "GUEST LECTURES", d: "Industry expert insights" },
-                  { pos: "bottom-[12%] left-[10%] md:bottom-[15%] md:left-[15%]", icon: <Share2 />, label: "PEER CIRCLES", d: "Mentoring sync" },
-                  { pos: "top-1/2 left-[2%] -translate-y-1/2 md:left-[5%]", icon: <Microscope />, label: "RESEARCH", d: "Case studies & papers" },
-                  { pos: "top-[12%] left-[10%] md:top-[15%] md:left-[15%]", icon: <Target />, label: "SOLVING", d: "Ideation events" }
+                  { pos: "top-[15%] left-1/2 -translate-x-1/2", icon: <Sparkles />, label: "INTRO SESSIONS", d: "AI concepts overview" },
+                  { pos: "top-[25%] right-[20%] md:top-[25%] md:right-[25%]", icon: <Terminal />, label: "TECH WORKSHOPS", d: "Python & Deep Learning" },
+                  { pos: "top-1/2 right-[10%] -translate-y-1/2 md:right-[15%]", icon: <Layers />, label: "AI PLATFORMS", d: "Vision & Automation" },
+                  { pos: "bottom-[25%] right-[20%] md:bottom-[25%] md:right-[25%]", icon: <Rocket />, label: "MINI PROJECTS", d: "Guided build sessions" },
+                  { pos: "bottom-[15%] left-1/2 -translate-x-1/2", icon: <Users />, label: "GUEST LECTURES", d: "Industry expert insights" },
+                  { pos: "bottom-[25%] left-[20%] md:bottom-[25%] md:left-[25%]", icon: <Share2 />, label: "PEER CIRCLES", d: "Mentoring sync" },
+                  { pos: "top-1/2 left-[10%] -translate-y-1/2 md:left-[15%]", icon: <Microscope />, label: "RESEARCH", d: "Case studies & papers" },
+                  { pos: "top-[25%] left-[20%] md:top-[25%] md:left-[25%]", icon: <Target />, label: "SOLVING", d: "Ideation events" }
                 ].map((n, i) => (
                   <motion.div 
                     key={i}
                     initial={{ opacity: 0, scale: 0.8 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.05 }}
-                    className={`absolute ${n.pos} pointer-events-auto group flex flex-col items-center text-center gap-2 w-32 md:w-44`}
+                    className={`absolute ${n.pos} pointer-events-auto group flex flex-col items-center text-center gap-2 w-32 md:w-44 z-40`}
                   >
-                    <div className="w-14 h-14 md:w-20 md:h-20 bg-transparent border border-white/10 rounded-[1.8rem] flex items-center justify-center transition-all duration-700 group-hover:border-indigo-500/50 group-hover:shadow-[0_0_30px_rgba(79,70,229,0.2)]">
+                    <div className="w-14 h-14 md:w-20 md:h-20 bg-transparent border border-white/10 rounded-[1.8rem] flex items-center justify-center transition-all duration-700 group-hover:border-indigo-500/50 group-hover:shadow-[0_0_30px_rgba(79,70,229,0.2)] relative">
                       {React.cloneElement(n.icon as React.ReactElement<any>, { size: 28, strokeWidth: 1.2, className: "text-gray-500 group-hover:text-indigo-400 group-hover:scale-110 transition-all duration-500" })}
+                      
+                      {/* DETAIL HOVER CARD */}
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 opacity-0 group-hover:opacity-100 group-hover:translate-y-[-150%] transition-all duration-500 pointer-events-none z-50">
+                        <div className="glass p-5 rounded-3xl border-indigo-500/40 bg-[#080808]/95 backdrop-blur-3xl shadow-[0_25px_50px_rgba(0,0,0,0.8)] border border-white/5">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="p-1.5 bg-indigo-500/10 rounded-xl text-indigo-400">
+                              {/* Fix: Adding <any> to React.ReactElement to resolve Type error with 'size' prop */}
+                              {React.cloneElement(n.icon as React.ReactElement<any>, { size: 14 })}
+                            </div>
+                            <span className="text-[10px] font-mono font-black text-indigo-300 uppercase tracking-widest">{n.label}</span>
+                          </div>
+                          <p className="text-[10px] text-gray-400 font-light leading-relaxed text-left border-t border-white/5 pt-3">
+                            {n.d}
+                          </p>
+                          <div className="mt-4 flex items-center gap-1.5">
+                            <div className="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" />
+                            <span className="text-[7px] font-mono text-indigo-500/60 uppercase tracking-widest">Active Node Operational</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="hidden md:block">
+                    
+                    {/* ORIGINAL LABEL - FADES ON HOVER */}
+                    <div className="hidden md:block transition-all duration-500 group-hover:opacity-0 group-hover:translate-y-2">
                       <p className="text-[8px] font-mono font-black text-indigo-400 uppercase tracking-[0.3em] mb-1">{n.label}</p>
                       <p className="text-[8px] text-gray-600 group-hover:text-gray-400 transition-colors leading-tight px-4">{n.d}</p>
                     </div>
-                    <div className="md:hidden">
+                    <div className="md:hidden group-hover:opacity-0 transition-opacity">
                        <p className="text-[7px] font-mono font-black text-indigo-400 uppercase tracking-[0.2em]">{n.label}</p>
                     </div>
                   </motion.div>
