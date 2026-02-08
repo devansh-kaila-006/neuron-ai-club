@@ -124,21 +124,27 @@ const App: React.FC = () => {
                       <Link to="/admin" className="text-xs text-gray-600 hover:text-indigo-400">Terminal Access</Link>
                     </div>
 
-                    {/* Architectural Blueprint Component */}
-                    <div className="flex items-center self-center ml-auto md:ml-8 opacity-30 hover:opacity-90 transition-all duration-1000 pointer-events-none select-none relative group/blueprint">
+                    {/* Architectural Blueprint Component - Fixed Visibility */}
+                    <div className="flex items-center self-center ml-auto md:ml-12 opacity-40 hover:opacity-100 transition-all duration-1000 pointer-events-none select-none relative group/blueprint min-w-[150px]">
                       <img 
-                        src="./amrita_banglore.jpeg" 
-                        alt="Amrita Blueprint" 
-                        className="h-24 md:h-40 w-auto object-contain grayscale invert brightness-110 contrast-125 mix-blend-screen drop-shadow-[0_0_8px_rgba(79,70,229,0.5)]"
+                        src="https://lh3.googleusercontent.com/u/0/d/1EJ-PMklHn6goHfflo7256aZ7EUDuYMEv" 
+                        alt="Amrita Infrastructure" 
+                        className="h-28 md:h-48 w-auto object-contain grayscale brightness-110 contrast-125 sepia-[0.3] hue-rotate-[200deg] drop-shadow-[0_0_15px_rgba(99,102,241,0.3)] transition-all duration-1000 group-hover:sepia-0 group-hover:hue-rotate-0"
+                        onLoad={(e) => {
+                          e.currentTarget.style.opacity = '1';
+                        }}
                         onError={(e) => {
-                          e.currentTarget.style.display = 'none';
+                          // Fallback to local file if the drive link fails
+                          if (e.currentTarget.src !== "./amrita_banglore.jpeg") {
+                             e.currentTarget.src = "./amrita_banglore.jpeg";
+                          }
                         }}
                       />
                       {/* Scanning Line Effect */}
                       <motion.div 
                         animate={{ y: ['0%', '100%', '0%'] }}
                         transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                        className="absolute inset-x-0 h-[1px] bg-indigo-500/40 blur-[1px] hidden group-hover/blueprint:block"
+                        className="absolute inset-x-0 h-[2px] bg-indigo-500/40 blur-[2px] z-10"
                       />
                     </div>
                   </div>
