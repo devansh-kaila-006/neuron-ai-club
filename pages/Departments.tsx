@@ -6,8 +6,7 @@ import { Link } from 'react-router-dom';
 import { 
   Code, Megaphone, Microscope, Palette, 
   LayoutPanelLeft, Handshake, ChevronRight,
-  ShieldCheck, Cpu, Network, Zap,
-  Target, Rocket, Workflow, BrainCircuit
+  Zap
 } from 'lucide-react';
 
 const departments = [
@@ -81,13 +80,13 @@ const departments = [
 
 const Departments: React.FC = () => {
   return (
-    <div className="pt-32 min-h-screen px-6 pb-40 flex flex-col items-center bg-transparent relative overflow-hidden">
+    <div className="pt-24 min-h-screen px-6 pb-40 flex flex-col items-center bg-transparent relative overflow-hidden">
       {/* Decorative Orbs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
       <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] bg-purple-500/5 blur-[100px] rounded-full pointer-events-none -z-10" />
 
       <div className="max-w-7xl w-full">
-        <header className="mb-24 space-y-6 text-center md:text-left">
+        <header className="mb-20 space-y-4 text-left">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -96,10 +95,17 @@ const Departments: React.FC = () => {
             <Zap size={14} className="text-indigo-400" />
             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">Neural Infrastructure</span>
           </motion.div>
-          <h1 className="text-6xl md:text-9xl font-black tracking-tighter leading-none text-white">
-            SQUAD <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic px-2">DIVISIONS</span>
-          </h1>
-          <p className="text-gray-500 text-xl max-w-2xl font-light leading-relaxed">
+          
+          <div className="flex flex-col">
+            <h1 className="text-6xl md:text-8xl lg:text-[9.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none">
+              <span className="block">SQUAD</span>
+              <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
+                DIVISIONS
+              </span>
+            </h1>
+          </div>
+          
+          <p className="text-gray-500 text-lg max-w-2xl font-light leading-relaxed pt-6">
             The specialized operational units that drive the NEURØN ecosystem forward. Each node is critical to our collective intelligence.
           </p>
         </header>

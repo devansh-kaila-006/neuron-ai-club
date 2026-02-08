@@ -68,7 +68,7 @@ const Hackathon: React.FC = () => {
             <h2 className="text-[12rem] md:text-[20rem] font-black opacity-[0.02] leading-none tracking-tighter text-white">TALOS</h2>
           </div>
           
-          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-end justify-between gap-12">
+          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-end justify-between gap-12 lg:gap-20">
             <div className="space-y-6 flex-1">
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
@@ -78,10 +78,17 @@ const Hackathon: React.FC = () => {
                 <Terminal size={14} className="text-indigo-400" />
                 <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">Flagship Hackathon Event</span>
               </motion.div>
-              <h1 className="text-7xl md:text-9xl font-black tracking-tighter leading-none">
-                TALOS <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic px-2">2026</span>
-              </h1>
-              <p className="text-gray-400 text-xl font-light max-w-2xl leading-relaxed">
+              
+              <div className="flex flex-col">
+                <h1 className="text-6xl md:text-8xl lg:text-[9.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none">
+                  <span className="block">TALOS</span>
+                  <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
+                    2026
+                  </span>
+                </h1>
+              </div>
+
+              <p className="text-gray-400 text-xl font-light max-w-2xl leading-relaxed pt-8">
                 Ideate, Build, and Pitch the Future of AI. An overnight mission for the next generation of synthetic intelligence practitioners.
               </p>
             </div>

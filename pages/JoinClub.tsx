@@ -183,7 +183,7 @@ const JoinClub: React.FC = () => {
               className="grid lg:grid-cols-12 gap-12 lg:gap-20"
             >
               {/* Left Column: Vision & Benefits */}
-              <div className="lg:col-span-5 space-y-12">
+              <div className="lg:col-span-6 space-y-12">
                 <div className="space-y-6">
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -193,11 +193,15 @@ const JoinClub: React.FC = () => {
                     <BrainCircuit size={14} className="text-indigo-400" />
                     <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">NEURØN Recruitment Sequence</span>
                   </motion.div>
-                  <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.9]">
-                    SYNC TO THE <br />
-                    <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">COLLECTIVE</span>
+                  
+                  <h1 className="text-6xl md:text-8xl lg:text-[9.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none mb-12">
+                    <span className="block">SYNC TO THE</span>
+                    <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
+                      COLLECTIVE
+                    </span>
                   </h1>
-                  <p className="text-gray-400 text-lg leading-relaxed max-w-lg font-light">
+
+                  <p className="text-gray-400 text-lg leading-relaxed max-w-lg font-light pt-8">
                     Join Amrita's dedicated Artificial Intelligence Community of Practice (CoP). We transform curiosity into competence and ideas into impactful solutions.
                   </p>
                 </div>
@@ -295,7 +299,7 @@ const JoinClub: React.FC = () => {
               </div>
 
               {/* Right Column: Multi-Step Application */}
-              <div className="lg:col-span-7">
+              <div className="lg:col-span-6">
                 <div className="glass rounded-[4rem] border-white/5 shadow-[0_0_80px_rgba(99,102,241,0.05)] overflow-hidden relative">
                   <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
                   

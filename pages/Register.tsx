@@ -226,19 +226,26 @@ const Register: React.FC = () => {
               key="s1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }}
               className="space-y-12"
             >
-              <div className="text-center md:text-left space-y-4">
+              <div className="text-center md:text-left">
                  <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full"
+                    className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full mb-6"
                   >
                     <Terminal size={14} className="text-indigo-400" />
                     <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">Mission Initialization Sequence</span>
                   </motion.div>
-                  <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none text-white">
-                    {isUpdateMode ? 'MODIFY' : 'SQUAD'} <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">MANIFEST</span>
-                  </h1>
-                  <p className="text-gray-500 text-lg max-w-2xl font-light leading-relaxed">
+                  
+                  <div className="flex flex-col">
+                    <h1 className="text-6xl md:text-8xl lg:text-[9.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none">
+                      <span className="block">{isUpdateMode ? 'MODIFY' : 'SQUAD'}</span>
+                      <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
+                        MANIFEST
+                      </span>
+                    </h1>
+                  </div>
+
+                  <p className="text-gray-500 text-lg max-w-2xl font-light leading-relaxed pt-8">
                     Provide the operational identity and personnel details for your squad. High-integrity data is required for neural grid anchoring.
                   </p>
               </div>
