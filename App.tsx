@@ -1,4 +1,3 @@
-
 import React, { useState, Suspense, lazy, useEffect } from 'react';
 // @ts-ignore - Fixing react-router-dom member export false positive
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
@@ -106,7 +105,9 @@ const App: React.FC = () => {
                     <div className="text-2xl font-bold tracking-tighter mb-4 font-mono text-indigo-500">NEURØN</div>
                     <p className="text-sm text-gray-500">The premier AI research and innovation student collective at Amrita Vishwa Vidyapeetham.</p>
                   </div>
-                  <div className="flex justify-center md:justify-start gap-12">
+                  
+                  {/* Navigation & Sketch Group */}
+                  <div className="flex flex-wrap md:flex-nowrap justify-center md:justify-start gap-12 items-start relative">
                     <div className="flex flex-col gap-3 text-left">
                       <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-1">Grid Navigation</p>
                       <Link to="/" className="text-xs text-gray-600 hover:text-indigo-400">Hub Hub</Link>
@@ -115,13 +116,28 @@ const App: React.FC = () => {
                       <Link to="/team" className="text-xs text-gray-600 hover:text-indigo-400">The Core Council</Link>
                       <Link to="/join" className="text-xs text-gray-600 hover:text-indigo-400 font-bold text-indigo-400">Join the Club</Link>
                     </div>
+                    
                     <div className="flex flex-col gap-3 text-left">
                       <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-1">System Links</p>
                       <Link to="/register" className="text-xs text-gray-600 hover:text-indigo-400">Registry Manifest</Link>
                       <button onClick={() => setShowLegal(true)} className="text-left text-xs text-gray-600 hover:text-indigo-400">Legal Manifest</button>
                       <Link to="/admin" className="text-xs text-gray-600 hover:text-indigo-400">Terminal Access</Link>
                     </div>
+
+                    {/* Architectural Sketch Image - Embedded next to System Links */}
+                    <div className="hidden lg:flex items-center self-center ml-8 opacity-20 hover:opacity-70 transition-all duration-700 pointer-events-none select-none">
+                      <img 
+                        src="https://raw.githubusercontent.com/Stackblitz-Labs/neuron-assets/main/amrita-building-sketch.png" 
+                        alt="Amrita HQ Blueprint" 
+                        className="h-32 w-auto object-contain invert grayscale brightness-125 contrast-110 mix-blend-screen"
+                        onError={(e) => {
+                          // Fallback to visual placeholder if external raw is blocked by some networks
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
                   </div>
+
                   <div className="flex flex-col items-center md:items-end gap-4">
                     <div className="p-4 glass border-white/5 rounded-2xl max-w-[220px]">
                       <p className="text-[8px] uppercase tracking-tighter text-gray-500 mb-1">Neural Connection</p>
@@ -131,6 +147,7 @@ const App: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                
                 <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between gap-4 text-[9px] text-gray-700 font-mono uppercase tracking-[0.2em]">
                   <p>© 2026 NEURØN CORE UNIT | ALL RIGHTS RESERVED</p>
                   <p>Designed for the next generation of synthetic intelligence</p>
