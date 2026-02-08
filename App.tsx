@@ -124,14 +124,14 @@ const App: React.FC = () => {
                       <Link to="/admin" className="text-xs text-gray-600 hover:text-indigo-400">Terminal Access</Link>
                     </div>
 
-                    {/* Architectural Sketch Image - Embedded next to System Links */}
-                    <div className="hidden lg:flex items-center self-center ml-8 opacity-20 hover:opacity-70 transition-all duration-700 pointer-events-none select-none">
+                    {/* Architectural Sketch Image - Fixed reference to local asset */}
+                    <div className="flex items-center self-center ml-auto md:ml-8 opacity-25 hover:opacity-80 transition-all duration-700 pointer-events-none select-none">
                       <img 
-                        src="amrita_banglore.jpeg" 
-                        alt="Amrita HQ Blueprint" 
-                        className="h-32 w-auto object-contain invert grayscale brightness-125 contrast-110 mix-blend-screen"
+                        src="./amrita_banglore.jpeg" 
+                        alt="Amrita Blueprint" 
+                        className="h-24 md:h-36 w-auto object-contain grayscale invert brightness-110 contrast-125 mix-blend-screen"
                         onError={(e) => {
-                          // Fallback to visual placeholder if external raw is blocked by some networks
+                          // If local path is not yet available, we hide the container to maintain layout integrity
                           e.currentTarget.style.display = 'none';
                         }}
                       />
