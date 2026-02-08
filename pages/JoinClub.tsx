@@ -194,14 +194,14 @@ const JoinClub: React.FC = () => {
                     <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">NEURØN Recruitment Sequence</span>
                   </motion.div>
                   
-                  <h3 className="text-6xl md:text-8xl lg:text-[9.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none mb-12">
+                  <h3 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none mb-6 md:mb-12 uppercase">
                     <span className="block">SYNC TO THE</span>
                     <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
                       COLLECTIVE
                     </span>
                   </h3>
 
-                  <p className="text-gray-400 text-lg leading-relaxed max-w-lg font-light pt-8">
+                  <p className="text-gray-400 text-lg md:text-xl leading-relaxed max-w-lg font-light pt-6 md:pt-10">
                     Join Amrita's dedicated Artificial Intelligence Community of Practice (CoP). We transform curiosity into competence and ideas into impactful solutions.
                   </p>
                 </div>

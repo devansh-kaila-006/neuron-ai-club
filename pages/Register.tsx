@@ -237,7 +237,7 @@ const Register: React.FC = () => {
                   </motion.div>
                   
                   <div className="flex flex-col">
-                    <h1 className="text-6xl md:text-8xl lg:text-[9.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none">
+                    <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none uppercase">
                       <span className="block">{isUpdateMode ? 'MODIFY' : 'SQUAD'}</span>
                       <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
                         MANIFEST
@@ -245,7 +245,7 @@ const Register: React.FC = () => {
                     </h1>
                   </div>
 
-                  <p className="text-gray-500 text-lg max-w-2xl font-light leading-relaxed pt-8">
+                  <p className="text-gray-500 text-lg md:text-xl max-w-2xl font-light leading-relaxed pt-6 md:pt-10">
                     Provide the operational identity and personnel details for your squad. High-integrity data is required for neural grid anchoring.
                   </p>
               </div>

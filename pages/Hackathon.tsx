@@ -65,7 +65,7 @@ const Hackathon: React.FC = () => {
         {/* Hero Section */}
         <section className="relative text-center md:text-left pt-12">
           <div className="absolute -top-12 left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 pointer-events-none select-none">
-            <h2 className="text-[12rem] md:text-[20rem] font-black opacity-[0.02] leading-none tracking-tighter text-white">TALOS</h2>
+            <h2 className="text-[12rem] md:text-[20rem] font-black opacity-[0.02] leading-none tracking-tighter text-white uppercase">TALOS</h2>
           </div>
           
           <div className="relative z-10 flex flex-col md:flex-row items-center md:items-end justify-between gap-12 lg:gap-20">
@@ -80,7 +80,7 @@ const Hackathon: React.FC = () => {
               </motion.div>
               
               <div className="flex flex-col">
-                <h1 className="text-6xl md:text-8xl lg:text-[9.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none">
+                <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none uppercase">
                   <span className="block">TALOS</span>
                   <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
                     2026
@@ -88,7 +88,7 @@ const Hackathon: React.FC = () => {
                 </h1>
               </div>
 
-              <p className="text-gray-400 text-xl font-light max-w-2xl leading-relaxed pt-8">
+              <p className="text-gray-400 text-lg md:text-xl font-light max-w-2xl leading-relaxed pt-6 md:pt-10">
                 Ideate, Build, and Pitch the Future of AI. An overnight mission for the next generation of synthetic intelligence practitioners.
               </p>
             </div>
