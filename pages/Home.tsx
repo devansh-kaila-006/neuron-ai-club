@@ -229,79 +229,79 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* 7. ACTIVITIES - TACTICAL HUB (CLEAN 8 NODES) */}
-        <div className="relative pt-12">
+        {/* 7. ACTIVITIES - TACTICAL HUB (OCTAGONAL ALIGNMENT) */}
+        <div className="relative pt-12 flex flex-col items-center">
            <div className="flex flex-col items-center mb-16 text-center">
               <span className="text-[10px] font-mono font-black text-indigo-500 uppercase tracking-[0.6em] mb-4">Tactical_Operations</span>
               <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none">
                 CLUB <span className="text-indigo-500 italic">ACTIVITIES</span>
               </h2>
               <p className="mt-6 text-gray-500 max-w-xl text-sm leading-relaxed">
-                A symmetrical synchronization of structured learning, experimentation, and industry bridging.
+                A perfectly symmetrical synchronization of structured learning, experimentation, and industry bridging.
               </p>
            </div>
 
-           <div className="relative h-[650px] md:h-[800px] flex items-center justify-center">
-              {/* Central HUB (Sized correctly and perfectly centered) */}
+           <div className="relative h-[700px] md:h-[900px] w-full flex items-center justify-center">
+              {/* Central HUB - Positioned exactly at center of container */}
               <motion.div 
                 initial={{ scale: 0.9, opacity: 0 }} 
                 whileInView={{ scale: 1, opacity: 1 }}
-                className="relative z-30 w-32 h-32 md:w-[180px] md:h-[180px] rounded-full border border-indigo-500/20 flex items-center justify-center bg-black/60 backdrop-blur-3xl shadow-[0_0_80px_rgba(79,70,229,0.1)]"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-32 h-32 md:w-[220px] md:h-[220px] rounded-full border border-indigo-500/20 flex items-center justify-center bg-black/60 backdrop-blur-3xl shadow-[0_0_100px_rgba(79,70,229,0.15)]"
               >
                 <div className="absolute inset-0 rounded-full border border-indigo-500/10 animate-pulse scale-[1.1]" />
-                <span className="text-[6rem] md:text-[9rem] font-black text-indigo-500 select-none leading-none translate-y-[-2px]">Ø</span>
+                <span className="text-[6rem] md:text-[11rem] font-black text-indigo-500 select-none leading-none translate-y-[-4px]">Ø</span>
               </motion.div>
 
-              {/* TACTICAL NODES (All 8 Symmetrical Positions - PULLED CLOSER) */}
+              {/* TACTICAL NODES (PERFECT OCTAGONAL POSITIONING AROUND CENTER) */}
               <div className="absolute inset-0 pointer-events-none">
                 {[
-                  { pos: "top-[15%] left-1/2 -translate-x-1/2", icon: <Sparkles />, label: "INTRO SESSIONS", d: "AI concepts overview" },
-                  { pos: "top-[25%] right-[20%] md:top-[25%] md:right-[25%]", icon: <Terminal />, label: "TECH WORKSHOPS", d: "Python & Deep Learning" },
-                  { pos: "top-1/2 right-[10%] -translate-y-1/2 md:right-[15%]", icon: <Layers />, label: "AI PLATFORMS", d: "Vision & Automation" },
-                  { pos: "bottom-[25%] right-[20%] md:bottom-[25%] md:right-[25%]", icon: <Rocket />, label: "MINI PROJECTS", d: "Guided build sessions" },
-                  { pos: "bottom-[15%] left-1/2 -translate-x-1/2", icon: <Users />, label: "GUEST LECTURES", d: "Industry expert insights" },
-                  { pos: "bottom-[25%] left-[20%] md:bottom-[25%] md:left-[25%]", icon: <Share2 />, label: "PEER CIRCLES", d: "Mentoring sync" },
-                  { pos: "top-1/2 left-[10%] -translate-y-1/2 md:left-[15%]", icon: <Microscope />, label: "RESEARCH", d: "Case studies & papers" },
-                  { pos: "top-[25%] left-[20%] md:top-[25%] md:left-[25%]", icon: <Target />, label: "SOLVING", d: "Ideation events" }
+                  { style: { top: '10%', left: '50%', transform: 'translate(-50%, -50%)' }, icon: <Sparkles />, label: "INTRO SESSIONS", d: "Foundational AI concepts overview" },
+                  { style: { top: '21.7%', left: '78.3%', transform: 'translate(-50%, -50%)' }, icon: <Terminal />, label: "TECH WORKSHOPS", d: "Python & Deep Learning implementation" },
+                  { style: { top: '50%', left: '90%', transform: 'translate(-50%, -50%)' }, icon: <Layers />, label: "AI PLATFORMS", d: "Computer Vision & Process Automation" },
+                  { style: { top: '78.3%', left: '78.3%', transform: 'translate(-50%, -50%)' }, icon: <Rocket />, label: "MINI PROJECTS", d: "Rapid prototype guided build sessions" },
+                  { style: { top: '90%', left: '50%', transform: 'translate(-50%, -50%)' }, icon: <Users />, label: "GUEST LECTURES", d: "Direct industry expert tech insights" },
+                  { style: { top: '78.3%', left: '21.7%', transform: 'translate(-50%, -50%)' }, icon: <Share2 />, label: "PEER CIRCLES", d: "Collaborative mentoring & sync" },
+                  { style: { top: '50%', left: '10%', transform: 'translate(-50%, -50%)' }, icon: <Microscope />, label: "RESEARCH", d: "Case studies & scientific paper synthesis" },
+                  { style: { top: '21.7%', left: '21.7%', transform: 'translate(-50%, -50%)' }, icon: <Target />, label: "SOLVING", d: "Competitive ideation & problem events" }
                 ].map((n, i) => (
                   <motion.div 
                     key={i}
                     initial={{ opacity: 0, scale: 0.8 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.05 }}
-                    className={`absolute ${n.pos} pointer-events-auto group flex flex-col items-center text-center gap-2 w-32 md:w-44 z-40`}
+                    style={n.style}
+                    className="absolute pointer-events-auto group flex flex-col items-center text-center gap-4 w-40 md:w-56 z-40"
                   >
-                    <div className="w-14 h-14 md:w-20 md:h-20 bg-transparent border border-white/10 rounded-[1.8rem] flex items-center justify-center transition-all duration-700 group-hover:border-indigo-500/50 group-hover:shadow-[0_0_30px_rgba(79,70,229,0.2)] relative">
-                      {React.cloneElement(n.icon as React.ReactElement<any>, { size: 28, strokeWidth: 1.2, className: "text-gray-500 group-hover:text-indigo-400 group-hover:scale-110 transition-all duration-500" })}
+                    <div className="w-16 h-16 md:w-24 md:h-24 bg-transparent border border-white/10 rounded-[2rem] flex items-center justify-center transition-all duration-700 group-hover:border-indigo-500/50 group-hover:shadow-[0_0_40px_rgba(79,70,229,0.25)] relative">
+                      {React.cloneElement(n.icon as React.ReactElement<any>, { size: 36, strokeWidth: 1.2, className: "text-gray-500 group-hover:text-indigo-400 group-hover:scale-110 transition-all duration-500" })}
                       
-                      {/* DETAIL HOVER CARD */}
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 opacity-0 group-hover:opacity-100 group-hover:translate-y-[-150%] transition-all duration-500 pointer-events-none z-50">
-                        <div className="glass p-5 rounded-3xl border-indigo-500/40 bg-[#080808]/95 backdrop-blur-3xl shadow-[0_25px_50px_rgba(0,0,0,0.8)] border border-white/5">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="p-1.5 bg-indigo-500/10 rounded-xl text-indigo-400">
-                              {/* Fix: Adding <any> to React.ReactElement to resolve Type error with 'size' prop */}
-                              {React.cloneElement(n.icon as React.ReactElement<any>, { size: 14 })}
+                      {/* DETAIL HOVER CARD - Gap increased slightly for better focus and hierarchy */}
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 md:w-80 opacity-0 group-hover:opacity-100 group-hover:translate-y-[-135%] transition-all duration-500 pointer-events-none z-50">
+                        <div className="glass p-8 rounded-[3rem] border-indigo-500/40 bg-[#080808]/98 backdrop-blur-3xl shadow-[0_30px_60px_rgba(0,0,0,0.9)] border border-white/5">
+                          <div className="flex items-center gap-3 mb-6">
+                            <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-400">
+                              {React.cloneElement(n.icon as React.ReactElement<any>, { size: 24 })}
                             </div>
-                            <span className="text-[10px] font-mono font-black text-indigo-300 uppercase tracking-widest">{n.label}</span>
+                            <span className="text-sm md:text-xl font-mono font-black text-indigo-300 uppercase tracking-widest leading-none">{n.label}</span>
                           </div>
-                          <p className="text-[10px] text-gray-400 font-light leading-relaxed text-left border-t border-white/5 pt-3">
+                          <p className="text-sm md:text-lg text-gray-400 font-light leading-relaxed text-left border-t border-white/5 pt-6">
                             {n.d}
                           </p>
-                          <div className="mt-4 flex items-center gap-1.5">
-                            <div className="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" />
-                            <span className="text-[7px] font-mono text-indigo-500/60 uppercase tracking-widest">Active Node Operational</span>
+                          <div className="mt-6 flex items-center gap-3">
+                            <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                            <span className="text-[10px] font-mono text-indigo-500/60 uppercase tracking-[0.2em]">NODE_OPERATIONAL</span>
                           </div>
                         </div>
                       </div>
                     </div>
                     
-                    {/* ORIGINAL LABEL - FADES ON HOVER */}
-                    <div className="hidden md:block transition-all duration-500 group-hover:opacity-0 group-hover:translate-y-2">
-                      <p className="text-[8px] font-mono font-black text-indigo-400 uppercase tracking-[0.3em] mb-1">{n.label}</p>
-                      <p className="text-[8px] text-gray-600 group-hover:text-gray-400 transition-colors leading-tight px-4">{n.d}</p>
+                    {/* ORIGINAL LABEL */}
+                    <div className="hidden md:block transition-all duration-500 group-hover:opacity-0 group-hover:translate-y-4">
+                      <p className="text-sm md:text-lg font-mono font-black text-indigo-400 uppercase tracking-[0.2em] mb-2">{n.label}</p>
+                      <p className="text-xs md:text-sm text-gray-500 group-hover:text-gray-400 transition-colors leading-tight px-2">{n.d}</p>
                     </div>
                     <div className="md:hidden group-hover:opacity-0 transition-opacity">
-                       <p className="text-[7px] font-mono font-black text-indigo-400 uppercase tracking-[0.2em]">{n.label}</p>
+                       <p className="text-xs font-mono font-black text-indigo-400 uppercase tracking-[0.15em]">{n.label}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -413,7 +413,7 @@ const Home: React.FC = () => {
               <div className="w-32 h-2 bg-indigo-500 mx-auto rounded-full shadow-[0_0_25px_rgba(79,70,229,0.6)]" />
               <div className="max-w-4xl mx-auto px-6">
                 <p className="text-gray-400 text-xl md:text-4xl font-light leading-[1.3] italic font-tech">
-                 "Transforming <span className="text-white font-bold">curiosity</span> into <span className="text-indigo-500 font-bold">competence</span> and ideas into impactful solutions."
+                 "Transforming <span className="text-white font-bold">curiosity</span> into <span className="text-indigo-400 font-bold">competence</span> and ideas into impactful solutions."
                 </p>
                 <div className="mt-12 text-[10px] font-mono text-gray-700 uppercase tracking-[1em] font-black">
                    TERMINAL_CONNECTED // SYSTEM_HUB_STABLE
