@@ -16,6 +16,14 @@ import { z } from 'zod';
 import { supabase } from '../lib/storage.ts';
 import { useToast } from '../context/ToastContext.tsx';
 
+/**
+ * NEURØN SUPABASE UPDATE CODE:
+ * Run this SQL in your Supabase Dashboard to enforce uniqueness at the database level:
+ * 
+ * ALTER TABLE club_applications ADD CONSTRAINT unique_reg_number UNIQUE (reg_number);
+ * ALTER TABLE club_applications ADD CONSTRAINT unique_phone UNIQUE (phone);
+ */
+
 const departments = [
   { id: 'Technical', name: "Technical", icon: <Code size={22} />, color: "indigo", desc: "Core AI/ML development & applied problem-solving." },
   { id: 'PR & Marketing', name: "Outreach", icon: <Megaphone size={22} />, color: "purple", desc: "Building awareness & interest in AI across campus." },
@@ -146,9 +154,25 @@ const JoinClub: React.FC = () => {
     setIsSubmitting(true);
     try {
       if (!supabase) throw new Error("Neural Grid Offline");
+
+      // Verify Uniqueness before insertion to prevent manifest conflicts
+      const { data: existing, error: checkError } = await supabase
+        .from('club_applications')
+        .select('id')
+        .or(`reg_number.eq.${formData.regNumber.toUpperCase()},phone.eq.${formData.phone}`)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      if (existing) {
+        toast.error("Sync Conflict: This Register Number or Phone is already synchronized with the collective.");
+        setIsSubmitting(false);
+        return;
+      }
+
       const { error } = await supabase.from('club_applications').insert([{
         name: formData.name,
-        reg_number: formData.regNumber,
+        reg_number: formData.regNumber.toUpperCase(),
         branch: formData.branch,
         semester: formData.semester,
         phone: formData.phone,

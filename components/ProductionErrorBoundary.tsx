@@ -10,9 +10,9 @@ interface State {
   hasError: boolean;
 }
 
-// Fixed: Inheriting from Component directly to ensure 'props' is correctly typed and recognized by the TypeScript compiler.
+// Fixed: Inheriting from React.Component directly to ensure 'props' is correctly typed and recognized by the TypeScript compiler.
 // Making children optional to fix 'Property children is missing' error in App.tsx.
-class ProductionErrorBoundary extends Component<Props, State> {
+class ProductionErrorBoundary extends React.Component<Props, State> {
   public state: State = {
     hasError: false
   };
@@ -46,7 +46,7 @@ class ProductionErrorBoundary extends Component<Props, State> {
       );
     }
 
-    // Fixed: Use standard access to this.props.children
+    // Fixed: Standard access to this.props.children after establishing proper class inheritance
     return this.props.children || null;
   }
 }

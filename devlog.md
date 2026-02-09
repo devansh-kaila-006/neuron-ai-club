@@ -21,3 +21,13 @@
 - **Issue**: MongoDB Atlas Data API restrictions.
 - **Solution**: Migrated to Supabase (PostgreSQL).
 - **Impact**: Standardized SQL and RLS for better data integrity.
+
+### 5. Data Integrity: Uniqueness Enforcement
+- **Issue**: Potential for multiple club applications using the same Register Number or Phone.
+- **Solution**: Implemented application-level validation and provided database-level constraints.
+- **SQL Migration**:
+  ```sql
+  /* Enforce uniqueness for club applications in Supabase SQL Editor */
+  ALTER TABLE club_applications ADD CONSTRAINT unique_reg_number UNIQUE (reg_number);
+  ALTER TABLE club_applications ADD CONSTRAINT unique_phone UNIQUE (phone);
+  ```
