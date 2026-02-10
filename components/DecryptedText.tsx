@@ -86,10 +86,7 @@ const DecryptedText: React.FC<DecryptedTextProps> = ({
   return (
     <span 
       ref={ref} 
-      className={`${className} inline-block whitespace-pre font-mono transition-colors duration-500`}
-      style={{
-        minWidth: `${text.length}ch`
-      }}
+      className={`${className} inline whitespace-pre-wrap font-mono transition-colors duration-500`}
     >
       {displayText.split('').map((char, i) => {
         const isResolved = isFinished || i < revealedCount;
