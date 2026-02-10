@@ -17,6 +17,10 @@ const NeuralBackground: React.FC = () => {
     const setCanvasSize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
+      
+      // Safety check for mobile orientation/resize reflows
+      if (width === 0 || height === 0) return;
+
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       ctx.scale(dpr, dpr);
@@ -25,7 +29,7 @@ const NeuralBackground: React.FC = () => {
     setCanvasSize();
 
     const nodes: any[] = [];
-    const nodeCount = Math.floor((width * height) / 7000); // Slightly more nodes for density
+    const nodeCount = Math.floor((width * height) / 7000); 
     const connectionDist = 180;
     const mouse = { x: -1000, y: -1000 };
 
@@ -54,6 +58,7 @@ const NeuralBackground: React.FC = () => {
     window.addEventListener('resize', onResize);
 
     const animate = () => {
+      if (!ctx || width === 0 || height === 0) return;
       ctx.clearRect(0, 0, width, height);
       
       nodes.forEach((node, i) => {
@@ -77,7 +82,7 @@ const NeuralBackground: React.FC = () => {
         }
 
         const glow = (Math.sin(node.pulse) + 1) / 2;
-        ctx.fillStyle = `rgba(129, 140, 248, ${0.2 + glow * 0.4})`; // Brighter Indigo
+        ctx.fillStyle = `rgba(129, 140, 248, ${0.2 + glow * 0.4})`;
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.size + (glow * 1.5), 0, Math.PI * 2);
         ctx.fill();

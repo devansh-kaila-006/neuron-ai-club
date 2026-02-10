@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
@@ -16,10 +17,9 @@ const rootElement = document.getElementById('root');
 if (rootElement) {
   try {
     const root = createRoot(rootElement);
+    // Removed StrictMode to prevent double-invocation of heavy animation hooks on mobile
     root.render(
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
+      <App />
     );
     console.log("NEURØN: Core systems online.");
   } catch (error) {
