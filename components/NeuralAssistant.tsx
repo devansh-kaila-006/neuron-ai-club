@@ -5,6 +5,7 @@ import {
   MessageSquare, X, Send, Sparkles, Bot, User, ExternalLink, 
   Loader2 
 } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { getNeuralResponse, NeuralResponse, MessageHistory } from '../services/ai.ts';
 
 interface Message {
@@ -14,7 +15,6 @@ interface Message {
 }
 
 const NeuralAssistant: React.FC = () => {
-  // Fix: Cast motion to any to resolve property missing errors in strict environments
   const m = motion as any;
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -47,9 +47,12 @@ const NeuralAssistant: React.FC = () => {
 
       const result: NeuralResponse = await getNeuralResponse(userMsg, history);
       
+      // Sanitize AI content before committing to state
+      const sanitizedText = DOMPurify.sanitize(result.text || "Uplink silent.");
+
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: result.text,
+        content: sanitizedText,
         sources: result.sources 
       }]);
     } catch (err) {
@@ -66,7 +69,6 @@ const NeuralAssistant: React.FC = () => {
     <div className="fixed bottom-8 right-8 z-[100]">
       <AnimatePresence>
         {isOpen && (
-          /* Fix: Using casted motion component to resolve type mismatch */
           <m.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -100,13 +102,14 @@ const NeuralAssistant: React.FC = () => {
                       {msg.role === 'user' ? <User size={12} /> : <Bot size={12} />}
                     </div>
                     <div className="flex flex-col gap-2">
-                      <div className={`p-3 rounded-2xl text-xs leading-relaxed ${
-                        msg.role === 'user' 
-                          ? 'bg-indigo-600 text-white rounded-tr-none' 
-                          : 'bg-white/5 border border-white/10 text-gray-300 rounded-tl-none'
-                      }`}>
-                        {msg.content}
-                      </div>
+                      <div 
+                        className={`p-3 rounded-2xl text-xs leading-relaxed ${
+                          msg.role === 'user' 
+                            ? 'bg-indigo-600 text-white rounded-tr-none' 
+                            : 'bg-white/5 border border-white/10 text-gray-300 rounded-tl-none'
+                        }`}
+                        dangerouslySetInnerHTML={{ __html: msg.content }}
+                      />
                       {msg.sources && msg.sources.length > 0 && (
                         <div className="flex flex-wrap gap-2 px-1">
                           {msg.sources.slice(0, 3).map((s, idx) => (
@@ -160,7 +163,6 @@ const NeuralAssistant: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Fix: Using casted motion component to resolve type mismatch */}
       <m.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
