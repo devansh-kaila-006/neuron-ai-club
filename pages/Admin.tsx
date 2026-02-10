@@ -258,7 +258,8 @@ const Admin: React.FC = () => {
     setLoginError(null);
     setIsLoggingIn(true);
     try {
-      const res = await authService.signIn(password);
+      // TRIMMING password to avoid accidental whitespace errors
+      const res = await authService.signIn(password.trim());
       if (res.success) { 
         setIsAuthenticated(true); 
         setPassword(''); 

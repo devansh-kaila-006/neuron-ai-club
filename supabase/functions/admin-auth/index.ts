@@ -23,38 +23,54 @@ serve(async (req) => {
     const { password } = body;
     
     // Retrieve and sanitize environment variables
+    // IMPORTANT: These must be in "Edge Function Environment Variables", NOT just the Vault.
     const adminHashRaw = (globalThis as any).Deno.env.get("ADMIN_HASH");
     const tokenSecretRaw = (globalThis as any).Deno.env.get("ADMIN_TOKEN_SECRET");
 
     const adminHash = adminHashRaw?.trim();
     const tokenSecret = tokenSecretRaw?.trim();
 
-    if (!password) {
-      return new Response(JSON.stringify({ error: "Access Denied: Protocol requires a signature." }), { status: 400, headers: corsHeaders });
+    // 1. Check for missing configuration
+    if (!adminHash || !tokenSecret) {
+      const missing = [];
+      if (!adminHash) missing.push("ADMIN_HASH");
+      if (!tokenSecret) missing.push("ADMIN_TOKEN_SECRET");
+      
+      console.error(`NEURØN Security Error: Missing variables: ${missing.join(", ")}`);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: "System Configuration Failure", 
+        details: `Missing environment variables in Supabase: ${missing.join(", ")}. Ensure they are added in Project Settings -> Edge Functions.`
+      }), { status: 200, headers: corsHeaders });
     }
 
-    if (!adminHash || !tokenSecret) {
-      console.error("NEURØN Security Error: ADMIN_HASH or ADMIN_TOKEN_SECRET not found in environment.");
-      return new Response(JSON.stringify({ error: "Security lockdown: System misconfigured. Contact Core Unit." }), { status: 500, headers: corsHeaders });
+    // 2. Validate password presence
+    if (!password) {
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: "Access Denied: Signature required." 
+      }), { status: 200, headers: corsHeaders });
     }
 
     const inputHash = await sha256(password);
 
-    // Perform case-insensitive comparison to handle hex variations
+    // 3. Perform comparison
     if (inputHash.toLowerCase() !== adminHash.toLowerCase()) {
       console.warn("NEURØN Security: Unauthorized access attempt detected.");
-      return new Response(JSON.stringify({ error: "Access Denied: Invalid signature sequence." }), { status: 401, headers: corsHeaders });
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: "Access Denied: Invalid signature sequence." 
+      }), { status: 200, headers: corsHeaders });
     }
 
-    // Generate a secure session payload
+    // 4. Generate Session
     const payload = {
       role: 'ADMIN',
       iat: Date.now(),
-      exp: Date.now() + (1000 * 60 * 60 * 12) // 12-hour terminal session
+      exp: Date.now() + (1000 * 60 * 60 * 12)
     };
     const payloadStr = btoa(JSON.stringify(payload));
     
-    // Sign the payload using the token secret
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
       "raw",
@@ -74,10 +90,14 @@ serve(async (req) => {
       success: true, 
       token, 
       user: { name: 'Core Admin', role: 'ADMIN' } 
-    }), { headers: corsHeaders });
+    }), { status: 200, headers: corsHeaders });
 
   } catch (error) {
     console.error("NEURØN Critical Error:", error.message);
-    return new Response(JSON.stringify({ error: "Internal Neural Link Error", details: error.message }), { status: 500, headers: corsHeaders });
+    return new Response(JSON.stringify({ 
+      success: false,
+      error: "Internal Neural Link Error", 
+      details: error.message 
+    }), { status: 200, headers: corsHeaders });
   }
 })
