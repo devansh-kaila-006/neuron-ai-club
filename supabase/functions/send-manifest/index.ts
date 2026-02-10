@@ -29,7 +29,7 @@ serve(async (req) => {
     const team = body.team;
 
     if (!team || !team.id) {
-      return new Response(JSON.stringify({ error: "Neural Identity missing." }), { status: 400, headers: corsHeaders });
+      return new Response(JSON.stringify({ success: false, error: "Neural Identity missing." }), { status: 400, headers: corsHeaders });
     }
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
@@ -51,7 +51,7 @@ serve(async (req) => {
 
       if (dbError || !dbTeam) {
         console.warn("Security Alert: Attempted manifest dispatch for non-existent record.");
-        return new Response(JSON.stringify({ error: "Access Denied: Neural record not found." }), { status: 401, headers: corsHeaders });
+        return new Response(JSON.stringify({ success: false, error: "Access Denied: Neural record not found." }), { status: 401, headers: corsHeaders });
       }
 
       if (dbTeam.paymentstatus === 'paid') {
@@ -62,12 +62,12 @@ serve(async (req) => {
         team.teamid = dbTeam.teamid;
       } else {
         console.warn(`Security Alert: Blocked email attempt for unpaid squad: ${team.teamname}`);
-        return new Response(JSON.stringify({ error: "Escrow required before manifest dispatch." }), { status: 401, headers: corsHeaders });
+        return new Response(JSON.stringify({ success: false, error: "Escrow required before manifest dispatch." }), { status: 401, headers: corsHeaders });
       }
     }
 
     if (!isAuthorized) {
-      return new Response(JSON.stringify({ error: "Access Denied: Authentication sequence failed." }), { status: 401, headers: corsHeaders });
+      return new Response(JSON.stringify({ success: false, error: "Access Denied: Authentication sequence failed." }), { status: 401, headers: corsHeaders });
     }
 
     const keysString = (globalThis as any).Deno.env.get("RESEND_API_KEYS") || (globalThis as any).Deno.env.get("RESEND_API_KEY") || "";
@@ -128,7 +128,7 @@ serve(async (req) => {
 
     if (!success) {
       console.error("Critical Grid Error: All SMTP nodes failed.");
-      throw new Error(`SMTP node failure: ${lastError}`);
+      return new Response(JSON.stringify({ success: false, error: `SMTP node failure: ${lastError}` }), { status: 500, headers: corsHeaders });
     }
 
     return new Response(JSON.stringify({ success: true, data: responseData }), { headers: corsHeaders });

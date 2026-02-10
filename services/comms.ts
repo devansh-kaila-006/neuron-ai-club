@@ -10,6 +10,8 @@ import { authService } from './auth.ts';
 export const commsService = {
   async sendManifestEmail(team: Team) {
     return api.call(async () => {
+      console.log(`NEURØN Service: Initiating manifest dispatch for ${team.teamid}...`);
+      
       if (!supabase) throw new Error("Neural Connection Lost.");
 
       const sessionHash = authService.getStoredHash();
@@ -22,7 +24,12 @@ export const commsService = {
       });
 
       if (error) {
+        console.error("Supabase Invoke Error (send-manifest):", error);
         throw new Error(`Dispatch Error: Service unavailable.`);
+      }
+
+      if (data && data.success === false) {
+        throw new Error(data.error || "Neural dispatch rejected.");
       }
 
       return data;

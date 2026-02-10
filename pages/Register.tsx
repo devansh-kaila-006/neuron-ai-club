@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { storage } from '../lib/storage.ts';
 import { TeamMember, Team, PaymentStatus } from '../lib/types.ts';
 import { paymentService } from '../services/payments.ts';
+import { commsService } from '../services/comms.ts';
 import { useToast } from '../context/ToastContext.tsx';
 import { getEnv } from '../lib/env.ts';
 import { executeRecaptcha, loadRecaptcha } from '../lib/recaptcha.ts';
@@ -42,6 +43,7 @@ const Register: React.FC = () => {
   ]);
   const [errors, setErrors] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [registeredTeam, setRegisteredTeam] = useState<Team | null>(null);
 
   const [isUpdateMode, setIsUpdateMode] = useState(false);
@@ -180,6 +182,28 @@ const Register: React.FC = () => {
     setStep(3);
     sessionStorage.removeItem('neuron_draft_v4');
     toast.success("Neural Manifest Anchored.");
+    
+    // Dispatch Manifest via Email
+    try {
+      await commsService.sendManifestEmail(team);
+      toast.info("Manifest dispatched to primary uplink.");
+    } catch (err) {
+      console.warn("Manifest Dispatch Failed:", err);
+      // Non-blocking failure: user has the QR code on screen
+    }
+  };
+
+  const resendManifest = async () => {
+    if (!registeredTeam || isSendingEmail) return;
+    setIsSendingEmail(true);
+    try {
+      await commsService.sendManifestEmail(registeredTeam);
+      toast.success("Manifest re-dispatched.");
+    } catch (err: any) {
+      toast.error(`Dispatch Failed: ${err.message}`);
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   return (
@@ -445,6 +469,14 @@ const Register: React.FC = () => {
 
                      <div className="pt-10 no-print flex flex-col sm:flex-row justify-center gap-6">
                         <button onClick={() => window.location.href = '/'} className="px-12 py-5 glass border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-white/10 transition-all">Return Hub</button>
+                        <button 
+                          onClick={resendManifest} 
+                          disabled={isSendingEmail}
+                          className="px-12 py-5 glass border-indigo-500/20 text-indigo-400 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-indigo-500/5 transition-all flex items-center justify-center gap-2"
+                        >
+                          {isSendingEmail ? <Loader2 className="animate-spin" size={14} /> : <RotateCcw size={14} />}
+                          Resend Email
+                        </button>
                         <button 
                           onClick={() => window.print()} 
                           className="px-12 py-5 bg-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:bg-indigo-500 transition-all shadow-xl"
