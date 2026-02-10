@@ -1,3 +1,4 @@
+
 // 1. NEURØN Global Security & Environment Shim
 const envStore: Record<string, string> = {};
 (globalThis as any).process = {
@@ -11,8 +12,8 @@ const envStore: Record<string, string> = {};
 } as any;
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-// Fix: Import HarmCategory and HarmBlockThreshold to resolve type mismatch errors
-import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "@google/genai";
+// Fix: Use full ESM URL for Deno environment to resolve bundling error
+import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "https://esm.sh/@google/genai@1.3.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -64,8 +65,6 @@ Tone: Concise, professional, technical.
             topP: 0.9,
             topK: 40,
             tools: [{ googleSearch: {} }],
-            // Fix: Use imported enums instead of string literals to satisfy TypeScript requirements
-            // Add Safety Settings to prevent harmful content generation
             safetySettings: [
               { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
               { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
