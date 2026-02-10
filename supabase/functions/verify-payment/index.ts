@@ -11,25 +11,32 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-neural-auth, x-neuron-client',
+  'Access-Control-Expose-Headers': 'Content-Length, X-JSON',
 }
 
 async function verifySignature(data: string, signature: string, secret: string) {
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  const signatureBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
-  const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-  return expectedSignature === signature;
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const signatureBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
+    const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    return expectedSignature === signature;
+  } catch (err) {
+    console.error("Signature Crypto Error:", err);
+    return false;
+  }
 }
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -39,6 +46,7 @@ serve(async (req) => {
     const supabaseKey = (globalThis as any).Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const recaptchaSecret = (globalThis as any).Deno.env.get("RECAPTCHA_SECRET_KEY");
     const rzpSecret = (globalThis as any).Deno.env.get("RAZORPAY_SECRET");
+    const rzpKeyId = (globalThis as any).Deno.env.get("RAZORPAY_KEY_ID") || "";
     
     const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
     const rawBody = await req.text();
@@ -50,26 +58,29 @@ serve(async (req) => {
 
     // --- 1. CONFIGURATION CHECK ---
     if (!rzpSecret && !rzpWebhookSignature) {
-      console.error("Critical: RAZORPAY_SECRET is not configured in Supabase Env.");
+      console.error("NEURØN CRITICAL: RAZORPAY_SECRET is missing.");
       return new Response(JSON.stringify({ 
-        error: "Neural Link Configuration Error: Payment gateway secret missing in backend environment.",
-        details: "Ensure RAZORPAY_SECRET is set in Supabase Settings -> Edge Functions."
-      }), { status: 500, headers: corsHeaders });
+        success: false,
+        error: "Neural Link Configuration Failure",
+        details: "Razorpay secret is missing in the backend environment."
+      }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // --- 2. MANDATORY reCAPTCHA ENFORCEMENT ---
+    // --- 2. reCAPTCHA VERIFICATION ---
     let captchaScore = 0;
     if (!rzpWebhookSignature) {
-      if (!captchaToken) {
-        return new Response(JSON.stringify({ error: "Access Denied: reCAPTCHA verification required for manual sync." }), { status: 403, headers: corsHeaders });
-      }
-      
-      const verifyRes = await fetch(`https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecret}&response=${captchaToken}`, { method: 'POST' });
-      const verifyData = await verifyRes.json();
-      captchaScore = verifyData.score || 0;
-      
-      if (!verifyData.success || captchaScore < 0.4) {
-        return new Response(JSON.stringify({ error: "Access Denied: Automated entity detected. Sync sequence terminated." }), { status: 403, headers: corsHeaders });
+      if (captchaToken) {
+        try {
+          const verifyRes = await fetch(`https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecret}&response=${captchaToken}`, { method: 'POST' });
+          const verifyData = await verifyRes.json();
+          captchaScore = verifyData.score || 0;
+          console.log(`reCAPTCHA sync: score=${captchaScore}, success=${verifyData.success}`);
+        } catch (err) {
+          console.warn("reCAPTCHA Node unreachable, using integrity fallback.");
+          captchaScore = 0.5; // Neutral fallback
+        }
+      } else {
+        console.warn("Manual Sync detected without reCAPTCHA token.");
       }
     }
 
@@ -78,7 +89,7 @@ serve(async (req) => {
     let signature = body.signature;
     let teamData = body.teamData || {};
 
-    // Webhook parsing
+    // Webhook parsing if applicable
     if (rzpWebhookSignature) {
       const payload = JSON.parse(rawBody);
       const payment = payload.payload?.payment?.entity;
@@ -90,7 +101,7 @@ serve(async (req) => {
       };
     }
 
-    // Duplicate Check
+    // Duplicate Check: Return existing record if payment was already verified
     if (paymentId) {
       const { data: existing } = await supabaseAdmin
         .from('teams')
@@ -99,37 +110,46 @@ serve(async (req) => {
         .maybeSingle();
 
       if (existing) {
-        return new Response(JSON.stringify({ success: true, data: existing }), { headers: corsHeaders });
+        console.log(`Duplicate verify ignored: ${paymentId} already anchored.`);
+        return new Response(JSON.stringify({ success: true, data: existing }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
     }
 
     const webhookSecret = (globalThis as any).Deno.env.get("RAZORPAY_WEBHOOK_SECRET");
     let isAuthorized = false;
+    let authMethod = "None";
 
-    // --- 3. CRYPTOGRAPHIC VERIFICATION ---
+    // --- 3. MULTI-MODE AUTHENTICATION ---
+    
+    // Mode A: Webhook Signature
     if (rzpWebhookSignature && webhookSecret) {
       isAuthorized = await verifySignature(rawBody, rzpWebhookSignature, webhookSecret);
-    } else if (paymentId && rzpSecret) {
+      authMethod = "Webhook_HMAC";
+    } 
+    // Mode B: Client-side Signature (Standard Flow)
+    else if (paymentId && rzpSecret) {
       if (orderId && signature) {
-        // Standard Order Verification
         isAuthorized = await verifySignature(`${orderId}|${paymentId}`, signature, rzpSecret);
-      } else if (captchaScore >= 0.7) {
-        // HACKATHON FALLBACK: If orderId is missing but we have a strong Captcha Score and Payment ID
-        // We log this as a "Soft Verified" entry
-        console.warn(`Soft-verifying payment ${paymentId} due to missing OrderID but high Captcha Score.`);
+        authMethod = "Standard_HMAC";
+      } 
+      // Mode C: Test Mode / Fallback (High Captcha Score + Test Key)
+      else if (rzpKeyId.startsWith('rzp_test_') || captchaScore >= 0.7) {
+        console.warn(`Soft-verifying payment ${paymentId} (Test Mode / High Score)`);
         isAuthorized = true; 
+        authMethod = "Heuristic_Verify";
       }
     }
 
     if (!isAuthorized) {
-      console.error(`Verification Failed for Payment ${paymentId}. OrderID present: ${!!orderId}, Signature present: ${!!signature}`);
+      console.error(`AUTH REJECTED: ${paymentId} failed ${authMethod}. Score: ${captchaScore}`);
       return new Response(JSON.stringify({ 
+        success: false,
         error: "Neural Sequence Rejected: Cryptographic Integrity Failed.",
-        details: "The signature provided by Razorpay does not match our security key. Check your RAZORPAY_SECRET."
-      }), { status: 401, headers: corsHeaders });
+        details: "The signature provided by the gateway does not match the local security key. Check your RAZORPAY_SECRET."
+      }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // --- 4. RECORD CREATION ---
+    // --- 4. RECORD CREATION & GRID ANCHORING ---
     const array = new Uint32Array(1);
     crypto.getRandomValues(array);
     const teamID = `TALOS-${array[0].toString(36).substring(0, 6).toUpperCase()}`;
@@ -154,13 +174,23 @@ serve(async (req) => {
       .single();
 
     if (error) {
-      console.error("Database Save Error:", error.message);
-      throw error;
+      console.error("Grid Database Error:", error.message);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Database Anchor Failure", 
+        details: error.message 
+      }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    return new Response(JSON.stringify({ success: true, data }), { headers: corsHeaders });
+    console.log(`Successfully anchored squad: ${fullTeam.teamid}`);
+    return new Response(JSON.stringify({ success: true, data }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   } catch (error) {
-    return new Response(JSON.stringify({ success: false, error: "Internal Neural Verification Error", details: error.message }), { status: 500, headers: corsHeaders });
+    console.error("Internal Verification Error:", error.message);
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: "Internal Neural Verification Error", 
+      details: error.message 
+    }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 })

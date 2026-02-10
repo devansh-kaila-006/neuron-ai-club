@@ -83,9 +83,10 @@ export const paymentService = {
       });
       
       if (error) {
+        console.error("Grid Sync Link Error:", error);
         let errorMsg = "Neural Verification Sequence Failed.";
         try {
-          // If Supabase returns a JSON error, extract the message
+          // Attempt to extract structured error from the response context
           const context = await error.context?.json();
           errorMsg = context?.error || context?.details || error.message;
         } catch { 
@@ -94,8 +95,9 @@ export const paymentService = {
         throw new Error(errorMsg);
       }
 
-      if (!data || !data.success) {
-        throw new Error(data?.error || "Neural verification sequence rejected.");
+      if (!data || data.success === false) {
+        console.warn("Verification Rejected Payload:", data);
+        throw new Error(data?.error || data?.details || "Neural verification sequence rejected.");
       }
 
       return data.data as Team;
