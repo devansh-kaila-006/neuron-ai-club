@@ -7,13 +7,12 @@ const NeuralBackground: React.FC = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true });
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let width = window.innerWidth;
     let height = window.innerHeight;
-    // Cap DPR to 2 for mobile performance, prevent huge canvas contexts
-    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let dpr = window.devicePixelRatio || 1;
     
     const setCanvasSize = () => {
       width = window.innerWidth;
@@ -25,11 +24,9 @@ const NeuralBackground: React.FC = () => {
 
     setCanvasSize();
 
-    const isMobile = width < 768;
     const nodes: any[] = [];
-    // Significantly reduce count on mobile to prevent crashes
-    const nodeCount = isMobile ? 40 : Math.floor((width * height) / 9000);
-    const connectionDist = isMobile ? 120 : 180;
+    const nodeCount = Math.floor((width * height) / 7000); // Slightly more nodes for density
+    const connectionDist = 180;
     const mouse = { x: -1000, y: -1000 };
 
     for (let i = 0; i < nodeCount; i++) {
@@ -38,7 +35,7 @@ const NeuralBackground: React.FC = () => {
         y: Math.random() * height,
         vx: (Math.random() - 0.5) * 0.4,
         vy: (Math.random() - 0.5) * 0.4,
-        size: Math.random() * 1.2 + 0.5,
+        size: Math.random() * 1.5 + 0.5,
         pulse: Math.random() * Math.PI,
         energy: Math.random()
       });
@@ -53,36 +50,39 @@ const NeuralBackground: React.FC = () => {
       setCanvasSize();
     };
 
-    window.addEventListener('mousemove', onMouseMove, { passive: true });
-    window.addEventListener('resize', onResize, { passive: true });
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('resize', onResize);
 
-    let animationFrameId: number;
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
       
       nodes.forEach((node, i) => {
+        // Kinetic Drift
         node.x += node.vx;
         node.y += node.vy;
-        node.pulse += 0.02;
+        node.pulse += 0.025;
 
+        // Reactive Borders
         if (node.x < 0 || node.x > width) node.vx *= -1;
         if (node.y < 0 || node.y > height) node.vy *= -1;
 
+        // Mouse Influence (Vortex Attraction)
         const mdx = mouse.x - node.x;
         const mdy = mouse.y - node.y;
         const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-        if (mdist < 200) {
-          const force = (200 - mdist) / 200;
-          node.x += mdx * force * 0.01;
-          node.y += mdy * force * 0.01;
+        if (mdist < 250) {
+          const force = (250 - mdist) / 250;
+          node.x += mdx * force * 0.015;
+          node.y += mdy * force * 0.015;
         }
 
         const glow = (Math.sin(node.pulse) + 1) / 2;
-        ctx.fillStyle = `rgba(129, 140, 248, ${0.1 + glow * 0.3})`;
+        ctx.fillStyle = `rgba(129, 140, 248, ${0.2 + glow * 0.4})`; // Brighter Indigo
         ctx.beginPath();
-        ctx.arc(node.x, node.y, node.size + (glow * 1), 0, Math.PI * 2);
+        ctx.arc(node.x, node.y, node.size + (glow * 1.5), 0, Math.PI * 2);
         ctx.fill();
 
+        // Synaptic Connections
         for (let j = i + 1; j < nodes.length; j++) {
           const target = nodes[j];
           const dx = node.x - target.x;
@@ -90,18 +90,25 @@ const NeuralBackground: React.FC = () => {
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           if (dist < connectionDist) {
-            const alpha = (1 - dist / connectionDist) * 0.15;
+            const alpha = (1 - dist / connectionDist) * 0.22;
             ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
-            ctx.lineWidth = 0.5;
+            ctx.lineWidth = 0.6;
             ctx.beginPath();
             ctx.moveTo(node.x, node.y);
             ctx.lineTo(target.x, target.y);
             ctx.stroke();
+
+            // Interactive Pulse Beam
+            if (glow > 0.92 && dist < 100) {
+               ctx.strokeStyle = `rgba(168, 85, 247, ${alpha * 2})`;
+               ctx.lineWidth = 1;
+               ctx.stroke();
+            }
           }
         }
       });
 
-      animationFrameId = requestAnimationFrame(animate);
+      requestAnimationFrame(animate);
     };
 
     animate();
@@ -109,7 +116,6 @@ const NeuralBackground: React.FC = () => {
     return () => {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', onResize);
-      cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
