@@ -5,7 +5,7 @@ import { supabase } from '../lib/storage.ts';
 export const authService = {
   /**
    * Neural Authentication Gateway
-   * Proxies verification to Supabase Edge Functions to keep secrets off the client.
+   * Proxies verification to Supabase Edge Functions.
    */
   async signIn(password: string) {
     return api.call(async () => {
@@ -15,10 +15,11 @@ export const authService = {
         body: { password }
       });
 
+      // Handle Edge Function infrastructure errors (4xx/5xx)
       if (error) {
+        console.error("Supabase Invoke Error:", error);
         let errorMsg = "Authorization sequence rejected.";
         try {
-          // Attempt to extract the specific error from the function response
           const context = await error.context?.json();
           errorMsg = context?.error || context?.details || error.message;
         } catch {
@@ -27,38 +28,34 @@ export const authService = {
         throw new Error(errorMsg);
       }
 
-      if (!data || !data.success) {
-        throw new Error(data?.error || "Neural link rejected.");
+      // Handle application-level errors returned with 200 OK
+      if (!data || data.success === false) {
+        console.warn("Auth Rejection Payload:", data);
+        const reason = data?.error || data?.details || "Neural link rejected: Verification failed.";
+        throw new Error(reason);
       }
       
       const { token, user } = data;
       sessionStorage.setItem('neuron_session_token', token);
       
-      return { user, token };
+      return { success: true, user, token };
     });
   },
 
-  /**
-   * Extracts the identifying hash/token from storage.
-   * This is sent as a header to authorize Edge Function actions.
-   */
   getStoredHash() {
-    const token = sessionStorage.getItem('neuron_session_token');
-    if (!token) return null;
-    return token;
+    return sessionStorage.getItem('neuron_session_token');
   },
 
   async getSession() {
-    const token = sessionStorage.getItem('neuron_session_token');
+    const token = this.getStoredHash();
     if (!token) return null;
     try {
-      // Tokens are opaque to the client, but contain a public payload for UI
       const parts = token.split('.');
       if (parts.length < 2) return null;
       const payload = JSON.parse(atob(parts[1]));
       
       if (payload.exp < Date.now()) {
-        sessionStorage.removeItem('neuron_session_token');
+        this.signOut();
         return null;
       }
       return payload;
