@@ -47,8 +47,9 @@ serve(async (req) => {
       try {
         const ai = new GoogleGenAI({ apiKey: currentKey });
 
-        const result = await ai.models.generateContent({
-          model: 'gemini-2.5-flash-lite-latest', // High-efficiency model with robust 2.5 series capabilities
+        // Using 'gemini-flash-lite-latest' for maximum stability on Free Tier
+        const response = await ai.models.generateContent({
+          model: 'gemini-flash-lite-latest',
           contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
           config: {
             systemInstruction: `### NEURØN CORE DIRECTIVE ###
@@ -74,12 +75,12 @@ Tone: Concise, technical, helpful, and slightly futuristic.
           },
         });
 
-        if (!result || !result.candidates || result.candidates.length === 0) {
+        if (!response || !response.candidates || response.candidates.length === 0) {
            throw new Error("Uplink returned empty candidate pool.");
         }
 
-        const textOutput = result.text || "Uplink returned empty state.";
-        const metadata = result.candidates[0]?.groundingMetadata;
+        const textOutput = response.text || "Uplink returned empty state.";
+        const metadata = response.candidates[0]?.groundingMetadata;
         const chunks = metadata?.groundingChunks || [];
         const sources = chunks.map((chunk: any) => {
           if (chunk.web) return { uri: chunk.web.uri, title: chunk.web.title };
@@ -93,7 +94,7 @@ Tone: Concise, technical, helpful, and slightly futuristic.
 
       } catch (err) {
         lastErrorMsg = err.message;
-        // If it's a 429 or quota error, the loop continues to the next key automatically
+        // Specifically logs key failures to identify which nodes are hitting 429s
         console.warn(`Node failure on key ${currentKey.substring(0, 8)}...: ${err.message}`);
         continue; 
       }
