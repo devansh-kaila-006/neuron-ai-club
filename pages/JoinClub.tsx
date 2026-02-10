@@ -15,14 +15,7 @@ import {
 import { supabase } from '../lib/storage.ts';
 import { useToast } from '../context/ToastContext.tsx';
 import { getEnv } from '../lib/env.ts';
-
-/**
- * NEURØN SUPABASE UPDATE CODE:
- * Run this SQL in your Supabase Dashboard to enforce uniqueness at the database level:
- * 
- * ALTER TABLE club_applications ADD CONSTRAINT unique_reg_number UNIQUE (reg_number);
- * ALTER TABLE club_applications ADD CONSTRAINT unique_phone UNIQUE (phone);
- */
+import { executeRecaptcha, loadRecaptcha } from '../lib/recaptcha.ts';
 
 const departments = [
   { id: 'Technical', name: "Technical", icon: <Code size={22} />, color: "indigo", desc: "Core AI/ML development & applied problem-solving." },
@@ -85,7 +78,6 @@ const missionPoints = [
 ];
 
 const JoinClub: React.FC = () => {
-  // Fix: Cast motion to any to resolve property missing errors in strict environments
   const m = motion as any;
   const toast = useToast();
   const [phase, setPhase] = useState(1);
@@ -101,7 +93,10 @@ const JoinClub: React.FC = () => {
     department: ''
   });
 
-  const RECAPTCHA_SITE_KEY = getEnv('RECAPTCHA_SITE_KEY');
+  // Pre-load reCAPTCHA
+  useEffect(() => {
+    loadRecaptcha().catch(err => console.error("Neural Security Warning:", err));
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -159,7 +154,7 @@ const JoinClub: React.FC = () => {
     try {
       if (!supabase) throw new Error("Neural Grid Offline");
 
-      // Verify Uniqueness before insertion to prevent manifest conflicts
+      // Verify Uniqueness
       const { data: existing, error: checkError } = await supabase
         .from('club_applications')
         .select('id')
@@ -174,22 +169,12 @@ const JoinClub: React.FC = () => {
         return;
       }
 
-      // Security Check: reCAPTCHA v3 Execution
+      // Execute Secure reCAPTCHA Sequence
       let captchaToken = '';
-      // Fix: Access grecaptcha via window casting to any to avoid TypeScript errors
-      const grecaptcha = (window as any).grecaptcha;
-      if (typeof grecaptcha !== 'undefined' && RECAPTCHA_SITE_KEY) {
-        try {
-          captchaToken = await new Promise((resolve, reject) => {
-             grecaptcha.ready(() => {
-               grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'join_club' })
-                 .then(resolve)
-                 .catch(reject);
-             });
-          });
-        } catch (err) {
-          console.warn("reCAPTCHA failed, proceeding with standard security.");
-        }
+      try {
+        captchaToken = await executeRecaptcha('join_club');
+      } catch (err) {
+        console.warn("reCAPTCHA failed, proceeding with fallback security.");
       }
 
       const { error } = await supabase.from('club_applications').insert([{
@@ -231,7 +216,7 @@ const JoinClub: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               className="grid lg:grid-cols-12 gap-12 lg:gap-20"
             >
-              {/* Left Column: Vision & Benefits */}
+              {/* Left Column */}
               <div className="lg:col-span-6 space-y-12">
                 <div className="space-y-6">
                   <m.div
@@ -255,7 +240,6 @@ const JoinClub: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Benefits Bento Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {perks.map((perk, i) => (
                     <m.div 
@@ -274,7 +258,6 @@ const JoinClub: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Mission Manifesto Section - Advanced UI */}
                 <div className="space-y-6 relative">
                   <div className="flex items-center justify-between mb-2 px-4">
                     <h3 className="text-2xl font-black uppercase tracking-tight flex items-center gap-3">
@@ -296,13 +279,11 @@ const JoinClub: React.FC = () => {
                         transition={{ delay: i * 0.15 }}
                         className="glass group/mission p-6 rounded-[2rem] border-white/5 relative overflow-hidden transition-all duration-500 hover:border-indigo-500/20 hover:bg-indigo-500/[0.02]"
                       >
-                        {/* Background Geometric Detail */}
                         <div className="absolute -right-4 -bottom-4 opacity-5 group-hover/mission:opacity-10 transition-opacity">
                           {m_mission.icon}
                         </div>
                         
                         <div className="flex gap-6 items-start relative z-10">
-                          {/* Point Index Bubble */}
                           <div className="shrink-0 flex flex-col items-center gap-3 pt-1">
                             <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-white/5 flex items-center justify-center text-[10px] font-mono font-bold text-indigo-400 group-hover/mission:bg-indigo-500 group-hover/mission:text-white transition-all duration-500 shadow-xl">
                               {m_mission.id}
@@ -326,34 +307,18 @@ const JoinClub: React.FC = () => {
                             </p>
                           </div>
                         </div>
-
-                        {/* Hover Decorative Line */}
-                        <m.div 
-                          className="absolute bottom-0 left-0 h-[2px] bg-indigo-500"
-                          initial={{ width: 0 }}
-                          whileHover={{ width: '100%' }}
-                        />
                       </m.div>
                     ))}
-                  </div>
-
-                  {/* Summary Footer */}
-                  <div className="glass p-5 rounded-[2rem] border-indigo-500/10 flex items-center justify-center gap-4">
-                     <Terminal className="text-indigo-400" size={16} />
-                     <p className="text-[10px] text-gray-500 font-mono italic">
-                       Transforming <span className="text-white">curiosity</span> into <span className="text-indigo-400">impactful solutions</span>.
-                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Multi-Step Application */}
+              {/* Right Column */}
               <div className="lg:col-span-6">
                 <div className="glass rounded-[4rem] border-white/5 shadow-[0_0_80px_rgba(99,102,241,0.05)] overflow-hidden relative">
                   <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
                   
                   <div className="p-8 md:p-14 relative z-10">
-                    {/* Phase Navigator */}
                     <div className="flex justify-between items-center mb-16">
                       {[1, 2, 3].map(s => (
                         <div key={s} className="flex flex-col items-center gap-3 relative flex-1">

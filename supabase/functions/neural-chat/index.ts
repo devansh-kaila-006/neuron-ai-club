@@ -47,7 +47,7 @@ serve(async (req) => {
       try {
         const ai = new GoogleGenAI({ apiKey: currentKey });
 
-        // Using 'gemini-flash-lite-latest' for maximum stability on Free Tier
+        // Using 'gemini-flash-lite-latest' (Gemini 2.5 Flash Lite) for maximum availability
         const response = await ai.models.generateContent({
           model: 'gemini-flash-lite-latest',
           contents: [...history, { role: 'user', parts: [{ text: prompt }] }],
@@ -94,16 +94,21 @@ Tone: Concise, technical, helpful, and slightly futuristic.
 
       } catch (err) {
         lastErrorMsg = err.message;
-        // Specifically logs key failures to identify which nodes are hitting 429s
-        console.warn(`Node failure on key ${currentKey.substring(0, 8)}...: ${err.message}`);
-        continue; 
+        // Specifically identify quota errors
+        if (err.message.includes("429") || err.message.includes("RESOURCE_EXHAUSTED") || err.message.includes("quota")) {
+           console.warn(`Node failure (Quota) on key ${currentKey.substring(0, 8)}...: ${err.message}`);
+           continue; 
+        }
+        // For other fatal errors, we break early to avoid key burning
+        console.error(`Fatal Node failure on key ${currentKey.substring(0, 8)}...: ${err.message}`);
+        return new Response(JSON.stringify({ error: "Neural Critical Error", details: err.message }), { status: 500, headers: corsHeaders });
       }
     }
 
-    // If we reach here, all keys failed
+    // If we reach here, all keys failed or were exhausted
     return new Response(
       JSON.stringify({ 
-        error: `Neural Exhaustion: All nodes reported resource constraints.`, 
+        error: `Neural Exhaustion: All link nodes reported resource constraints.`, 
         details: lastErrorMsg 
       }),
       { status: 503, headers: corsHeaders }

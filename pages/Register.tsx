@@ -14,9 +14,9 @@ import { z } from 'zod';
 import { storage } from '../lib/storage.ts';
 import { TeamMember, Team, PaymentStatus } from '../lib/types.ts';
 import { paymentService } from '../services/payments.ts';
-import { commsService } from '../services/comms.ts';
 import { useToast } from '../context/ToastContext.tsx';
 import { getEnv } from '../lib/env.ts';
+import { executeRecaptcha, loadRecaptcha } from '../lib/recaptcha.ts';
 
 const memberSchema = z.object({
   name: z.string().min(2, "Name required"),
@@ -31,7 +31,6 @@ const teamSchema = z.object({
 });
 
 const Register: React.FC = () => {
-  // Fix: Cast motion to any to resolve property missing errors in strict environments
   const m = motion as any;
   const toast = useToast();
   const [step, setStep] = useState(1); 
@@ -44,10 +43,13 @@ const Register: React.FC = () => {
   const [errors, setErrors] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registeredTeam, setRegisteredTeam] = useState<Team | null>(null);
-  const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
 
   const [isUpdateMode, setIsUpdateMode] = useState(false);
-  const RECAPTCHA_SITE_KEY = getEnv('RECAPTCHA_SITE_KEY');
+
+  // Pre-load reCAPTCHA
+  useEffect(() => {
+    loadRecaptcha().catch(err => console.error("Neural Security Warning:", err));
+  }, []);
 
   useEffect(() => {
     if (teamName.length < 3 || isUpdateMode) return setNameAvailability('idle');
@@ -127,17 +129,12 @@ const Register: React.FC = () => {
   const handlePayment = async () => {
     setIsSubmitting(true);
     try {
-      // Execute reCAPTCHA before initializing payment
+      // Execute reCAPTCHA secure token generation
       let captchaToken = '';
-      const grecaptcha = (window as any).grecaptcha;
-      if (typeof grecaptcha !== 'undefined' && RECAPTCHA_SITE_KEY) {
-        captchaToken = await new Promise((resolve, reject) => {
-          grecaptcha.ready(() => {
-            grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'registration' })
-              .then(resolve)
-              .catch(reject);
-          });
-        });
+      try {
+        captchaToken = await executeRecaptcha('registration');
+      } catch (err) {
+        console.warn("Security Module: reCAPTCHA failed, proceeding with manual sync.");
       }
 
       await paymentService.checkout({
@@ -183,8 +180,6 @@ const Register: React.FC = () => {
     setStep(3);
     sessionStorage.removeItem('neuron_draft_v4');
     toast.success("Neural Manifest Anchored.");
-    // Email dispatch is now handled background-side by the Edge Function for high-integrity delivery.
-    setEmailStatus('sent'); 
   };
 
   return (
@@ -194,10 +189,8 @@ const Register: React.FC = () => {
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 blur-[160px] rounded-full opacity-50" />
 
       <div className="max-w-5xl mx-auto">
-        {/* Stepper HUD */}
         <div className="flex justify-center mb-20 no-print">
           <div className="relative flex items-center justify-between w-full max-w-lg">
-             {/* Progress Line */}
              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-white/5 z-0" />
              <m.div 
                initial={{ width: 0 }}
@@ -257,7 +250,6 @@ const Register: React.FC = () => {
 
               <div className="grid lg:grid-cols-12 gap-12">
                 <div className="lg:col-span-8 space-y-8">
-                  {/* Squad Name Card */}
                   <div className="glass p-10 rounded-[3.5rem] border-white/5 space-y-6 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-[0.02] group-hover:opacity-[0.06] transition-opacity">
                       <Zap size={140} strokeWidth={0.5} />
@@ -278,7 +270,6 @@ const Register: React.FC = () => {
                     {errors.teamName && <p className="text-[10px] text-red-500 font-mono pl-4 uppercase tracking-widest">{errors.teamName}</p>}
                   </div>
 
-                  {/* Personnel Cards */}
                   <div className="space-y-6">
                     <h3 className="text-2xl font-black uppercase tracking-tight flex items-center gap-3 px-4">
                       <Fingerprint className="text-indigo-500" size={24} /> Personnel Manifest
@@ -355,17 +346,6 @@ const Register: React.FC = () => {
                               <span className="text-[9px] font-mono text-indigo-500/60 uppercase tracking-widest mb-1">Per Squad</span>
                            </div>
                         </div>
-
-                        <div className="space-y-4">
-                           <div className="flex items-start gap-3">
-                              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5" />
-                              <p className="text-[11px] text-gray-500 leading-relaxed font-light">Minimum 2 operators per squad for system validation.</p>
-                           </div>
-                           <div className="flex items-start gap-3">
-                              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5" />
-                              <p className="text-[11px] text-gray-500 leading-relaxed font-light">Lead operator receives the secure digital manifest.</p>
-                           </div>
-                        </div>
                      </div>
 
                      <button 
@@ -400,17 +380,6 @@ const Register: React.FC = () => {
                    <p className="text-7xl font-black text-white font-tech tracking-tighter italic">₹1</p>
                 </div>
 
-                <div className="space-y-4">
-                   <div className="flex justify-between items-center text-xs border-b border-white/5 pb-4">
-                      <span className="text-gray-600 uppercase tracking-widest font-mono">Squad</span>
-                      <span className="text-white font-black">{teamName}</span>
-                   </div>
-                   <div className="flex justify-between items-center text-xs border-b border-white/5 pb-4">
-                      <span className="text-gray-600 uppercase tracking-widest font-mono">Lead</span>
-                      <span className="text-white font-black">{members[0].name}</span>
-                   </div>
-                </div>
-
                 <button 
                   onClick={handlePayment} 
                   disabled={isSubmitting} 
@@ -424,7 +393,6 @@ const Register: React.FC = () => {
 
           {step === 3 && (
             <m.div key="s3" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl mx-auto text-center space-y-12">
-               {/* Deployed Header */}
                <div className="space-y-4">
                   <m.div
                     initial={{ scale: 0 }}
@@ -437,17 +405,9 @@ const Register: React.FC = () => {
                   <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none text-white uppercase italic">
                     DEPLOYED
                   </h1>
-                  <p className="text-gray-500 text-lg font-light max-w-lg mx-auto leading-relaxed">
-                    Squad registry complete. Your neural manifest is now anchored in the TALOS persistent grid.
-                  </p>
                </div>
 
-               {/* Physical Manifest Card */}
                <div className="glass p-12 md:p-20 rounded-[4rem] border-white/5 shadow-2xl manifest-card relative bg-[#080808] overflow-hidden">
-                  <div className="absolute top-0 right-0 p-12 opacity-[0.03]">
-                    <ShieldCheck size={300} strokeWidth={0.5} />
-                  </div>
-                  
                   <div className="relative z-10 space-y-12">
                      <div className="flex flex-col items-center gap-6">
                         <div className="bg-white p-10 rounded-[3rem] shadow-[0_0_40px_rgba(255,255,255,0.05)] border border-white/10 group hover:scale-105 transition-transform duration-700">
@@ -486,10 +446,6 @@ const Register: React.FC = () => {
                         </button>
                      </div>
                   </div>
-               </div>
-
-               <div className="text-[9px] font-mono text-gray-800 uppercase tracking-[1em] font-black pt-12">
-                  NEURAL_PERSISTENCE // GRID_ID_CONFIRMED
                </div>
             </m.div>
           )}
