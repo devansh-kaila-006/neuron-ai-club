@@ -1,3 +1,4 @@
+
 import { api } from './api.ts';
 import { supabase } from '../lib/storage.ts';
 import { Team } from '../lib/types.ts';
@@ -7,7 +8,6 @@ import { authService } from './auth.ts';
 declare global {
   interface Window {
     Razorpay: any;
-    // Fix: Define grecaptcha globally to resolve TS errors in Register and JoinClub
     grecaptcha: any;
   }
 }
@@ -46,7 +46,11 @@ export const paymentService = {
           contact: options.phone
         },
         theme: { color: "#4f46e5" },
-        modal: { ondismiss: () => console.log("Payment dismissed.") }
+        modal: { 
+          ondismiss: () => {
+             console.log("NEURØN Security: Escrow sequence terminated by user.");
+          } 
+        }
       };
 
       const rzp = new window.Razorpay(rzpOptions);
@@ -55,31 +59,38 @@ export const paymentService = {
     });
   },
 
-  async verifyPayment(orderId: string | undefined, paymentId: string, signature: string | undefined, teamData: Partial<Team>, captchaToken?: string) {
+  async verifyPayment(orderId: string | undefined | null, paymentId: string, signature: string | undefined | null, teamData: Partial<Team>, captchaToken?: string) {
     return api.call(async () => {
       if (!supabase) throw new Error("Neural Grid Offline.");
 
       // For normal users, this is null. For admins, it's the session hash.
       const sessionHash = authService.getStoredHash();
 
+      // Ensure we don't pass string "null" or "undefined"
+      const payload = { 
+        orderId: orderId || null, 
+        paymentId, 
+        signature: signature || null, 
+        teamData, 
+        captchaToken: captchaToken || null 
+      };
+
       const { data, error } = await supabase.functions.invoke('verify-payment', {
-        body: { orderId, paymentId, signature, teamData, captchaToken },
+        body: payload,
         headers: {
           'x-neural-auth': sessionHash || ''
         }
       });
       
       if (error) {
-        let errorMsg = error.message;
+        let errorMsg = "Neural Verification Sequence Failed.";
         try {
-          const errorContext = await error.context?.json();
-          if (errorContext?.error) {
-            errorMsg = errorContext.error;
-            if (errorContext.details) {
-              errorMsg += ` (${errorContext.details})`;
-            }
-          }
-        } catch { /* use original message */ }
+          // If Supabase returns a JSON error, extract the message
+          const context = await error.context?.json();
+          errorMsg = context?.error || context?.details || error.message;
+        } catch { 
+          errorMsg = error.message;
+        }
         throw new Error(errorMsg);
       }
 
