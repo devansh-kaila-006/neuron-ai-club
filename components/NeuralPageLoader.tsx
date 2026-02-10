@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // @ts-ignore
@@ -10,18 +11,20 @@ import { useLocation } from 'react-router-dom';
  * Design Choice: Vertical laser scan, high-contrast monochrome with indigo accents.
  */
 const NeuralPageLoader: React.FC = () => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
   const location = useLocation();
   const pathName = location.pathname === '/' ? 'HUB_ROOT' : location.pathname.toUpperCase().replace('/', '');
 
   return (
-    <motion.div 
+    <m.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.5 } }}
       className="fixed inset-0 z-[4000] bg-[#020202] flex items-center justify-center overflow-hidden"
     >
       {/* Scanning Laser */}
-      <motion.div 
+      <m.div 
         initial={{ y: '-100%' }}
         animate={{ y: '100%' }}
         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -36,7 +39,7 @@ const NeuralPageLoader: React.FC = () => {
       <div className="relative z-20 flex flex-col items-center">
         {/* The Pulsing Core */}
         <div className="w-24 h-24 relative mb-8 flex items-center justify-center">
-          <motion.div 
+          <m.div 
             animate={{ 
               scale: [1, 1.2, 1],
               opacity: [0.3, 0.7, 0.3],
@@ -45,34 +48,34 @@ const NeuralPageLoader: React.FC = () => {
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
             className="absolute inset-0 border border-indigo-500/30 rounded-lg"
           />
-          <motion.span 
+          <m.span 
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 1, repeat: Infinity }}
             className="text-4xl font-black text-indigo-500 font-display"
           >
             Ø
-          </motion.span>
+          </m.span>
         </div>
 
         {/* Route Details */}
         <div className="text-center font-mono">
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-[10px] text-indigo-400 tracking-[0.6em] uppercase mb-2"
           >
             Resolving_Endpoint
-          </motion.div>
+          </m.div>
           <div className="text-xl font-bold tracking-tighter text-white">
             {pathName.split('').map((char, i) => (
-              <motion.span
+              <m.span
                 key={i}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.05 }}
               >
                 {char}
-              </motion.span>
+              </m.span>
             ))}
           </div>
         </div>
@@ -80,7 +83,7 @@ const NeuralPageLoader: React.FC = () => {
         {/* Loading Progress (Fake but high-end) */}
         <div className="mt-8 flex gap-1">
           {[...Array(8)].map((_, i) => (
-            <motion.div
+            <m.div
               key={i}
               animate={{ 
                 backgroundColor: ["rgba(99,102,241,0.1)", "rgba(99,102,241,0.8)", "rgba(99,102,241,0.1)"]
@@ -94,7 +97,7 @@ const NeuralPageLoader: React.FC = () => {
 
       {/* CRT Vignette */}
       <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_15vw_rgba(0,0,0,1)] z-30" />
-    </motion.div>
+    </m.div>
   );
 };
 

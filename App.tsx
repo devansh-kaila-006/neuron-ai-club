@@ -1,3 +1,4 @@
+
 import React, { useState, Suspense, lazy, useEffect } from 'react';
 // @ts-ignore - Fixing react-router-dom member export false positive
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
@@ -56,6 +57,8 @@ const RouteChangeHandler: React.FC<{ children: React.ReactNode }> = ({ children 
 };
 
 const App: React.FC = () => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
   const [showLegal, setShowLegal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -127,7 +130,7 @@ const App: React.FC = () => {
 
                     {/* Architectural Blueprint Component - Further Right, Reduced Size, White Glow */}
                     <div className="flex items-center self-center ml-auto md:ml-48 opacity-80 hover:opacity-100 transition-all duration-1000 pointer-events-none select-none relative group/blueprint min-w-[200px] md:min-w-[360px] min-h-[120px] md:min-h-[220px]">
-                      <motion.div
+                      <m.div
                         animate={{ 
                           y: [0, -10, 0],
                           rotateY: [-3, 3, -3],
@@ -152,18 +155,18 @@ const App: React.FC = () => {
                           }}
                         />
                         {/* Scanning Line Effect - Subtle White */}
-                        <motion.div 
+                        <m.div 
                           animate={{ y: ['-5%', '105%', '-5%'] }}
                           transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                           className="absolute inset-x-0 h-[1.5px] bg-white/40 blur-[2px] z-10"
                         />
                         {/* White Holographic Atmosphere */}
-                        <motion.div 
+                        <m.div 
                           animate={{ opacity: [0.05, 0.15, 0.05], scale: [0.95, 1.05, 0.95] }}
                           transition={{ duration: 7, repeat: Infinity }}
                           className="absolute inset-0 bg-white/5 blur-[100px] rounded-full -z-10"
                         />
-                      </motion.div>
+                      </m.div>
                     </div>
                   </div>
 
@@ -186,13 +189,13 @@ const App: React.FC = () => {
 
             <AnimatePresence>
               {showLegal && (
-                <motion.div 
+                <m.div 
                   initial={{ opacity: 0 }} 
                   animate={{ opacity: 1 }} 
                   exit={{ opacity: 0 }} 
                   className="fixed inset-0 z-[1000] flex items-center justify-center px-6 bg-black/90 backdrop-blur-2xl overflow-y-auto"
                 >
-                  <motion.div 
+                  <m.div 
                     initial={{ scale: 0.95, y: 20 }} 
                     animate={{ scale: 1, y: 0 }} 
                     className="glass w-full max-w-2xl p-8 md:p-12 rounded-[2.5rem] relative my-10 border-indigo-500/20 shadow-2xl"
@@ -221,8 +224,8 @@ const App: React.FC = () => {
                     <button onClick={() => setShowLegal(false)} className="w-full mt-12 py-5 bg-indigo-600 rounded-2xl font-bold hover:bg-indigo-500 transition-all shadow-xl">
                       Acknowledge & Synchronize
                     </button>
-                  </motion.div>
-                </motion.div>
+                  </m.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>

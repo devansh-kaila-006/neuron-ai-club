@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -13,6 +14,8 @@ interface Message {
 }
 
 const NeuralAssistant: React.FC = () => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
@@ -37,9 +40,9 @@ const NeuralAssistant: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const history: MessageHistory[] = messages.map(m => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }]
+      const history: MessageHistory[] = messages.map(msg_item => ({
+        role: msg_item.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg_item.content }]
       }));
 
       const result: NeuralResponse = await getNeuralResponse(userMsg, history);
@@ -63,8 +66,8 @@ const NeuralAssistant: React.FC = () => {
     <div className="fixed bottom-8 right-8 z-[100]">
       <AnimatePresence>
         {isOpen && (
-          /* @ts-ignore - Fixing framer-motion type mismatch */
-          <motion.div
+          /* Fix: Using casted motion component to resolve type mismatch */
+          <m.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -153,19 +156,19 @@ const NeuralAssistant: React.FC = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
-      {/* @ts-ignore - Fixing framer-motion type mismatch */}
-      <motion.button
+      {/* Fix: Using casted motion component to resolve type mismatch */}
+      <m.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
         className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(79,70,229,0.5)] border border-indigo-400/30 no-print"
       >
         <MessageSquare size={28} />
-      </motion.button>
+      </m.button>
     </div>
   );
 };

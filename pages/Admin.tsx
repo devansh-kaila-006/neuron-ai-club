@@ -15,6 +15,8 @@ import Skeleton from '../components/Skeleton.tsx';
 import { useToast } from '../context/ToastContext.tsx';
 
 const Admin: React.FC = () => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
   const toast = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [password, setPassword] = useState('');
@@ -308,7 +310,7 @@ const Admin: React.FC = () => {
   if (isAuthenticated === false) {
     return (
       <div className="pt-32 min-h-screen flex items-center justify-center px-6">
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass p-12 rounded-[2.5rem] w-full max-w-md text-center border-indigo-500/20 shadow-2xl">
+        <m.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass p-12 rounded-[2.5rem] w-full max-w-md text-center border-indigo-500/20 shadow-2xl">
           <ShieldCheck size={64} className="mx-auto text-indigo-500 mb-8" />
           <h1 className="text-2xl font-bold mb-8 uppercase tracking-widest font-mono">Executive Hub</h1>
           <form onSubmit={handleLogin} className="space-y-6">
@@ -318,7 +320,7 @@ const Admin: React.FC = () => {
               {isLoggingIn ? <Loader2 className="animate-spin mx-auto" /> : "Authorize"}
             </button>
           </form>
-        </motion.div>
+        </m.div>
       </div>
     );
   }
@@ -357,13 +359,13 @@ const Admin: React.FC = () => {
             { icon: <CheckCircle2 />, label: "Paid", val: stats.paidTeams },
             { icon: <Activity />, label: "Verified", val: stats.checkedIn },
             { icon: <TrendingUp />, label: "Revenue", val: `₹${stats.revenue}` },
-          ].map((s, i) => (
+          ].map((s_stat, i) => (
             <div key={i} className="glass p-6 rounded-3xl border-white/5">
               <div className="flex items-center gap-3 mb-2 opacity-50">
-                <div className="p-1">{s.icon}</div>
-                <p className="text-[10px] uppercase tracking-widest font-bold">{s.label}</p>
+                <div className="p-1">{s_stat.icon}</div>
+                <p className="text-[10px] uppercase tracking-widest font-bold">{s_stat.label}</p>
               </div>
-              <p className="text-2xl font-bold">{isLoading ? '...' : s.val}</p>
+              <p className="text-2xl font-bold">{isLoading ? '...' : s_stat.val}</p>
             </div>
           ))}
         </div>
@@ -436,7 +438,7 @@ const Admin: React.FC = () => {
 
         <AnimatePresence>
           {isScannerOpen && (
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/95 backdrop-blur-3xl overflow-y-auto"
             >
@@ -467,7 +469,7 @@ const Admin: React.FC = () => {
                         <div className="absolute -bottom-1 -left-1 w-12 h-12 border-b-4 border-l-4 border-indigo-500 rounded-bl-2xl" />
                         <div className="absolute -bottom-1 -right-1 w-12 h-12 border-b-4 border-r-4 border-indigo-500 rounded-br-2xl" />
                         
-                        <motion.div 
+                        <m.div 
                           animate={{ y: [0, 280, 0] }} 
                           transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
                           className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent shadow-[0_0_25px_rgba(79,70,229,1)]"
@@ -477,21 +479,21 @@ const Admin: React.FC = () => {
 
                   <AnimatePresence>
                     {isScanSuccess && (
-                      <motion.div 
+                      <m.div 
                         initial={{ opacity: 0 }} 
                         animate={{ opacity: 1 }} 
                         exit={{ opacity: 0 }}
                         className="absolute inset-0 bg-green-600/90 z-50 flex flex-col items-center justify-center text-white"
                       >
-                         <motion.div
+                         <m.div
                            initial={{ scale: 0.5 }} animate={{ scale: 1 }}
                            className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4"
                          >
                             <Check size={48} strokeWidth={3} />
-                         </motion.div>
+                         </m.div>
                          <h3 className="text-3xl font-black uppercase tracking-widest font-display">Access Granted</h3>
                          <p className="text-[10px] font-mono mt-2 opacity-70">SQUAD_VERIFIED // SESSION_SYNC</p>
-                      </motion.div>
+                      </m.div>
                     )}
                   </AnimatePresence>
                 </div>
@@ -535,7 +537,7 @@ const Admin: React.FC = () => {
                    </div>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>

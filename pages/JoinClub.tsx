@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -84,6 +85,8 @@ const missionPoints = [
 ];
 
 const JoinClub: React.FC = () => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
   const toast = useToast();
   const [phase, setPhase] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -211,7 +214,7 @@ const JoinClub: React.FC = () => {
   };
 
   return (
-    <div className="pt-32 min-h-screen px-6 pb-40 flex flex-col items-center bg-[#050505]">
+    <div className="pt-32 min-h-screen px-6 pb-40 flex flex-col items-center bg-transparent">
       {/* Dynamic Background */}
       <div className="fixed inset-0 pointer-events-none -z-10">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-600/5 blur-[160px] rounded-full opacity-50" />
@@ -222,7 +225,7 @@ const JoinClub: React.FC = () => {
       <div className="max-w-7xl w-full">
         <AnimatePresence mode="wait">
           {!isSuccess ? (
-            <motion.div 
+            <m.div 
               key="recruitment-grid"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -231,14 +234,14 @@ const JoinClub: React.FC = () => {
               {/* Left Column: Vision & Benefits */}
               <div className="lg:col-span-6 space-y-12">
                 <div className="space-y-6">
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full"
                   >
                     <BrainCircuit size={14} className="text-indigo-400" />
                     <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">NEURØN Recruitment Sequence</span>
-                  </motion.div>
+                  </m.div>
                   
                   <h3 className="text-3xl sm:text-5xl md:text-6xl lg:text-[6.0rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none mb-6 md:mb-12 uppercase">
                     <span className="block">SYNC TO THE</span>
@@ -255,7 +258,7 @@ const JoinClub: React.FC = () => {
                 {/* Benefits Bento Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {perks.map((perk, i) => (
-                    <motion.div 
+                    <m.div 
                       key={i}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -267,7 +270,7 @@ const JoinClub: React.FC = () => {
                       </div>
                       <h4 className="font-bold text-lg mb-2">{perk.title}</h4>
                       <p className="text-xs text-gray-500 leading-relaxed font-light">{perk.desc}</p>
-                    </motion.div>
+                    </m.div>
                   ))}
                 </div>
 
@@ -285,8 +288,8 @@ const JoinClub: React.FC = () => {
                   </div>
 
                   <div className="grid gap-4">
-                    {missionPoints.map((m, i) => (
-                      <motion.div
+                    {missionPoints.map((m_mission, i) => (
+                      <m.div
                         key={i}
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -295,14 +298,14 @@ const JoinClub: React.FC = () => {
                       >
                         {/* Background Geometric Detail */}
                         <div className="absolute -right-4 -bottom-4 opacity-5 group-hover/mission:opacity-10 transition-opacity">
-                          {m.icon}
+                          {m_mission.icon}
                         </div>
                         
                         <div className="flex gap-6 items-start relative z-10">
                           {/* Point Index Bubble */}
                           <div className="shrink-0 flex flex-col items-center gap-3 pt-1">
                             <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-white/5 flex items-center justify-center text-[10px] font-mono font-bold text-indigo-400 group-hover/mission:bg-indigo-500 group-hover/mission:text-white transition-all duration-500 shadow-xl">
-                              {m.id}
+                              {m_mission.id}
                             </div>
                             {i < missionPoints.length - 1 && (
                               <div className="w-px h-12 bg-gradient-to-b from-indigo-500/30 to-transparent" />
@@ -312,25 +315,25 @@ const JoinClub: React.FC = () => {
                           <div className="flex-1 space-y-2">
                             <div className="flex justify-between items-center">
                               <h4 className="font-tech text-xs uppercase tracking-[0.2em] text-white group-hover/mission:text-indigo-400 transition-colors">
-                                {m.title}
+                                {m_mission.title}
                               </h4>
                               <span className="text-[8px] font-mono px-2 py-0.5 rounded-full border border-white/5 text-gray-600 group-hover/mission:text-gray-400 transition-colors">
-                                {m.tag}
+                                {m_mission.tag}
                               </span>
                             </div>
                             <p className="text-[11px] text-gray-500 leading-relaxed font-light group-hover/mission:text-gray-300 transition-colors">
-                              {m.desc}
+                              {m_mission.desc}
                             </p>
                           </div>
                         </div>
 
                         {/* Hover Decorative Line */}
-                        <motion.div 
+                        <m.div 
                           className="absolute bottom-0 left-0 h-[2px] bg-indigo-500"
                           initial={{ width: 0 }}
                           whileHover={{ width: '100%' }}
                         />
-                      </motion.div>
+                      </m.div>
                     ))}
                   </div>
 
@@ -354,7 +357,7 @@ const JoinClub: React.FC = () => {
                     <div className="flex justify-between items-center mb-16">
                       {[1, 2, 3].map(s => (
                         <div key={s} className="flex flex-col items-center gap-3 relative flex-1">
-                          <motion.div 
+                          <m.div 
                             animate={{ 
                               scale: phase === s ? 1.1 : 1,
                               backgroundColor: phase >= s ? 'rgba(99, 102, 241, 1)' : 'rgba(255, 255, 255, 0.03)',
@@ -363,10 +366,10 @@ const JoinClub: React.FC = () => {
                             className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-white border transition-all z-10"
                           >
                             {phase > s ? <CheckCircle size={24} /> : s}
-                          </motion.div>
+                          </m.div>
                           {s < 3 && (
                             <div className="absolute left-[calc(50%+1.5rem)] right-[-50%] top-7 h-[1px] bg-white/5 z-0">
-                              <motion.div 
+                              <m.div 
                                 initial={{ scaleX: 0 }}
                                 animate={{ scaleX: phase > s ? 1 : 0 }}
                                 className="h-full bg-indigo-500 origin-left transition-transform duration-700"
@@ -383,7 +386,7 @@ const JoinClub: React.FC = () => {
                     <form onSubmit={handleSubmit} className="space-y-10">
                       <AnimatePresence mode="wait">
                         {phase === 1 && (
-                          <motion.div 
+                          <m.div 
                             key="p1" 
                             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                             className="space-y-8"
@@ -424,11 +427,11 @@ const JoinClub: React.FC = () => {
                             <button type="button" onClick={nextPhase} className="w-full py-6 bg-indigo-600 rounded-[2rem] font-black uppercase tracking-[0.4em] text-xs hover:bg-indigo-500 transition-all hover:scale-[1.01] active:scale-[0.98] shadow-[0_20px_40px_rgba(79,70,229,0.3)] flex items-center justify-center gap-3">
                               Continue Calibration <ChevronRight size={18} />
                             </button>
-                          </motion.div>
+                          </m.div>
                         )}
 
                         {phase === 2 && (
-                          <motion.div 
+                          <m.div 
                             key="p2" 
                             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                             className="space-y-8"
@@ -472,11 +475,11 @@ const JoinClub: React.FC = () => {
                                 Validate Manifest <ChevronRight size={18} />
                               </button>
                             </div>
-                          </motion.div>
+                          </m.div>
                         )}
 
                         {phase === 3 && (
-                          <motion.div 
+                          <m.div 
                             key="p3" 
                             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                             className="space-y-8"
@@ -523,30 +526,30 @@ const JoinClub: React.FC = () => {
                                 {isSubmitting ? <Loader2 className="animate-spin" /> : <><Send size={18} className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" /> Commit Manifest</>}
                               </button>
                             </div>
-                          </motion.div>
+                          </m.div>
                         )}
                       </AnimatePresence>
                     </form>
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ) : (
-            <motion.div 
+            <m.div 
               key="success"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               className="w-full max-w-xl glass p-16 rounded-[4rem] text-center border-emerald-500/20 shadow-2xl relative mx-auto"
             >
               <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500/30" />
-              <motion.div 
+              <m.div 
                 initial={{ scale: 0, rotate: -45 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: "spring", damping: 10, delay: 0.2 }}
                 className="w-28 h-28 bg-emerald-500/10 rounded-[2rem] flex items-center justify-center text-emerald-500 mx-auto mb-10"
               >
                 <ShieldCheck size={64} strokeWidth={1.5} />
-              </motion.div>
+              </m.div>
               <h2 className="text-5xl font-black mb-4 uppercase tracking-tighter">Manifest Anchored</h2>
               <p className="text-gray-400 text-lg leading-relaxed mb-12 font-light">
                 Your credentials have been verified and bridged to the <span className="text-indigo-400 font-bold">NEURØN</span> collective. Prepare for initial contact.
@@ -557,7 +560,7 @@ const JoinClub: React.FC = () => {
               >
                 Return to Grid <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </button>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>

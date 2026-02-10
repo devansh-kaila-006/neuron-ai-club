@@ -31,6 +31,8 @@ const teamSchema = z.object({
 });
 
 const Register: React.FC = () => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
   const toast = useToast();
   const [step, setStep] = useState(1); 
   const [teamName, setTeamName] = useState('');
@@ -127,7 +129,6 @@ const Register: React.FC = () => {
     try {
       // Execute reCAPTCHA before initializing payment
       let captchaToken = '';
-      // Fix: Access grecaptcha via window casting to any to avoid TypeScript errors
       const grecaptcha = (window as any).grecaptcha;
       if (typeof grecaptcha !== 'undefined' && RECAPTCHA_SITE_KEY) {
         captchaToken = await new Promise((resolve, reject) => {
@@ -182,18 +183,12 @@ const Register: React.FC = () => {
     setStep(3);
     sessionStorage.removeItem('neuron_draft_v4');
     toast.success("Neural Manifest Anchored.");
-    
-    setEmailStatus('sending');
-    try { 
-      await commsService.sendManifestEmail(team); 
-      setEmailStatus('sent'); 
-    } catch (err) { 
-      setEmailStatus('failed');
-    }
+    // Email dispatch is now handled background-side by the Edge Function for high-integrity delivery.
+    setEmailStatus('sent'); 
   };
 
   return (
-    <div className="pt-32 min-h-screen px-6 pb-40 bg-[#050505] relative overflow-hidden">
+    <div className="pt-32 min-h-screen px-6 pb-40 bg-transparent relative overflow-hidden">
       {/* Background Ambience */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-500/5 blur-[160px] rounded-full pointer-events-none -z-10" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 blur-[160px] rounded-full opacity-50" />
@@ -204,7 +199,7 @@ const Register: React.FC = () => {
           <div className="relative flex items-center justify-between w-full max-w-lg">
              {/* Progress Line */}
              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-white/5 z-0" />
-             <motion.div 
+             <m.div 
                initial={{ width: 0 }}
                animate={{ width: `${((step - 1) / 2) * 100}%` }}
                className="absolute left-0 top-1/2 -translate-y-1/2 h-px bg-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.5)] z-0" 
@@ -212,7 +207,7 @@ const Register: React.FC = () => {
 
              {[1, 2, 3].map(s => (
                <div key={s} className="relative flex flex-col items-center gap-4 z-10">
-                 <motion.div 
+                 <m.div 
                     animate={{ 
                       scale: step === s ? 1.2 : 1,
                       backgroundColor: step >= s ? 'rgba(79, 70, 229, 1)' : 'rgba(5, 5, 5, 1)',
@@ -221,7 +216,7 @@ const Register: React.FC = () => {
                     className={`w-12 h-12 rounded-2xl flex items-center justify-center border font-mono font-black text-sm transition-all duration-500 ${step >= s ? 'text-white' : 'text-gray-700'}`}
                  >
                    {step > s ? <CheckCircle size={20} /> : s}
-                 </motion.div>
+                 </m.div>
                  <span className={`text-[9px] font-mono font-bold uppercase tracking-[0.3em] ${step >= s ? 'text-indigo-400' : 'text-gray-700'}`}>
                    {s === 1 ? 'REGISTRY' : s === 2 ? 'ESCROW' : 'DEPLOYED'}
                  </span>
@@ -232,19 +227,19 @@ const Register: React.FC = () => {
 
         <AnimatePresence mode="wait">
           {step === 1 && (
-            <motion.div 
+            <m.div 
               key="s1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }}
               className="space-y-12"
             >
               <div className="text-center md:text-left">
-                 <motion.div
+                 <m.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full mb-6"
                   >
                     <Terminal size={14} className="text-indigo-400" />
                     <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">Mission Initialization Sequence</span>
-                  </motion.div>
+                  </m.div>
                   
                   <div className="flex flex-col">
                     <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none uppercase">
@@ -289,15 +284,15 @@ const Register: React.FC = () => {
                       <Fingerprint className="text-indigo-500" size={24} /> Personnel Manifest
                     </h3>
                     <div className="grid md:grid-cols-2 gap-6">
-                      {members.map((m, i) => (
-                        <motion.div 
+                      {members.map((m_member, i) => (
+                        <m.div 
                           key={i} 
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
                           className="glass p-8 rounded-[3rem] border-white/5 space-y-6 relative group/member"
                         >
                           <div className="flex justify-between items-center mb-2">
-                             <span className="text-[10px] font-mono font-black text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full uppercase tracking-widest">Operator 0{i+1} — {m.role}</span>
+                             <span className="text-[10px] font-mono font-black text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full uppercase tracking-widest">Operator 0{i+1} — {m_member.role}</span>
                              {i > 1 && (
                                <button onClick={() => removeMember(i)} className="p-2 glass rounded-xl text-gray-600 hover:text-red-500 transition-colors">
                                  <Trash2 size={14} />
@@ -308,27 +303,27 @@ const Register: React.FC = () => {
                           <div className="space-y-4">
                             <div className="relative group">
                               <input 
-                                placeholder="Name" value={m.name} onChange={e => updateMember(i, 'name', e.target.value)}
+                                placeholder="Name" value={m_member.name} onChange={e => updateMember(i, 'name', e.target.value)}
                                 className={`w-full bg-white/[0.03] border rounded-2xl p-4 pl-12 text-xs outline-none transition-all ${errors.members?.[i]?.name ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`}
                               />
                               <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500" size={14} />
                             </div>
                             <div className="relative group">
                               <input 
-                                placeholder="Email" value={m.email} onChange={e => updateMember(i, 'email', e.target.value)}
+                                placeholder="Email" value={m_member.email} onChange={e => updateMember(i, 'email', e.target.value)}
                                 className={`w-full bg-white/[0.03] border rounded-2xl p-4 pl-12 text-xs outline-none transition-all ${errors.members?.[i]?.email ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`}
                               />
                               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500" size={14} />
                             </div>
                             <div className="relative group">
                               <input 
-                                placeholder="Phone" value={m.phone} maxLength={10} onChange={e => updateMember(i, 'phone', e.target.value.replace(/\D/g, ''))}
+                                placeholder="Phone" value={m_member.phone} maxLength={10} onChange={e => updateMember(i, 'phone', e.target.value.replace(/\D/g, ''))}
                                 className={`w-full bg-white/[0.03] border rounded-2xl p-4 pl-12 text-xs outline-none transition-all ${errors.members?.[i]?.phone ? 'border-red-500/50' : 'border-white/5 focus:border-indigo-500'}`}
                               />
                               <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500" size={14} />
                             </div>
                           </div>
-                        </motion.div>
+                        </m.div>
                       ))}
                     </div>
 
@@ -384,11 +379,11 @@ const Register: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {step === 2 && (
-            <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-md mx-auto space-y-10">
+            <m.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-md mx-auto space-y-10">
               <div className="text-center space-y-4">
                 <div className="w-20 h-20 bg-indigo-500/10 rounded-[2rem] flex items-center justify-center text-indigo-500 mx-auto border border-indigo-500/20">
                    <CreditCard size={32} />
@@ -424,21 +419,21 @@ const Register: React.FC = () => {
                   {isSubmitting ? <Loader2 className="animate-spin" /> : <>Initiate Payment <Zap size={18}/></>}
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {step === 3 && (
-            <motion.div key="s3" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl mx-auto text-center space-y-12">
+            <m.div key="s3" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl mx-auto text-center space-y-12">
                {/* Deployed Header */}
                <div className="space-y-4">
-                  <motion.div
+                  <m.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", damping: 10, delay: 0.2 }}
                     className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto border border-green-500/20 mb-8"
                   >
                     <CheckCircle size={48} strokeWidth={1.5} />
-                  </motion.div>
+                  </m.div>
                   <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none text-white uppercase italic">
                     DEPLOYED
                   </h1>
@@ -496,7 +491,7 @@ const Register: React.FC = () => {
                <div className="text-[9px] font-mono text-gray-800 uppercase tracking-[1em] font-black pt-12">
                   NEURAL_PERSISTENCE // GRID_ID_CONFIRMED
                </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>

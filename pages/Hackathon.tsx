@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 
 const Hackathon: React.FC = () => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
   useEffect(() => {
@@ -70,14 +72,14 @@ const Hackathon: React.FC = () => {
           
           <div className="relative z-10 flex flex-col md:flex-row items-center md:items-end justify-between gap-12 lg:gap-20">
             <div className="space-y-6 flex-1">
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full"
               >
                 <Terminal size={14} className="text-indigo-400" />
                 <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">Flagship Hackathon Event</span>
-              </motion.div>
+              </m.div>
               
               <div className="flex flex-col">
                 <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none uppercase">
@@ -126,7 +128,7 @@ const Hackathon: React.FC = () => {
             { icon: <Sparkles size={24} />, label: "Real-world Problems", desc: "Focus on industrial and social impact.", color: "cyan" },
             { icon: <Trophy size={24} />, label: "Final Pitch & Demo", desc: "Showcase your prototype to the board.", color: "emerald" },
           ].map((feature, i) => (
-            <motion.div 
+            <m.div 
               key={i} 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -141,7 +143,7 @@ const Hackathon: React.FC = () => {
                 <span className="text-sm font-black uppercase tracking-widest text-white">{feature.label}</span>
                 <p className="text-[10px] text-gray-500 font-light leading-relaxed">{feature.desc}</p>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
@@ -160,7 +162,7 @@ const Hackathon: React.FC = () => {
 
             <div className="space-y-0 relative pl-4 border-l border-white/5">
               {timeline.map((item, i) => (
-                <motion.div 
+                <m.div 
                   key={i} 
                   initial={{ opacity: 0, x: -20 }} 
                   whileInView={{ opacity: 1, x: 0 }} 
@@ -187,7 +189,7 @@ const Hackathon: React.FC = () => {
                   {i < timeline.length - 1 && (
                     <div className="absolute left-[-1px] top-10 bottom-0 w-[1px] bg-gradient-to-b from-indigo-500/50 to-transparent" />
                   )}
-                </motion.div>
+                </m.div>
               ))}
             </div>
           </section>
@@ -240,7 +242,7 @@ const Hackathon: React.FC = () => {
                     </button>
                     <AnimatePresence>
                       {openRule === i && (
-                        <motion.div 
+                        <m.div 
                           initial={{ height: 0, opacity: 0 }} 
                           animate={{ height: 'auto', opacity: 1 }} 
                           exit={{ height: 0, opacity: 0 }} 
@@ -249,7 +251,7 @@ const Hackathon: React.FC = () => {
                           <div className="p-7 pt-0 text-xs text-gray-500 leading-relaxed font-light border-t border-white/5 bg-white/[0.01]">
                             {rule.a}
                           </div>
-                        </motion.div>
+                        </m.div>
                       )}
                     </AnimatePresence>
                   </div>
@@ -257,7 +259,7 @@ const Hackathon: React.FC = () => {
               </div>
             </div>
 
-            <motion.div 
+            <m.div 
               whileHover={{ scale: 1.02 }}
               className="p-1 glass rounded-[3rem] border-indigo-500/30 overflow-hidden shadow-2xl"
             >
@@ -268,7 +270,7 @@ const Hackathon: React.FC = () => {
                 <span className="text-xs font-black uppercase tracking-[0.5em] ml-[0.5em]">Sync to Manifest</span>
                 <span className="text-[8px] font-mono text-white/50 group-hover:text-white/80 uppercase tracking-widest">Registration Sequence Active</span>
               </Link>
-            </motion.div>
+            </m.div>
           </section>
         </div>
       </div>

@@ -5,6 +5,8 @@ import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 import { useToast } from '../context/ToastContext.tsx';
 
 const ToastContainer: React.FC = () => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
   const { toasts, remove } = useToast();
 
   const icons = {
@@ -23,8 +25,8 @@ const ToastContainer: React.FC = () => {
     <div className="fixed top-6 right-6 z-[2000] flex flex-col gap-3 pointer-events-none">
       <AnimatePresence>
         {toasts.map((toast) => (
-          /* @ts-ignore - Fixing framer-motion type mismatch */
-          <motion.div
+          /* Fix: Using casted motion component to resolve type mismatch */
+          <m.div
             key={toast.id}
             initial={{ opacity: 0, x: 50, scale: 0.9 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -41,7 +43,7 @@ const ToastContainer: React.FC = () => {
             >
               <X size={14} />
             </button>
-          </motion.div>
+          </m.div>
         ))}
       </AnimatePresence>
     </div>

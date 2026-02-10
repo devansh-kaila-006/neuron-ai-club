@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,6 +14,8 @@ interface NeuralLoaderProps {
  * It uses gravitational typography where the 'Ø' acts as the core ignition point.
  */
 const NeuralLoader: React.FC<NeuralLoaderProps> = ({ onComplete }) => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
   const [phase, setPhase] = useState<'void' | 'ignition' | 'assembly' | 'sync' | 'stable'>('void');
 
   // Generate random data strings for the HUD once to avoid re-renders
@@ -51,7 +54,7 @@ const NeuralLoader: React.FC<NeuralLoaderProps> = ({ onComplete }) => {
   const letters = "NEURØN".split("");
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 1 }}
       exit={{ 
         opacity: 0,
@@ -68,7 +71,7 @@ const NeuralLoader: React.FC<NeuralLoaderProps> = ({ onComplete }) => {
         {/* Scanning Beam (Active during Sync) */}
         <AnimatePresence>
           {phase === 'sync' && (
-            <motion.div 
+            <m.div 
               initial={{ x: '-100%' }}
               animate={{ x: '200%' }}
               exit={{ opacity: 0 }}
@@ -81,12 +84,12 @@ const NeuralLoader: React.FC<NeuralLoaderProps> = ({ onComplete }) => {
         {/* HUD Elements */}
         <div className="absolute inset-0 p-8 flex flex-col justify-between opacity-40 font-mono text-[9px] tracking-[0.4em] text-indigo-400 select-none">
           <div className="flex justify-between items-start">
-            <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity }}>
+            <m.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity }}>
               {hudData.topL}
-            </motion.div>
-            <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}>
+            </m.div>
+            <m.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}>
               {hudData.topR}
-            </motion.div>
+            </m.div>
           </div>
           <div className="flex justify-between items-end">
             <div>{hudData.botL}</div>
@@ -103,7 +106,7 @@ const NeuralLoader: React.FC<NeuralLoaderProps> = ({ onComplete }) => {
         <div className="relative flex items-center justify-center gap-1 md:gap-4 lg:gap-8 h-40 md:h-64 lg:h-96">
           
           {/* Gravitational Core Ring */}
-          <motion.div
+          <m.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ 
               scale: phase === 'void' ? 0 : [1, 1.2, 1],
@@ -117,7 +120,7 @@ const NeuralLoader: React.FC<NeuralLoaderProps> = ({ onComplete }) => {
             const isCore = char === 'Ø';
             
             return (
-              <motion.div
+              <m.div
                 key={i}
                 initial={{ opacity: 0, scale: 0.5, y: isCore ? 0 : 20, filter: 'blur(20px)' }}
                 animate={{ 
@@ -141,22 +144,22 @@ const NeuralLoader: React.FC<NeuralLoaderProps> = ({ onComplete }) => {
                 
                 {/* Individual Letter Glow / Shard Effect */}
                 {isCore && (
-                  <motion.div
+                  <m.div
                     animate={{ scale: [1, 1.1, 1], opacity: [0.4, 0.8, 0.4] }}
                     transition={{ duration: 4, repeat: Infinity }}
                     className="absolute inset-0 blur-3xl text-indigo-500/30 pointer-events-none"
                   >
                     {char}
-                  </motion.div>
+                  </m.div>
                 )}
-              </motion.div>
+              </m.div>
             );
           })}
         </div>
 
         {/* Unified Tagline Reveal */}
         <div className="overflow-hidden mt-8 md:mt-12">
-          <motion.div
+          <m.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ 
               y: phase === 'stable' ? 0 : 20,
@@ -169,7 +172,7 @@ const NeuralLoader: React.FC<NeuralLoaderProps> = ({ onComplete }) => {
             <span className="text-[10px] md:text-xs font-mono uppercase tracking-[1.5em] text-gray-500 ml-[1.5em] text-center">
               Amrita Artificial Intelligence Collective
             </span>
-          </motion.div>
+          </m.div>
         </div>
       </div>
 
@@ -179,14 +182,14 @@ const NeuralLoader: React.FC<NeuralLoaderProps> = ({ onComplete }) => {
       
       {/* Bottom Loading Bar (Minimalist) */}
       <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-48 h-[1px] bg-white/5">
-        <motion.div 
+        <m.div 
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 4, ease: "easeInOut" }}
           className="absolute inset-0 bg-indigo-500 origin-left"
         />
       </div>
-    </motion.div>
+    </m.div>
   );
 };
 

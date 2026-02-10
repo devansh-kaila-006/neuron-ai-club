@@ -60,6 +60,21 @@ serve(async (req) => {
     let orderId = body.orderId;
     let signature = body.signature;
     let teamData = body.teamData || {};
+    let captchaToken = body.captchaToken;
+
+    // --- reCAPTCHA VERIFICATION (Anti-Bot) ---
+    // Only verify for direct browser requests, not Razorpay webhooks
+    if (!rzpWebhookSignature && captchaToken) {
+      const recaptchaSecret = (globalThis as any).Deno.env.get("RECAPTCHA_SECRET_KEY");
+      if (recaptchaSecret) {
+        const verifyRes = await fetch(`https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecret}&response=${captchaToken}`, { method: 'POST' });
+        const verifyData = await verifyRes.json();
+        if (!verifyData.success || verifyData.score < 0.4) {
+          console.warn("reCAPTCHA Failure: Possible bot activity detected.");
+          return new Response(JSON.stringify({ error: "Neural access rejected by reCAPTCHA filter." }), { status: 403, headers: corsHeaders });
+        }
+      }
+    }
 
     if (rzpWebhookSignature) {
       const payload = JSON.parse(rawBody);
@@ -138,14 +153,11 @@ serve(async (req) => {
 
     if (error) throw error;
 
-    // --- NEW: ASYNCHRONOUS MANIFEST DISPATCH ---
-    // We trigger the send-manifest function here so the user gets an email 
-    // regardless of whether the browser tab is open.
+    // --- BACKGROUND MANIFEST DISPATCH ---
+    // Trigger the manifest email internally. We await this for reliability in this critical step.
     try {
       console.log(`Triggering manifest dispatch for ${teamID}...`);
-      // We don't await this to avoid delaying the payment verification response,
-      // though edge function lifecycle might vary; for robustness, we fire and forget or use a sub-request.
-      fetch(`${supabaseUrl}/functions/v1/send-manifest`, {
+      const manifestRes = await fetch(`${supabaseUrl}/functions/v1/send-manifest`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,9 +165,10 @@ serve(async (req) => {
           'x-neural-auth': (globalThis as any).Deno.env.get("ADMIN_HASH") || ''
         },
         body: JSON.stringify({ team: data })
-      }).catch(err => console.error("Manifest Dispatch Background Error:", err));
+      });
+      if (!manifestRes.ok) console.error("Manifest Dispatch Error:", await manifestRes.text());
     } catch (e) {
-      console.error("Manifest Trigger Failed:", e);
+      console.error("Manifest Trigger System Failure:", e);
     }
 
     console.log(`Registry Anchored: ${fullTeam.teamid}`);

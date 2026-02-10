@@ -79,6 +79,9 @@ const departments = [
 ];
 
 const Departments: React.FC = () => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
+
   return (
     <div className="pt-24 min-h-screen px-6 pb-40 flex flex-col items-center bg-transparent relative overflow-hidden">
       {/* Decorative Orbs */}
@@ -87,14 +90,14 @@ const Departments: React.FC = () => {
 
       <div className="max-w-7xl w-full">
         <header className="mb-20 space-y-4 text-left">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full"
           >
             <Zap size={14} className="text-indigo-400" />
             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">Neural Infrastructure</span>
-          </motion.div>
+          </m.div>
           
           <div className="flex flex-col">
             <h3 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none uppercase">
@@ -112,7 +115,7 @@ const Departments: React.FC = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {departments.map((dept, i) => (
-            <motion.div
+            <m.div
               key={dept.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -158,12 +161,12 @@ const Departments: React.FC = () => {
 
               {/* Decorative Scanline */}
               <div className={`absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-${dept.colorClass.split('-')[1]}-500/20 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-1000 origin-left`} />
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
         {/* Action Footer */}
-        <motion.div 
+        <m.div 
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
@@ -190,7 +193,7 @@ const Departments: React.FC = () => {
           {/* Subtle Grid Pattern */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
                style={{ backgroundImage: 'radial-gradient(#6366f1 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
-        </motion.div>
+        </m.div>
       </div>
     </div>
   );

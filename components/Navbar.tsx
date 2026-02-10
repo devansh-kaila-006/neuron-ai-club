@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const Navbar: React.FC = () => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
   const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
 
@@ -23,14 +25,14 @@ const Navbar: React.FC = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10 px-6 py-4">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <Link to="/" className="flex items-center gap-0.35 group">
-          {/* @ts-ignore - Fixing framer-motion type mismatch */}
-          <motion.div
+          {/* Fix: Using casted motion component to resolve type mismatch */}
+          <m.div
             whileHover={{ rotate: 360 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className="w-10 h-10 flex items-center justify-center"
           >
             <span className="text-3xl font-black text-indigo-500 leading-none select-none">Ø</span>
-          </motion.div>
+          </m.div>
           <span className="text-2xl font-bold tracking-tighter bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent font-mono">
             NEURØN
           </span>
@@ -65,8 +67,8 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Nav */}
       {isOpen && (
-        /* @ts-ignore - Fixing framer-motion type mismatch */
-        <motion.div
+        /* Fix: Using casted motion component to resolve type mismatch */
+        <m.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="md:hidden absolute top-full left-0 right-0 glass border-b border-white/10 p-6 flex flex-col gap-4"
@@ -81,7 +83,7 @@ const Navbar: React.FC = () => {
               {item.label}
             </Link>
           ))}
-        </motion.div>
+        </m.div>
       )}
     </nav>
   );

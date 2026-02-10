@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 // @ts-ignore
@@ -12,6 +13,9 @@ import {
 } from 'lucide-react';
 
 const Home: React.FC = () => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
+
   return (
     <div className="min-h-screen bg-transparent overflow-x-hidden font-display text-white selection:bg-indigo-500/30 pb-32">
       
@@ -20,8 +24,8 @@ const Home: React.FC = () => {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-gradient-to-b from-indigo-600/10 to-transparent blur-[120px] -z-10" />
         
         <div className="max-w-6xl mx-auto text-center relative">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ staggerChildren: 0.1 }}>
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-3 px-4 py-1.5 mb-10 bg-white/[0.03] border border-white/10 rounded-full backdrop-blur-md">
+          <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ staggerChildren: 0.1 }}>
+            <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-3 px-4 py-1.5 mb-10 bg-white/[0.03] border border-white/10 rounded-full backdrop-blur-md">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
@@ -29,14 +33,14 @@ const Home: React.FC = () => {
               <span className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.5em] font-mono">
                 Amrita Vishwa Vidyapeetham
               </span>
-            </motion.div>
+            </m.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative mb-14 flex justify-center items-center select-none">
+            <m.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative mb-14 flex justify-center items-center select-none">
               <h1 className="text-7xl md:text-[13rem] font-black leading-none flex items-center justify-center tracking-tighter">
                 <span className="z-10 -mr-1 md:-mr-4 drop-shadow-2xl">NEUR</span>
                 <span className="relative inline-block text-indigo-500 z-20 scale-[1.05] px-1 md:px-3">
                   Ø
-                  <motion.div 
+                  <m.div 
                     animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.3, 0.1] }}
                     transition={{ duration: 4, repeat: Infinity }}
                     className="absolute inset-0 blur-3xl bg-indigo-500/40 -z-10"
@@ -44,23 +48,23 @@ const Home: React.FC = () => {
                 </span>
                 <span className="z-10 -ml-1 md:-ml-4 drop-shadow-2xl">N</span>
               </h1>
-            </motion.div>
+            </m.div>
 
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-lg md:text-2xl font-tech tracking-[0.2em] text-gray-400 mb-6 uppercase">
+            <m.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-lg md:text-2xl font-tech tracking-[0.2em] text-gray-400 mb-6 uppercase">
               Artificial Intelligence Community of Practice
-            </motion.p>
+            </m.p>
 
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] md:text-sm text-indigo-500/60 mb-12 max-w-2xl mx-auto font-mono uppercase tracking-[0.4em] italic font-bold">
+            <m.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] md:text-sm text-indigo-500/60 mb-12 max-w-2xl mx-auto font-mono uppercase tracking-[0.4em] italic font-bold">
               "Built by students. Driven by curiosity. Powered by AI."
-            </motion.p>
+            </m.p>
             
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center">
+            <m.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center">
               <Link to="/join" className="group relative px-14 py-6 bg-indigo-600 rounded-2xl font-black text-[11px] uppercase tracking-[0.5em] overflow-hidden transition-all hover:scale-105 shadow-[0_25px_50px_rgba(79,70,229,0.35)] text-white">
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <span className="relative z-10 flex items-center gap-3">Join The Collective <ChevronRight className="w-4 h-4" /></span>
               </Link>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         </div>
       </section>
 
@@ -69,7 +73,7 @@ const Home: React.FC = () => {
         
         {/* Intro Flow */}
         <div className="grid lg:grid-cols-12 gap-16 items-start">
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, x: -30 }} 
             whileInView={{ opacity: 1, x: 0 }} 
             viewport={{ once: true }}
@@ -89,9 +93,9 @@ const Home: React.FC = () => {
                 While students are exposed to AI tools, many lack structured guidance. <span className="text-white font-bold">NEURØN</span> bridge this gap as Amrita’s dedicated <span className="text-indigo-400 font-tech">Community of Practice (CoP)</span>.
               </p>
             </div>
-          </motion.div>
+          </m.div>
           
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, x: 30 }} 
             whileInView={{ opacity: 1, x: 0 }} 
             viewport={{ once: true }}
@@ -109,12 +113,12 @@ const Home: React.FC = () => {
                 </div>
              </div>
              <div className="absolute -top-10 -right-10 w-48 h-48 bg-indigo-600/10 blur-[100px] -z-0 rounded-full" />
-          </motion.div>
+          </m.div>
         </div>
 
         {/* 3. STRATEGIC INTENT (VISION & MISSION) */}
         <div className="grid lg:grid-cols-2 gap-8">
-           <motion.div 
+           <m.div 
              initial={{ opacity: 0, y: 20 }} 
              whileInView={{ opacity: 1, y: 0 }} 
              viewport={{ once: true }}
@@ -129,9 +133,9 @@ const Home: React.FC = () => {
               <p className="text-3xl md:text-5xl font-black leading-[1.1] tracking-tighter text-white">
                 To establish a strong, inclusive, and <span className="text-indigo-500 italic">innovative AI ecosystem</span> at Amrita that empowers students as practitioners and leaders.
               </p>
-           </motion.div>
+           </m.div>
 
-           <motion.div 
+           <m.div 
              initial={{ opacity: 0, y: 20 }} 
              whileInView={{ opacity: 1, y: 0 }} 
              transition={{ delay: 0.1 }} 
@@ -173,17 +177,17 @@ const Home: React.FC = () => {
                     d: "Responsible problem-solving for a sustainable future.", 
                     icon: <ShieldCheck className="text-emerald-400" /> 
                   }
-                ].map((m, i) => (
+                ].map((m_item, i) => (
                   <div key={i} className="flex items-center gap-8 group/item">
                     <div className="shrink-0 w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-center transition-all duration-500 group-hover/item:border-indigo-500/30 group-hover/item:bg-indigo-500/5 group-hover/item:scale-110">
-                      {React.cloneElement(m.icon as React.ReactElement<any>, { size: 20, strokeWidth: 1.5 })}
+                      {React.cloneElement(m_item.icon as React.ReactElement<any>, { size: 20, strokeWidth: 1.5 })}
                     </div>
                     <div className="space-y-1">
                       <span className="text-xs font-black uppercase tracking-[0.2em] text-white block group-hover/item:text-indigo-400 transition-colors">
-                        {m.t}
+                        {m_item.t}
                       </span>
                       <span className="text-[10px] font-medium text-gray-500 group-hover/item:text-gray-400 transition-colors">
-                        {m.d}
+                        {m_item.d}
                       </span>
                     </div>
                   </div>
@@ -192,7 +196,7 @@ const Home: React.FC = () => {
 
               {/* Decorative Scanline */}
               <div className="absolute top-0 left-0 w-[1px] h-full bg-gradient-to-b from-transparent via-indigo-500/20 to-transparent group-hover/mission:via-indigo-500 transition-all duration-1000" />
-           </motion.div>
+           </m.div>
         </div>
 
         {/* 5. CO-P PILLARS (DNA) */}
@@ -210,7 +214,7 @@ const Home: React.FC = () => {
               { t: "Practice", d: "Hands-on projects, workshops, and research labs.", icon: <Code className="text-cyan-500" />, sub: "5.3 Tactical Layer" },
               { t: "Growth", d: "Sustained innovation and evolutionary community scale.", icon: <Activity className="text-indigo-400" />, sub: "5.4 Neural Pulse" }
             ].map((p, i) => (
-              <motion.div 
+              <m.div 
                 key={i} 
                 initial={{ opacity: 0, scale: 0.98 }} 
                 whileInView={{ opacity: 1, scale: 1 }} 
@@ -223,7 +227,7 @@ const Home: React.FC = () => {
                 <h4 className="text-[9px] font-mono font-bold text-gray-500 uppercase tracking-[0.4em] mb-2">{p.sub}</h4>
                 <h4 className="text-2xl font-black uppercase tracking-tight mb-4 text-white">{p.t}</h4>
                 <p className="text-sm font-medium text-gray-500 group-hover:text-gray-300 transition-colors">{p.d}</p>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
@@ -247,14 +251,14 @@ const Home: React.FC = () => {
               <div className="relative w-full h-full flex items-center justify-center scale-[0.88] xs:scale-[0.92] sm:scale-95 md:scale-100 transition-transform duration-500 origin-center">
                 
                 {/* Central HUB */}
-                <motion.div 
+                <m.div 
                   initial={{ scale: 0.9, opacity: 0 }} 
                   whileInView={{ scale: 1, opacity: 1 }}
                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-24 h-24 md:w-[220px] md:h-[220px] rounded-full border border-indigo-500/20 flex items-center justify-center bg-black/60 backdrop-blur-3xl shadow-[0_0_100px_rgba(79,70,229,0.15)]"
                 >
                   <div className="absolute inset-0 rounded-full border border-indigo-500/10 animate-pulse scale-[1.1]" />
                   <span className="text-[4rem] md:text-[11rem] font-black text-indigo-500 select-none leading-none translate-y-[-4px]">Ø</span>
-                </motion.div>
+                </m.div>
 
                 {/* TACTICAL NODES (PERFECT OCTAGONAL POSITIONING AROUND CENTER) */}
                 <div className="absolute inset-0 pointer-events-none">
@@ -276,7 +280,7 @@ const Home: React.FC = () => {
                       : '-translate-x-1/2';
 
                     return (
-                      <motion.div 
+                      <m.div 
                         key={i}
                         initial={{ opacity: 0, scale: 0.8 }}
                         whileInView={{ opacity: 1, scale: 1 }}
@@ -316,7 +320,7 @@ const Home: React.FC = () => {
                         <div className="md:hidden group-hover:opacity-0 transition-opacity">
                            <p className="text-[11px] font-mono font-black text-indigo-400 uppercase tracking-[0.1em]">{n.label}</p>
                         </div>
-                      </motion.div>
+                      </m.div>
                     );
                   })}
                 </div>
@@ -378,7 +382,7 @@ const Home: React.FC = () => {
               { t: "Drive Innovation", d: "Encouraging next-gen problem solving.", icon: <Lightbulb className="text-yellow-500" /> },
               { t: "Career Readiness", d: "Preparing for AI careers and research.", icon: <Briefcase className="text-indigo-400" /> }
             ].map((obj, i) => (
-              <motion.div 
+              <m.div 
                 key={i} 
                 initial={{ opacity: 0, y: 15 }} 
                 whileInView={{ opacity: 1, y: 0 }} 
@@ -390,7 +394,7 @@ const Home: React.FC = () => {
                   <h4 className="text-xl font-bold uppercase tracking-tight text-white mb-2">{obj.t}</h4>
                   <p className="text-xs text-gray-500 leading-relaxed">{obj.d}</p>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
@@ -410,7 +414,7 @@ const Home: React.FC = () => {
                   "Industry Readiness", 
                   "Leadership Development"
                 ].map((impact, i) => (
-                  <motion.div 
+                  <m.div 
                     key={i} 
                     initial={{ opacity: 0, scale: 0.9 }} 
                     whileInView={{ opacity: 1, scale: 1 }} 
@@ -418,7 +422,7 @@ const Home: React.FC = () => {
                     className="px-10 py-5 glass rounded-2xl border-white/5 text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] hover:text-indigo-400 hover:border-indigo-500/30 transition-all cursor-default shadow-sm"
                   >
                     {impact}
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
            </div>

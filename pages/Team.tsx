@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import { ShieldCheck, Cpu, Award, BookOpen, Microscope, Zap, Fingerprint, Star, Globe } from 'lucide-react';
 
 const Team: React.FC = () => {
+  // Fix: Cast motion to any to resolve property missing errors in strict environments
+  const m = motion as any;
+
   const mentor = {
     name: "Dr. Gopalakrishnan E. A.",
     role: "Principal, School of Computing, Bengaluru",
@@ -24,14 +27,14 @@ const Team: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-24">
         {/* Header Section - Perfectly matched with Departments consistency */}
         <header className="mb-20 space-y-4 text-left">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full"
           >
             <ShieldCheck size={14} className="text-indigo-400" />
             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">Neural Governance</span>
-          </motion.div>
+          </m.div>
           
           <div className="flex flex-col">
             <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none uppercase">
@@ -49,7 +52,7 @@ const Team: React.FC = () => {
 
         {/* 1. MENTOR SECTION */}
         <section className="relative flex justify-center">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -72,7 +75,7 @@ const Team: React.FC = () => {
               <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#050505]/40 to-transparent hidden md:block" />
               
               {/* Scanning Line */}
-              <motion.div 
+              <m.div 
                 animate={{ y: ['-100%', '200%'] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                 className="absolute inset-x-0 h-px bg-indigo-500/40 z-20 shadow-[0_0_15px_rgba(79,70,229,0.5)]"
@@ -127,7 +130,7 @@ const Team: React.FC = () => {
                 ))}
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </section>
 
         {/* Improved Stats Grid */}
@@ -137,7 +140,7 @@ const Team: React.FC = () => {
             { label: "Global Synergy", value: "TU Munich", desc: "Scientific research fellowship.", icon: <Globe /> },
             { label: "Policy Influence", value: "UK Govt Citation", desc: "Cited in governance policy.", icon: <Award /> }
           ].map((stat, i) => (
-            <motion.div
+            <m.div
               key={i}
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -151,7 +154,7 @@ const Team: React.FC = () => {
               <h4 className="text-[9px] font-mono text-gray-600 uppercase tracking-[0.4em] mb-2">{stat.label}</h4>
               <p className="text-xl font-black text-white mb-1 uppercase tracking-tight">{stat.value}</p>
               <p className="text-[10px] text-gray-600 italic font-light tracking-wide">{stat.desc}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
