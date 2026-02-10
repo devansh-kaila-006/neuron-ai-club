@@ -25,6 +25,17 @@ const JoinClub = lazy(() => import('./pages/JoinClub.tsx'));
 const Departments = lazy(() => import('./pages/Departments.tsx'));
 
 /**
+ * ScrollToTop: Logic component that resets scroll position on route changes.
+ */
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
+/**
  * AnimatedRoutes: Handles the core logic of page transitions.
  * CRITICAL FIX: The 'location' prop is passed to the 'Routes' component.
  * This prevents "content doubling" where both the exiting and entering routes
@@ -77,6 +88,7 @@ const App: React.FC = () => {
     <ProductionErrorBoundary>
       <ToastProvider>
         <Router>
+          <ScrollToTop />
           <div className="min-h-screen text-white relative bg-[#050505]">
             <AnimatePresence>
               {isLoading && (
