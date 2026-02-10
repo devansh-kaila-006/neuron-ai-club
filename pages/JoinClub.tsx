@@ -491,6 +491,10 @@ const JoinClub: React.FC = () => {
                                 {isSubmitting ? <Loader2 className="animate-spin" /> : <><Send size={18} className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" /> Commit Manifest</>}
                               </button>
                             </div>
+
+                            <p className="text-[7px] text-gray-800 text-center font-mono uppercase tracking-widest mt-4">
+                              Protected by reCAPTCHA v3 // Google Privacy & Terms Apply
+                            </p>
                           </m.div>
                         )}
                       </AnimatePresence>

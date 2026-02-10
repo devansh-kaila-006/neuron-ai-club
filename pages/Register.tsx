@@ -356,6 +356,9 @@ const Register: React.FC = () => {
                      >
                         {isUpdateMode ? <><Save size={20}/> Sync Change</> : <><ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /> Start Sync</>}
                      </button>
+                     <p className="text-[7px] text-gray-800 text-center font-mono uppercase tracking-widest">
+                       Protected by reCAPTCHA // Google Privacy & Terms Apply
+                     </p>
                   </div>
                 </div>
               </div>
@@ -372,10 +375,10 @@ const Register: React.FC = () => {
                 <p className="text-gray-500 font-light text-sm">Escrow link established. Finalize registry payment to anchor your manifest in the neural grid.</p>
               </div>
 
-              <div className="glass p-12 rounded-[4rem] border-indigo-500/20 shadow-2xl space-y-12 relative overflow-hidden">
+              <div className="glass p-12 rounded-[4rem] border-indigo-500/20 shadow-2xl space-y-12 relative overflow-hidden text-center">
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
                 
-                <div className="text-center space-y-2">
+                <div className="space-y-2">
                    <p className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.5em]">Registry Total</p>
                    <p className="text-7xl font-black text-white font-tech tracking-tighter italic">₹1</p>
                 </div>
@@ -387,6 +390,10 @@ const Register: React.FC = () => {
                 >
                   {isSubmitting ? <Loader2 className="animate-spin" /> : <>Initiate Payment <Zap size={18}/></>}
                 </button>
+
+                <p className="text-[7px] text-gray-800 font-mono uppercase tracking-widest">
+                  Secured by reCAPTCHA v3 // Google Terms Apply
+                </p>
               </div>
             </m.div>
           )}
