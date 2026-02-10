@@ -25,21 +25,18 @@ const DecryptedText: React.FC<DecryptedTextProps> = ({
   
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once, margin: "-5%" });
-  // Fix: Providing explicit initial value 'undefined' to satisfy TypeScript requirements in environments that do not support zero-argument useRef calls.
   const requestRef = useRef<number | undefined>(undefined);
-  // Fix: Providing explicit initial value 'undefined' to satisfy TypeScript requirements in environments that do not support zero-argument useRef calls.
   const startTimeRef = useRef<number | undefined>(undefined);
 
   // Handle the "Wave" Reveal
   useEffect(() => {
     if (isInView && !isFinished) {
-      const duration = text.length * speed * 50; // Total duration based on length
+      const duration = text.length * speed * 50;
       
       const animate = (time: number) => {
         if (!startTimeRef.current) startTimeRef.current = time;
         const progress = Math.min((time - (startTimeRef.current as number)) / duration, 1);
         
-        // Use a power function for a smoother "ease-in" reveal wave
         const easedProgress = Math.pow(progress, 1.2);
         const currentReveal = Math.floor(easedProgress * text.length);
         
@@ -86,17 +83,23 @@ const DecryptedText: React.FC<DecryptedTextProps> = ({
   return (
     <span 
       ref={ref} 
-      className={`${className} inline whitespace-pre-wrap font-mono transition-colors duration-500`}
+      className={`${className} inline-block transition-colors duration-500 max-w-full`}
+      style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
     >
       {displayText.split('').map((char, i) => {
         const isResolved = isFinished || i < revealedCount;
         const isGlitching = !isResolved && i < revealedCount + 3;
 
+        // If it's a space, render it simply to allow wrapping
+        if (char === ' ') {
+          return <span key={i}> </span>;
+        }
+
         return (
           <span 
             key={i} 
             className={`
-              transition-all duration-200
+              transition-all duration-200 inline
               ${isResolved ? '' : 'text-indigo-500/40 opacity-70'}
               ${isGlitching ? 'text-indigo-400 opacity-100 blur-[0.3px]' : ''}
             `}

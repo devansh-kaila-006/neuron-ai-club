@@ -8,6 +8,7 @@ import NeuralBackground from './components/NeuralBackground.tsx';
 import NeuralLoader from './components/NeuralLoader.tsx';
 import NeuralPageLoader from './components/NeuralPageLoader.tsx';
 import CustomCursor from './components/CustomCursor.tsx';
+import CoreTerminal from './components/CoreTerminal.tsx';
 import ProductionErrorBoundary from './components/ProductionErrorBoundary.tsx';
 import { ToastProvider } from './context/ToastContext.tsx';
 import ToastContainer from './components/ToastContainer.tsx';
@@ -25,35 +26,27 @@ const Departments = lazy(() => import('./pages/Departments.tsx'));
 
 /**
  * RouteChangeHandler: Orchestrates path transitions with a non-blocking neural scan.
- * Unified with Suspense to prevent placeholder flickering during lazy loading.
+ * Updated: Simplified logic to avoid state-locks. 
+ * Replaced manual timer with AnimatePresence key tracking to prevent "stuck" loader.
  */
 const RouteChangeHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [lastPath, setLastPath] = useState(location.pathname);
-
-  useEffect(() => {
-    if (location.pathname !== lastPath) {
-      setIsSyncing(true);
-      const timer = setTimeout(() => {
-        setLastPath(location.pathname);
-        setIsSyncing(false);
-      }, 600); // Optimized for feel vs visual feedback
-      return () => clearTimeout(timer);
-    }
-  }, [location.pathname, lastPath]);
+  const m = motion as any;
 
   return (
-    <>
-      <AnimatePresence mode="wait">
-        {isSyncing && <NeuralPageLoader />}
-      </AnimatePresence>
-      <div className={`transition-all duration-700 ${isSyncing ? 'blur-sm saturate-0' : 'blur-0 saturate-100'}`}>
+    <AnimatePresence mode="wait">
+      <m.div
+        key={location.pathname}
+        initial={{ opacity: 0, filter: 'blur(10px)' }}
+        animate={{ opacity: 1, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, filter: 'blur(10px)' }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
         <Suspense fallback={<NeuralPageLoader />}>
           {children}
         </Suspense>
-      </div>
-    </>
+      </m.div>
+    </AnimatePresence>
   );
 };
 
@@ -79,7 +72,7 @@ const App: React.FC = () => {
           <div className="min-h-screen text-white relative bg-[#050505]">
             <AnimatePresence mode="wait">
               {isLoading && (
-                <NeuralLoader onComplete={() => setIsLoading(false)} />
+                <NeuralLoader key="loader" onComplete={() => setIsLoading(false)} />
               )}
             </AnimatePresence>
 
@@ -103,6 +96,7 @@ const App: React.FC = () => {
             </main>
             
             <NeuralAssistant />
+            <CoreTerminal />
             
             <footer className="relative z-20 py-16 px-6 border-t border-white/5 bg-[#030303]/90 backdrop-blur-xl">
               <div className="max-w-7xl mx-auto text-center md:text-left">
