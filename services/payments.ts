@@ -1,4 +1,3 @@
-
 import { api } from './api.ts';
 import { supabase } from '../lib/storage.ts';
 import { Team } from '../lib/types.ts';
@@ -8,6 +7,8 @@ import { authService } from './auth.ts';
 declare global {
   interface Window {
     Razorpay: any;
+    // Fix: Define grecaptcha globally to resolve TS errors in Register and JoinClub
+    grecaptcha: any;
   }
 }
 
@@ -54,7 +55,7 @@ export const paymentService = {
     });
   },
 
-  async verifyPayment(orderId: string | undefined, paymentId: string, signature: string | undefined, teamData: Partial<Team>) {
+  async verifyPayment(orderId: string | undefined, paymentId: string, signature: string | undefined, teamData: Partial<Team>, captchaToken?: string) {
     return api.call(async () => {
       if (!supabase) throw new Error("Neural Grid Offline.");
 
@@ -62,7 +63,7 @@ export const paymentService = {
       const sessionHash = authService.getStoredHash();
 
       const { data, error } = await supabase.functions.invoke('verify-payment', {
-        body: { orderId, paymentId, signature, teamData },
+        body: { orderId, paymentId, signature, teamData, captchaToken },
         headers: {
           'x-neural-auth': sessionHash || ''
         }

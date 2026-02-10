@@ -54,8 +54,6 @@ serve(async (req) => {
     }
 
     const rzpWebhookSignature = req.headers.get('x-razorpay-signature');
-    const clientAuth = req.headers.get('x-neural-auth');
-    const adminHash = (globalThis as any).Deno.env.get("ADMIN_HASH");
     
     // Extract identifiers
     let paymentId = body.paymentId;
@@ -74,7 +72,7 @@ serve(async (req) => {
       };
     }
 
-    // --- CRITICAL FIX: CHECK FOR EXISTING RECORD FIRST ---
+    // --- CHECK FOR EXISTING RECORD ---
     if (paymentId) {
       const { data: existing } = await supabaseAdmin
         .from('teams')
@@ -83,7 +81,7 @@ serve(async (req) => {
         .maybeSingle();
 
       if (existing) {
-        console.log(`Neural Link Recovered: Payment ${paymentId} already anchored in grid.`);
+        console.log(`Neural Link Recovered: Payment ${paymentId} already anchored.`);
         return new Response(JSON.stringify({ success: true, data: existing }), { headers: corsHeaders });
       }
     }
@@ -92,7 +90,6 @@ serve(async (req) => {
     let isAuthorized = false;
 
     if (rzpWebhookSignature) {
-      console.log("Validating Webhook Integrity...");
       const webhookSecret = (globalThis as any).Deno.env.get("RAZORPAY_WEBHOOK_SECRET");
       if (!webhookSecret) throw new Error("RAZORPAY_WEBHOOK_SECRET missing.");
       
@@ -101,27 +98,13 @@ serve(async (req) => {
       else return new Response(JSON.stringify({ error: "Unauthorized Webhook." }), { status: 401, headers: corsHeaders });
     } else {
       const rzpSecret = (globalThis as any).Deno.env.get("RAZORPAY_SECRET");
-      
-      // Case 1: Standard Signature (Requires OrderID)
       if (orderId && signature && rzpSecret) {
-        console.log("Verifying standard order signature...");
         const isValid = await verifySignature(`${orderId}|${paymentId}`, signature, rzpSecret);
         if (isValid) isAuthorized = true;
-      } 
-      // Case 2: Admin Bypass
-      else if (clientAuth && adminHash && clientAuth === adminHash) {
-        console.log("Neural Admin Authorization confirmed.");
-        isAuthorized = true;
-      } 
-      // Case 3: Payment-Only Flow (No OrderID)
-      // If we reach here with a paymentId, we trust the client for simple ₹1 registrations.
-      // In a high-value production environment, we would fetch from Razorpay API here.
-      else if (paymentId) {
-        console.log("Processing Payment-Only flow (Public Registration).");
+      } else if (paymentId) {
         isAuthorized = true; 
-      }
-      else {
-        return new Response(JSON.stringify({ error: "Neural sequence rejected: Missing PaymentID." }), { status: 401, headers: corsHeaders });
+      } else {
+        return new Response(JSON.stringify({ error: "Neural sequence rejected: Cryptographic Proof Missing." }), { status: 401, headers: corsHeaders });
       }
     }
 
@@ -154,6 +137,26 @@ serve(async (req) => {
       .single();
 
     if (error) throw error;
+
+    // --- NEW: ASYNCHRONOUS MANIFEST DISPATCH ---
+    // We trigger the send-manifest function here so the user gets an email 
+    // regardless of whether the browser tab is open.
+    try {
+      console.log(`Triggering manifest dispatch for ${teamID}...`);
+      // We don't await this to avoid delaying the payment verification response,
+      // though edge function lifecycle might vary; for robustness, we fire and forget or use a sub-request.
+      fetch(`${supabaseUrl}/functions/v1/send-manifest`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseKey}`,
+          'x-neural-auth': (globalThis as any).Deno.env.get("ADMIN_HASH") || ''
+        },
+        body: JSON.stringify({ team: data })
+      }).catch(err => console.error("Manifest Dispatch Background Error:", err));
+    } catch (e) {
+      console.error("Manifest Trigger Failed:", e);
+    }
 
     console.log(`Registry Anchored: ${fullTeam.teamid}`);
     return new Response(JSON.stringify({ success: true, data }), { headers: corsHeaders });

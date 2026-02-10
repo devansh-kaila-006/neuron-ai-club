@@ -16,6 +16,7 @@ import { TeamMember, Team, PaymentStatus } from '../lib/types.ts';
 import { paymentService } from '../services/payments.ts';
 import { commsService } from '../services/comms.ts';
 import { useToast } from '../context/ToastContext.tsx';
+import { getEnv } from '../lib/env.ts';
 
 const memberSchema = z.object({
   name: z.string().min(2, "Name required"),
@@ -44,6 +45,7 @@ const Register: React.FC = () => {
   const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
 
   const [isUpdateMode, setIsUpdateMode] = useState(false);
+  const RECAPTCHA_SITE_KEY = getEnv('RECAPTCHA_SITE_KEY');
 
   useEffect(() => {
     if (teamName.length < 3 || isUpdateMode) return setNameAvailability('idle');
@@ -68,14 +70,7 @@ const Register: React.FC = () => {
     }
   };
 
-  const cancelUpdate = () => {
-    setIsUpdateMode(false);
-    setRegisteredTeam(null);
-    setTeamName('');
-    setMembers([{ name: '', email: '', phone: '', role: 'Lead' }, { name: '', email: '', phone: '', role: 'Developer' }]);
-  };
-
-  const handleProceedToPayment = () => {
+  const handleProceedToPayment = async () => {
     const result = teamSchema.safeParse({ teamName, members });
     if (!result.success) {
       const formattedErrors: any = {};
@@ -130,6 +125,20 @@ const Register: React.FC = () => {
   const handlePayment = async () => {
     setIsSubmitting(true);
     try {
+      // Execute reCAPTCHA before initializing payment
+      let captchaToken = '';
+      // Fix: Access grecaptcha via window casting to any to avoid TypeScript errors
+      const grecaptcha = (window as any).grecaptcha;
+      if (typeof grecaptcha !== 'undefined' && RECAPTCHA_SITE_KEY) {
+        captchaToken = await new Promise((resolve, reject) => {
+          grecaptcha.ready(() => {
+            grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'registration' })
+              .then(resolve)
+              .catch(reject);
+          });
+        });
+      }
+
       await paymentService.checkout({
         teamName,
         members,
@@ -142,7 +151,8 @@ const Register: React.FC = () => {
               response.razorpay_order_id || null, 
               response.razorpay_payment_id, 
               response.razorpay_signature || null, 
-              { teamname: teamName, members, leademail: members[0].email }
+              { teamname: teamName, members, leademail: members[0].email },
+              captchaToken
             );
             
             if (verifyRes.success && verifyRes.data) {
@@ -157,7 +167,7 @@ const Register: React.FC = () => {
             if (found) {
               finishRegistration(found);
             } else {
-              toast.error(`Verification Sequence Interrupted. Record with Payment ID: ${response.razorpay_payment_id} will be syncronized shortly.`);
+              toast.error(`Verification Sequence Interrupted. Payment ID: ${response.razorpay_payment_id} will be synchronized.`);
             }
           }
         }
@@ -186,7 +196,7 @@ const Register: React.FC = () => {
     <div className="pt-32 min-h-screen px-6 pb-40 bg-[#050505] relative overflow-hidden">
       {/* Background Ambience */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-500/5 blur-[160px] rounded-full pointer-events-none -z-10" />
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 blur-[160px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 blur-[160px] rounded-full opacity-50" />
 
       <div className="max-w-5xl mx-auto">
         {/* Stepper HUD */}

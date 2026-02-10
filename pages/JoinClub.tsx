@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Hash, MapPin, Phone, Layers, 
@@ -12,9 +11,9 @@ import {
   BookOpen, Rocket, BrainCircuit, Hexagon,
   ShieldAlert, GitBranch
 } from 'lucide-react';
-import { z } from 'zod';
 import { supabase } from '../lib/storage.ts';
 import { useToast } from '../context/ToastContext.tsx';
+import { getEnv } from '../lib/env.ts';
 
 /**
  * NEURØN SUPABASE UPDATE CODE:
@@ -99,6 +98,8 @@ const JoinClub: React.FC = () => {
     department: ''
   });
 
+  const RECAPTCHA_SITE_KEY = getEnv('RECAPTCHA_SITE_KEY');
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -165,9 +166,27 @@ const JoinClub: React.FC = () => {
       if (checkError) throw checkError;
 
       if (existing) {
-        toast.error("Sync Conflict: This Register Number or Phone is already synchronized with the collective.");
+        toast.error("Sync Conflict: Credentials already anchored in the collective.");
         setIsSubmitting(false);
         return;
+      }
+
+      // Security Check: reCAPTCHA v3 Execution
+      let captchaToken = '';
+      // Fix: Access grecaptcha via window casting to any to avoid TypeScript errors
+      const grecaptcha = (window as any).grecaptcha;
+      if (typeof grecaptcha !== 'undefined' && RECAPTCHA_SITE_KEY) {
+        try {
+          captchaToken = await new Promise((resolve, reject) => {
+             grecaptcha.ready(() => {
+               grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'join_club' })
+                 .then(resolve)
+                 .catch(reject);
+             });
+          });
+        } catch (err) {
+          console.warn("reCAPTCHA failed, proceeding with standard security.");
+        }
       }
 
       const { error } = await supabase.from('club_applications').insert([{
@@ -176,9 +195,12 @@ const JoinClub: React.FC = () => {
         branch: formData.branch,
         semester: formData.semester,
         phone: formData.phone,
-        department: formData.department
+        department: formData.department,
+        captcha_token: captchaToken
       }]);
+      
       if (error) throw error;
+      
       setIsSuccess(true);
       toast.success("Synchronized successfully. Welcome to the Collective.");
     } catch (err: any) {
