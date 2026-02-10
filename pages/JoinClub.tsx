@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import DecryptedText from '../components/DecryptedText.tsx';
 import { 
   User, Hash, MapPin, Phone, Layers, 
   Send, Loader2, Cpu, CheckCircle, Sparkles,
@@ -229,10 +230,11 @@ const JoinClub: React.FC = () => {
                   </m.div>
                   
                   <h3 className="text-3xl sm:text-5xl md:text-6xl lg:text-[6.0rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none mb-6 md:mb-12 uppercase">
-                    <span className="block">SYNC TO THE</span>
-                    <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
-                      COLLECTIVE
-                    </span>
+                    <span className="block"><DecryptedText text="SYNC TO THE" /></span>
+                    <DecryptedText 
+                      text="COLLECTIVE" 
+                      className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic"
+                    />
                   </h3>
 
                   <p className="text-gray-400 text-lg md:text-xl leading-relaxed max-w-lg font-light pt-6 md:pt-10">

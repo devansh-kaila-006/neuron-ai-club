@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // @ts-ignore
 import { Link } from 'react-router-dom';
+import DecryptedText from '../components/DecryptedText.tsx';
 import { 
   Clock, Calendar, MapPin, ChevronDown, ChevronUp, Sparkles, 
   Trophy, Users, Lightbulb, Zap, Rocket, Target, ShieldCheck,
@@ -66,8 +67,13 @@ const Hackathon: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-32">
         {/* Hero Section */}
         <section className="relative text-center md:text-left pt-12">
+          {/* Decrypt applied to huge decorative background text */}
           <div className="absolute -top-12 left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 pointer-events-none select-none">
-            <h2 className="text-[12rem] md:text-[20rem] font-black opacity-[0.02] leading-none tracking-tighter text-white uppercase">TALOS</h2>
+            <DecryptedText 
+              text="TALOS" 
+              className="text-[12rem] md:text-[20rem] font-black opacity-[0.02] leading-none tracking-tighter text-white uppercase"
+              speed={2}
+            />
           </div>
           
           <div className="relative z-10 flex flex-col md:flex-row items-center md:items-end justify-between gap-12 lg:gap-20">
@@ -82,11 +88,13 @@ const Hackathon: React.FC = () => {
               </m.div>
               
               <div className="flex flex-col">
+                {/* Main Header now uses DecryptedText for both components */}
                 <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none uppercase">
-                  <span className="block">TALOS</span>
-                  <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
-                    2026
-                  </span>
+                  <DecryptedText text="TALOS" />
+                  <DecryptedText 
+                    text="2026" 
+                    className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic"
+                  />
                 </h1>
               </div>
 
@@ -155,7 +163,7 @@ const Hackathon: React.FC = () => {
                   <Calendar size={24} />
                </div>
                <div>
-                 <h2 className="text-3xl font-black uppercase tracking-tight">Mission Schedule</h2>
+                 <h2 className="text-3xl font-black uppercase tracking-tight"><DecryptedText text="Mission Schedule" /></h2>
                  <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Sequential Operational Roadmap</p>
                </div>
             </div>
@@ -201,7 +209,7 @@ const Hackathon: React.FC = () => {
                     <MapPin size={24} />
                  </div>
                  <div>
-                   <h2 className="text-3xl font-black uppercase tracking-tight">Neural Hub</h2>
+                   <h2 className="text-3xl font-black uppercase tracking-tight"><DecryptedText text="Neural Hub" /></h2>
                    <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Tactical Location Data</p>
                  </div>
               </div>
@@ -229,7 +237,7 @@ const Hackathon: React.FC = () => {
             </div>
 
             <div className="space-y-8">
-              <h2 className="text-3xl font-black uppercase tracking-tight px-2">Grid Policies</h2>
+              <h2 className="text-3xl font-black uppercase tracking-tight px-2"><DecryptedText text="Grid Policies" /></h2>
               <div className="space-y-4">
                 {rules.map((rule, i) => (
                   <div key={i} className="glass rounded-3xl overflow-hidden border-white/5 hover:border-indigo-500/10 transition-colors">

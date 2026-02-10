@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 // @ts-ignore
 import { Link } from 'react-router-dom';
+import DecryptedText from '../components/DecryptedText.tsx';
 import { 
   Code, Megaphone, Microscope, Palette, 
   LayoutPanelLeft, Handshake, ChevronRight,
@@ -100,12 +101,13 @@ const Departments: React.FC = () => {
           </m.div>
           
           <div className="flex flex-col">
-            <h3 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none uppercase">
-              <span className="block">SQUAD</span>
-              <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
-                DIVISIONS
-              </span>
-            </h3>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none uppercase">
+              <span className="block"><DecryptedText text="SQUAD" /></span>
+              <DecryptedText 
+                text="DIVISIONS" 
+                className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic"
+              />
+            </h1>
           </div>
           
           <p className="text-gray-500 text-lg md:text-xl max-w-2xl font-light leading-relaxed pt-6 md:pt-10">

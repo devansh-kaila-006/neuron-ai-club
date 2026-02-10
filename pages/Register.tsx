@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // @ts-ignore
 import { Link } from 'react-router-dom';
+import DecryptedText from '../components/DecryptedText.tsx';
 import { 
   CheckCircle, CreditCard, Loader2, Plus, Trash2, Cpu, ArrowRight, 
   Printer, Mail, RefreshCw, AlertTriangle, ShieldCheck, Search, 
@@ -260,10 +261,11 @@ const Register: React.FC = () => {
                   
                   <div className="flex flex-col">
                     <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none uppercase">
-                      <span className="block">{isUpdateMode ? 'MODIFY' : 'SQUAD'}</span>
-                      <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
-                        MANIFEST
-                      </span>
+                      <span className="block"><DecryptedText text={isUpdateMode ? 'MODIFY' : 'SQUAD'} /></span>
+                      <DecryptedText 
+                        text="MANIFEST" 
+                        className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic"
+                      />
                     </h1>
                   </div>
 

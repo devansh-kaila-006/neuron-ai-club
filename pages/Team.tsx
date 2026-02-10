@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import DecryptedText from '../components/DecryptedText.tsx';
 // @ts-ignore
 import { ShieldCheck, Cpu, Award, BookOpen, Microscope, Zap, Fingerprint, Star, Globe } from 'lucide-react';
 
@@ -39,9 +40,10 @@ const Team: React.FC = () => {
           <div className="flex flex-col">
             <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none uppercase">
               <span className="block">THE</span>
-              <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic">
-                COLLECTIVE
-              </span>
+              <DecryptedText 
+                text="COLLECTIVE" 
+                className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic"
+              />
             </h1>
           </div>
           

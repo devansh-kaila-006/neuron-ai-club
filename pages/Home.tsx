@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 // @ts-ignore
 import { Link } from 'react-router-dom';
+import DecryptedText from '../components/DecryptedText.tsx';
 import { 
   Zap, Code, ChevronRight, Eye, Rocket, BrainCircuit, 
   Microscope, Network, Compass, Sparkles, 
@@ -83,7 +84,7 @@ const Home: React.FC = () => {
                <span className="text-[10px] font-mono font-bold tracking-widest text-indigo-400 uppercase">Initialization_Protocol</span>
             </div>
             <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.9]">
-              The AI <span className="text-indigo-500 italic">Evolution</span>
+              The AI <DecryptedText text="Evolution" className="text-indigo-500 italic" />
             </h2>
             <div className="space-y-6 text-gray-400 font-light leading-relaxed text-lg">
               <p>
@@ -131,7 +132,7 @@ const Home: React.FC = () => {
                 <Compass size={18} /> Strategic Vision
               </h3>
               <p className="text-3xl md:text-5xl font-black leading-[1.1] tracking-tighter text-white">
-                To establish a strong, inclusive, and <span className="text-indigo-500 italic">innovative AI ecosystem</span> at Amrita that empowers students as practitioners and leaders.
+                To establish a strong, inclusive, and <DecryptedText text="innovative AI ecosystem" className="text-indigo-500 italic" /> at Amrita that empowers students as practitioners and leaders.
               </p>
            </m.div>
 
@@ -204,7 +205,7 @@ const Home: React.FC = () => {
            <div className="flex flex-col items-center text-center">
               <span className="text-[10px] font-mono font-black text-indigo-500 uppercase tracking-[0.6em] mb-4">Neural_Architecture</span>
               <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none">
-                CoP <span className="text-indigo-500 italic">PILLARS</span>
+                CoP <DecryptedText text="PILLARS" className="text-indigo-500 italic" />
               </h2>
            </div>
            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -237,7 +238,7 @@ const Home: React.FC = () => {
            <div className="flex flex-col items-center mb-16 text-center">
               <span className="text-[10px] font-mono font-black text-indigo-500 uppercase tracking-[0.6em] mb-4">Tactical_Operations</span>
               <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none">
-                CLUB <span className="text-indigo-500 italic">ACTIVITIES</span>
+                CLUB <DecryptedText text="ACTIVITIES" className="text-indigo-500 italic" />
               </h2>
               <p className="mt-6 text-gray-500 max-w-xl text-sm leading-relaxed px-4">
                 A perfectly symmetrical synchronization of structured learning, experimentation, and industry bridging.
@@ -370,7 +371,7 @@ const Home: React.FC = () => {
         <div className="space-y-16 pt-24">
            <div className="text-center">
               <span className="text-[10px] font-mono font-bold text-gray-600 uppercase tracking-[0.5em] block mb-4">Core_Directives</span>
-              <h2 className="text-5xl font-black uppercase tracking-tighter mb-4">SYSTEM <span className="text-indigo-500 italic">OBJECTIVES</span></h2>
+              <h2 className="text-5xl font-black uppercase tracking-tighter mb-4">SYSTEM <DecryptedText text="OBJECTIVES" className="text-indigo-500 italic" /></h2>
               <div className="h-[1px] w-32 bg-indigo-500/50 mx-auto" />
            </div>
            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -403,7 +404,7 @@ const Home: React.FC = () => {
         <div className="pt-32 pb-12 space-y-24">
            <div className="text-center">
               <h2 className="text-6xl md:text-9xl font-black uppercase tracking-tighter mb-14 leading-none text-white/90">
-                IMPACT <span className="text-indigo-500 italic">MATRIX</span>
+                IMPACT <DecryptedText text="MATRIX" className="text-indigo-500 italic" />
               </h2>
               <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
                 {[
