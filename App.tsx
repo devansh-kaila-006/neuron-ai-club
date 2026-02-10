@@ -25,30 +25,38 @@ const JoinClub = lazy(() => import('./pages/JoinClub.tsx'));
 const Departments = lazy(() => import('./pages/Departments.tsx'));
 
 /**
- * RouteChangeHandler: Orchestrates path transitions.
- * Fix: Suspense is now the absolute parent to ensure the loader triggers 
- * before any animation logic begins. We use a simple cross-fade without 
- * blocking 'wait' modes to prevent navigation stalling on heavy loads.
+ * AnimatedRoutes: Handles the core logic of page transitions.
+ * CRITICAL FIX: The 'location' prop is passed to the 'Routes' component.
+ * This prevents "content doubling" where both the exiting and entering routes
+ * resolve to the new URL simultaneously.
  */
-const RouteChangeHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
   const m = motion as any;
 
   return (
-    <Suspense fallback={<NeuralPageLoader />}>
-      <AnimatePresence mode="popLayout">
-        <m.div
-          key={location.pathname}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className="w-full"
-        >
-          {children}
-        </m.div>
-      </AnimatePresence>
-    </Suspense>
+    <AnimatePresence mode="wait">
+      <m.div
+        key={location.pathname}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="w-full"
+      >
+        <Suspense fallback={<NeuralPageLoader />}>
+          <Routes location={location}>
+            <Route path="/" element={<Home />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/hackathon" element={<Hackathon />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/join" element={<JoinClub />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/departments" element={<Departments />} />
+          </Routes>
+        </Suspense>
+      </m.div>
+    </AnimatePresence>
   );
 };
 
@@ -82,17 +90,7 @@ const App: React.FC = () => {
             <ToastContainer />
             
             <main className="relative z-10 bg-transparent min-h-[80vh]">
-              <RouteChangeHandler>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/team" element={<Team />} />
-                  <Route path="/hackathon" element={<Hackathon />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/join" element={<JoinClub />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="/departments" element={<Departments />} />
-                </Routes>
-              </RouteChangeHandler>
+              <AnimatedRoutes />
             </main>
             
             <NeuralAssistant />
