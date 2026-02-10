@@ -7,6 +7,7 @@ import NeuralAssistant from './components/NeuralAssistant.tsx';
 import NeuralBackground from './components/NeuralBackground.tsx';
 import NeuralLoader from './components/NeuralLoader.tsx';
 import NeuralPageLoader from './components/NeuralPageLoader.tsx';
+import CustomCursor from './components/CustomCursor.tsx';
 import ProductionErrorBoundary from './components/ProductionErrorBoundary.tsx';
 import { ToastProvider } from './context/ToastContext.tsx';
 import ToastContainer from './components/ToastContainer.tsx';
@@ -82,6 +83,7 @@ const App: React.FC = () => {
               )}
             </AnimatePresence>
 
+            <CustomCursor />
             <NeuralBackground />
             <Navbar />
             <ToastContainer />
