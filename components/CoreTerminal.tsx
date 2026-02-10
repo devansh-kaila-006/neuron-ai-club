@@ -18,6 +18,7 @@ const CoreTerminal: React.FC = () => {
   const m = motion as any;
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<TerminalLine[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
@@ -26,6 +27,16 @@ const CoreTerminal: React.FC = () => {
   const [startTime] = useState(Date.now());
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Detect phone/mobile devices to hide the terminal
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const addLine = useCallback((content: React.ReactNode, type: TerminalLine['type'] = 'output') => {
     setHistory(prev => [...prev, {
@@ -49,11 +60,11 @@ const CoreTerminal: React.FC = () => {
   }, [addLine, history.length]);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !isMobile) {
       bootSequence();
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [isOpen, bootSequence]);
+  }, [isOpen, bootSequence, isMobile]);
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -62,6 +73,8 @@ const CoreTerminal: React.FC = () => {
   }, [history]);
 
   useEffect(() => {
+    if (isMobile) return;
+
     const handleKeydown = (e: KeyboardEvent) => {
       // Toggle with Cmd+K or Ctrl+K
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -82,7 +95,7 @@ const CoreTerminal: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeydown);
     return () => window.removeEventListener('keydown', handleKeydown);
-  }, [isOpen]);
+  }, [isOpen, isMobile]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowUp') {
@@ -307,6 +320,9 @@ const CoreTerminal: React.FC = () => {
     setInput('');
     processCommand(cmd);
   };
+
+  // Completely remove component from rendering if on phone
+  if (isMobile) return null;
 
   return (
     <>
