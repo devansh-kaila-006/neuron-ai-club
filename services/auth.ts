@@ -15,8 +15,20 @@ export const authService = {
         body: { password }
       });
 
-      if (error || !data?.success) {
-        throw new Error(data?.error || "Invalid access key: Authorization sequence rejected.");
+      if (error) {
+        let errorMsg = "Authorization sequence rejected.";
+        try {
+          // Attempt to extract the specific error from the function response
+          const context = await error.context?.json();
+          errorMsg = context?.error || context?.details || error.message;
+        } catch {
+          errorMsg = error.message;
+        }
+        throw new Error(errorMsg);
+      }
+
+      if (!data || !data.success) {
+        throw new Error(data?.error || "Neural link rejected.");
       }
       
       const { token, user } = data;

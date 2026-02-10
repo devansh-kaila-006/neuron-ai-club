@@ -19,7 +19,7 @@ async function verifyToken(token: string, secret: string) {
       ["verify"]
     );
     
-    // Verify signature
+    // Convert signature back to bytes
     const sigArray = new Uint8Array(signature.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
     const isValid = await crypto.subtle.verify("HMAC", key, sigArray, encoder.encode(payloadStr));
     if (!isValid) return null;
@@ -37,7 +37,9 @@ serve(async (req) => {
   }
 
   try {
-    const tokenSecret = (globalThis as any).Deno.env.get("ADMIN_TOKEN_SECRET");
+    const tokenSecretRaw = (globalThis as any).Deno.env.get("ADMIN_TOKEN_SECRET");
+    const tokenSecret = tokenSecretRaw?.trim();
+    
     const clientToken = req.headers.get('x-neural-auth');
     
     if (!clientToken || !tokenSecret) {

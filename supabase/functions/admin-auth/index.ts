@@ -19,29 +19,42 @@ serve(async (req) => {
   }
 
   try {
-    const { password } = await req.json();
-    const adminHash = (globalThis as any).Deno.env.get("ADMIN_HASH");
-    const tokenSecret = (globalThis as any).Deno.env.get("ADMIN_TOKEN_SECRET");
+    const body = await req.json();
+    const { password } = body;
+    
+    // Retrieve and sanitize environment variables
+    const adminHashRaw = (globalThis as any).Deno.env.get("ADMIN_HASH");
+    const tokenSecretRaw = (globalThis as any).Deno.env.get("ADMIN_TOKEN_SECRET");
 
-    if (!password || !adminHash || !tokenSecret) {
-      return new Response(JSON.stringify({ error: "Security lockdown: System misconfigured." }), { status: 500, headers: corsHeaders });
+    const adminHash = adminHashRaw?.trim();
+    const tokenSecret = tokenSecretRaw?.trim();
+
+    if (!password) {
+      return new Response(JSON.stringify({ error: "Access Denied: Protocol requires a signature." }), { status: 400, headers: corsHeaders });
+    }
+
+    if (!adminHash || !tokenSecret) {
+      console.error("NEURØN Security Error: ADMIN_HASH or ADMIN_TOKEN_SECRET not found in environment.");
+      return new Response(JSON.stringify({ error: "Security lockdown: System misconfigured. Contact Core Unit." }), { status: 500, headers: corsHeaders });
     }
 
     const inputHash = await sha256(password);
 
-    if (inputHash !== adminHash) {
+    // Perform case-insensitive comparison to handle hex variations
+    if (inputHash.toLowerCase() !== adminHash.toLowerCase()) {
+      console.warn("NEURØN Security: Unauthorized access attempt detected.");
       return new Response(JSON.stringify({ error: "Access Denied: Invalid signature sequence." }), { status: 401, headers: corsHeaders });
     }
 
-    // Generate a simple secure token (In production, use a proper JWT library)
+    // Generate a secure session payload
     const payload = {
       role: 'ADMIN',
       iat: Date.now(),
-      exp: Date.now() + (1000 * 60 * 60 * 12)
+      exp: Date.now() + (1000 * 60 * 60 * 12) // 12-hour terminal session
     };
     const payloadStr = btoa(JSON.stringify(payload));
     
-    // Sign the payload
+    // Sign the payload using the token secret
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
       "raw",
@@ -64,6 +77,7 @@ serve(async (req) => {
     }), { headers: corsHeaders });
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+    console.error("NEURØN Critical Error:", error.message);
+    return new Response(JSON.stringify({ error: "Internal Neural Link Error", details: error.message }), { status: 500, headers: corsHeaders });
   }
 })
