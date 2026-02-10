@@ -25,38 +25,38 @@ const JoinClub = lazy(() => import('./pages/JoinClub.tsx'));
 const Departments = lazy(() => import('./pages/Departments.tsx'));
 
 /**
- * RouteChangeHandler: Orchestrates path transitions with a non-blocking neural scan.
- * Updated: Simplified logic to avoid state-locks. 
- * Replaced manual timer with AnimatePresence key tracking to prevent "stuck" loader.
+ * RouteChangeHandler: Orchestrates path transitions.
+ * Fix: Suspense is now the absolute parent to ensure the loader triggers 
+ * before any animation logic begins. We use a simple cross-fade without 
+ * blocking 'wait' modes to prevent navigation stalling on heavy loads.
  */
 const RouteChangeHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const m = motion as any;
 
   return (
-    <AnimatePresence mode="wait">
-      <m.div
-        key={location.pathname}
-        initial={{ opacity: 0, filter: 'blur(10px)' }}
-        animate={{ opacity: 1, filter: 'blur(0px)' }}
-        exit={{ opacity: 0, filter: 'blur(10px)' }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-      >
-        <Suspense fallback={<NeuralPageLoader />}>
+    <Suspense fallback={<NeuralPageLoader />}>
+      <AnimatePresence mode="popLayout">
+        <m.div
+          key={location.pathname}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="w-full"
+        >
           {children}
-        </Suspense>
-      </m.div>
-    </AnimatePresence>
+        </m.div>
+      </AnimatePresence>
+    </Suspense>
   );
 };
 
 const App: React.FC = () => {
-  // Fix: Cast motion to any to resolve property missing errors in strict environments
   const m = motion as any;
   const [showLegal, setShowLegal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Lock body scroll while initial loading sequence is active
   useEffect(() => {
     if (isLoading) {
       document.body.style.overflow = 'hidden';
@@ -70,9 +70,9 @@ const App: React.FC = () => {
       <ToastProvider>
         <Router>
           <div className="min-h-screen text-white relative bg-[#050505]">
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               {isLoading && (
-                <NeuralLoader key="loader" onComplete={() => setIsLoading(false)} />
+                <NeuralLoader key="initial-loader" onComplete={() => setIsLoading(false)} />
               )}
             </AnimatePresence>
 
@@ -106,7 +106,6 @@ const App: React.FC = () => {
                     <p className="text-sm text-gray-500 font-light">The flagship Artificial Intelligence Community of Practice at Amrita Vishwa Vidyapeetham.</p>
                   </div>
                   
-                  {/* Navigation & Sketch Group - Span 2 columns to allow the image more horizontal freedom */}
                   <div className="md:col-span-2 flex flex-wrap md:flex-nowrap justify-center md:justify-start gap-12 items-start relative">
                     <div className="flex flex-col gap-3 text-left">
                       <p className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-1">Grid Navigation</p>
@@ -124,7 +123,6 @@ const App: React.FC = () => {
                       <Link to="/admin" className="text-xs text-gray-600 hover:text-indigo-400">Terminal Access</Link>
                     </div>
 
-                    {/* Architectural Blueprint Component - Further Right, Reduced Size, White Glow */}
                     <div className="flex items-center self-center ml-auto md:ml-48 opacity-80 hover:opacity-100 transition-all duration-1000 pointer-events-none select-none relative group/blueprint min-w-[200px] md:min-w-[360px] min-h-[120px] md:min-h-[220px]">
                       <m.div
                         animate={{ 
@@ -143,20 +141,12 @@ const App: React.FC = () => {
                           src="https://lh3.googleusercontent.com/d/1vdS01wW-7hwDaKG77TK4juDo4gW-FySb" 
                           alt="Amrita Infrastructure Manifest" 
                           className="h-36 md:h-60 lg:h-72 w-auto object-contain grayscale brightness-[2.5] contrast-[1.5] saturate-0 invert drop-shadow-[0_0_20px_rgba(255,255,255,0.6)] transition-all duration-1000"
-                          onLoad={(e) => {
-                            e.currentTarget.style.opacity = '1';
-                          }}
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
                         />
-                        {/* Scanning Line Effect - Subtle White */}
                         <m.div 
                           animate={{ y: ['-5%', '105%', '-5%'] }}
                           transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                           className="absolute inset-x-0 h-[1.5px] bg-white/40 blur-[2px] z-10"
                         />
-                        {/* White Holographic Atmosphere */}
                         <m.div 
                           animate={{ opacity: [0.05, 0.15, 0.05], scale: [0.95, 1.05, 0.95] }}
                           transition={{ duration: 7, repeat: Infinity }}
