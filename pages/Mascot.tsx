@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import NeuralMascot from '../components/NeuralMascot.tsx';
-import { Shield, Zap, Cpu, Download } from 'lucide-react';
+import { Shield, Zap, Cpu } from 'lucide-react';
 
 const MascotPage: React.FC = () => {
   const m = motion as any;
@@ -49,15 +49,6 @@ const MascotPage: React.FC = () => {
                   Integrated directly into our chatbot, providing real-time feedback through its holographic visor.
                 </p>
               </div>
-            </div>
-
-            <div className="flex flex-wrap gap-4">
-              <button className="bg-white text-black px-8 py-4 rounded-full font-bold hover:bg-gray-200 transition-colors flex items-center gap-2">
-                <Download size={18} /> Download STL
-              </button>
-              <button className="glass px-8 py-4 rounded-full font-bold hover:bg-white/5 transition-colors">
-                View Blueprint
-              </button>
             </div>
           </m.div>
 
