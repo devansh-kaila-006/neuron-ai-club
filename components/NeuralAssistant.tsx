@@ -2,11 +2,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  MessageSquare, X, Send, Sparkles, Bot, User, ExternalLink, 
+  X, Send, User, ExternalLink, 
   Loader2 
 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { getNeuralResponse, NeuralResponse, MessageHistory } from '../services/ai.ts';
+import NeuralMascot from './NeuralMascot.tsx';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -77,8 +78,8 @@ const NeuralAssistant: React.FC = () => {
           >
             <div className="p-4 bg-indigo-600/20 border-b border-white/10 flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
-                  <Sparkles size={16} className="text-white" />
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <NeuralMascot size={32} showWaveform={false} isAnimated={false} />
                 </div>
                 <div>
                   <p className="text-sm font-bold tracking-tight">Neural Assistant</p>
@@ -99,7 +100,7 @@ const NeuralAssistant: React.FC = () => {
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-1 ${
                       msg.role === 'user' ? 'bg-purple-600' : 'bg-indigo-600'
                     }`}>
-                      {msg.role === 'user' ? <User size={12} /> : <Bot size={12} />}
+                      {msg.role === 'user' ? <User size={12} /> : <NeuralMascot size={20} showWaveform={false} isAnimated={false} />}
                     </div>
                     <div className="flex flex-col gap-2">
                       <div 
@@ -169,7 +170,7 @@ const NeuralAssistant: React.FC = () => {
         onClick={() => setIsOpen(!isOpen)}
         className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(79,70,229,0.5)] border border-indigo-400/30 no-print"
       >
-        <MessageSquare size={28} />
+        <NeuralMascot size={48} />
       </m.button>
     </div>
   );

@@ -8,7 +8,6 @@ import NeuralBackground from './components/NeuralBackground.tsx';
 import NeuralLoader from './components/NeuralLoader.tsx';
 import NeuralPageLoader from './components/NeuralPageLoader.tsx';
 import CustomCursor from './components/CustomCursor.tsx';
-import CoreTerminal from './components/CoreTerminal.tsx';
 import ProductionErrorBoundary from './components/ProductionErrorBoundary.tsx';
 import { ToastProvider } from './context/ToastContext.tsx';
 import ToastContainer from './components/ToastContainer.tsx';
@@ -23,6 +22,7 @@ const Register = lazy(() => import('./pages/Register.tsx'));
 const Admin = lazy(() => import('./pages/Admin.tsx'));
 const JoinClub = lazy(() => import('./pages/JoinClub.tsx'));
 const Departments = lazy(() => import('./pages/Departments.tsx'));
+const Mascot = lazy(() => import('./pages/Mascot.tsx'));
 
 /**
  * ScrollToTop: Logic component that resets scroll position on route changes.
@@ -64,6 +64,7 @@ const AnimatedRoutes: React.FC = () => {
             <Route path="/join" element={<JoinClub />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/departments" element={<Departments />} />
+            <Route path="/mascot" element={<Mascot />} />
           </Routes>
         </Suspense>
       </m.div>
@@ -106,7 +107,6 @@ const App: React.FC = () => {
             </main>
             
             <NeuralAssistant />
-            <CoreTerminal />
             
             <footer className="relative z-20 py-16 px-6 border-t border-white/5 bg-[#030303]/90 backdrop-blur-xl">
               <div className="max-w-7xl mx-auto text-center md:text-left">
@@ -122,6 +122,7 @@ const App: React.FC = () => {
                       <Link to="/" className="text-xs text-gray-600 hover:text-indigo-400">Hub Hub</Link>
                       <Link to="/hackathon" className="text-xs text-gray-600 hover:text-indigo-400">TALOS 2026</Link>
                       <Link to="/departments" className="text-xs text-gray-600 hover:text-indigo-400">Squad Divisions</Link>
+                      <Link to="/mascot" className="text-xs text-gray-600 hover:text-indigo-400">Mascot Blueprint</Link>
                       <Link to="/team" className="text-xs text-gray-600 hover:text-indigo-400">The Core Council</Link>
                       <Link to="/join" className="text-xs text-gray-600 hover:text-indigo-400 font-bold text-indigo-400">Join the Club</Link>
                     </div>
@@ -130,7 +131,7 @@ const App: React.FC = () => {
                       <p className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-1">System Links</p>
                       <Link to="/register" className="text-xs text-gray-600 hover:text-indigo-400">Registry Manifest</Link>
                       <button onClick={() => setShowLegal(true)} className="text-left text-xs text-gray-600 hover:text-indigo-400">Legal Manifest</button>
-                      <Link to="/admin" className="text-xs text-gray-600 hover:text-indigo-400">Terminal Access</Link>
+                      <Link to="/admin" className="text-xs text-gray-600 hover:text-indigo-400">Admin Access</Link>
                     </div>
 
                     <div className="flex items-center self-center ml-auto md:ml-48 opacity-80 hover:opacity-100 transition-all duration-1000 pointer-events-none select-none relative group/blueprint min-w-[200px] md:min-w-[360px] min-h-[120px] md:min-h-[220px]">

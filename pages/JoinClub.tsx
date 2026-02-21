@@ -7,7 +7,7 @@ import {
   Send, Loader2, Cpu, CheckCircle, Sparkles,
   Code, Megaphone, Microscope, Palette, 
   Handshake, LayoutPanelLeft, ChevronRight,
-  ArrowLeft, Terminal, ShieldCheck, Zap,
+  ArrowLeft, ShieldCheck, Zap,
   Activity, Fingerprint, Globe, Award,
   Cpu as CpuIcon, Network, Target, Workflow,
   BookOpen, Rocket, BrainCircuit, Hexagon,

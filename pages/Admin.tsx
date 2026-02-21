@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Users, Activity, Loader2, RefreshCw, ShieldCheck, Download, 
-  CheckCircle2, TrendingUp, LogOut, Scan, X, Terminal, Flame, ArrowRight,
+  CheckCircle2, TrendingUp, LogOut, Scan, X, Flame, ArrowRight,
   AlertCircle, ShieldAlert, Check
 } from 'lucide-react';
 import jsQR from 'jsqr';
@@ -58,7 +58,7 @@ const Admin: React.FC = () => {
   const handleLogout = useCallback(() => {
     authService.signOut();
     setIsAuthenticated(false);
-    toast.success("Terminal Session Terminated.");
+    toast.success("Session Terminated.");
   }, [toast]);
 
   const fetchData = useCallback(async (silent = false) => {
@@ -264,7 +264,7 @@ const Admin: React.FC = () => {
         setIsAuthenticated(true); 
         setPassword(''); 
         await fetchData(); 
-        toast.success("Terminal Authenticated.");
+        toast.success("Session Authenticated.");
       } else {
         setLoginError(res.error || "Access Denied");
       }
@@ -302,7 +302,7 @@ const Admin: React.FC = () => {
       <div className="pt-32 min-h-screen flex items-center justify-center bg-[#050505]">
         <div className="text-center">
           <Loader2 className="animate-spin text-indigo-500 mb-4 mx-auto" size={32} />
-          <p className="text-xs font-mono text-gray-600 uppercase tracking-widest text-indigo-400">Linking Terminal...</p>
+          <p className="text-xs font-mono text-gray-600 uppercase tracking-widest text-indigo-400">Linking Session...</p>
         </div>
       </div>
     );

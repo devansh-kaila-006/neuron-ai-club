@@ -7,7 +7,7 @@ import DecryptedText from '../components/DecryptedText.tsx';
 import { 
   Clock, Calendar, MapPin, ChevronDown, ChevronUp, Sparkles, 
   Trophy, Users, Lightbulb, Zap, Rocket, Target, ShieldCheck,
-  Activity, Cpu, Network, Terminal, ChevronRight
+  Activity, Cpu, Network, ChevronRight, Code
 } from 'lucide-react';
 
 const Hackathon: React.FC = () => {
@@ -83,7 +83,7 @@ const Hackathon: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full"
               >
-                <Terminal size={14} className="text-indigo-400" />
+                <Code size={14} className="text-indigo-400" />
                 <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">Flagship Hackathon Event</span>
               </m.div>
               

@@ -8,7 +8,7 @@ import {
   CheckCircle, CreditCard, Loader2, Plus, Trash2, Cpu, ArrowRight, 
   Printer, Mail, RefreshCw, AlertTriangle, ShieldCheck, Search, 
   Database, Save, X, Send, Phone, RotateCcw, FileDown,
-  Terminal, User, Hash, Zap, Fingerprint, ShieldAlert, ChevronRight
+  User, Hash, Zap, Fingerprint, ShieldAlert, ChevronRight, Code
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { z } from 'zod';
@@ -255,7 +255,7 @@ const Register: React.FC = () => {
                     animate={{ opacity: 1, x: 0 }}
                     className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full mb-6"
                   >
-                    <Terminal size={14} className="text-indigo-400" />
+                    <Code size={14} className="text-indigo-400" />
                     <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400 font-mono">Mission Initialization Sequence</span>
                   </m.div>
                   

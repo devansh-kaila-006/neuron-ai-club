@@ -9,7 +9,7 @@ import {
   Microscope, Network, Compass, Sparkles, 
   Target, Workflow, GraduationCap, Megaphone, Lightbulb,
   Activity, Globe, Users, LayoutGrid, Database, FileText,
-  Library, GitBranch, Terminal, BookOpen, ShieldAlert,
+  Library, GitBranch, BookOpen, ShieldAlert,
   Briefcase, Info, Share2, Layers, ShieldCheck
 } from 'lucide-react';
 
@@ -265,7 +265,7 @@ const Home: React.FC = () => {
                 <div className="absolute inset-0 pointer-events-none">
                   {[
                     { style: { top: '10%', left: '50%', transform: 'translate(-50%, -50%)' }, icon: <Sparkles />, label: "INTRO SESSIONS", d: "Foundational AI concepts overview" },
-                    { style: { top: '21.7%', left: '78.3%', transform: 'translate(-50%, -50%)' }, icon: <Terminal />, label: "TECH WORKSHOPS", d: "Python & Deep Learning implementation" },
+                    { style: { top: '21.7%', left: '78.3%', transform: 'translate(-50%, -50%)' }, icon: <Code />, label: "TECH WORKSHOPS", d: "Python & Deep Learning implementation" },
                     { style: { top: '50%', left: '90%', transform: 'translate(-50%, -50%)' }, icon: <Layers />, label: "AI PLATFORMS", d: "Computer Vision & Process Automation" },
                     { style: { top: '78.3%', left: '78.3%', transform: 'translate(-50%, -50%)' }, icon: <Rocket />, label: "MINI PROJECTS", d: "Rapid prototype guided build sessions" },
                     { style: { top: '90%', left: '50%', transform: 'translate(-50%, -50%)' }, icon: <Users />, label: "GUEST LECTURES", d: "Direct industry expert tech insights" },
@@ -436,7 +436,7 @@ const Home: React.FC = () => {
                  "Transforming <span className="text-white font-bold">curiosity</span> into <span className="text-indigo-400 font-bold">competence</span> and ideas into impactful solutions."
                 </p>
                 <div className="mt-12 text-[10px] font-mono text-gray-700 uppercase tracking-[1em] font-black">
-                   TERMINAL_CONNECTED // SYSTEM_HUB_STABLE
+                   SYSTEM_HUB_STABLE
                 </div>
               </div>
            </div>
