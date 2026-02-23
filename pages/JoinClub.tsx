@@ -510,25 +510,25 @@ const JoinClub: React.FC = () => {
               key="success"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-xl glass p-16 rounded-[4rem] text-center border-emerald-500/20 shadow-2xl relative mx-auto"
+              className="w-full max-w-xl glass p-8 md:p-16 rounded-[2.5rem] md:rounded-[4rem] text-center border-emerald-500/20 shadow-2xl relative mx-auto"
             >
               <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500/30" />
               <m.div 
                 initial={{ scale: 0, rotate: -45 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: "spring", damping: 10, delay: 0.2 }}
-                className="w-28 h-28 bg-emerald-500/10 rounded-[2rem] flex items-center justify-center text-emerald-500 mx-auto mb-10"
+                className="w-20 h-20 md:w-28 md:h-28 bg-emerald-500/10 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center text-emerald-500 mx-auto mb-8 md:mb-10"
               >
-                <ShieldCheck size={64} strokeWidth={1.5} />
+                <ShieldCheck size={48} className="md:w-[64px] md:h-[64px]" strokeWidth={1.5} />
               </m.div>
-              <h2 className="text-5xl font-black mb-4 uppercase tracking-tighter">Manifest Anchored</h2>
-              <p className="text-gray-400 text-lg leading-relaxed mb-8 font-light">
+              <h2 className="text-3xl md:text-5xl font-black mb-4 uppercase tracking-tighter">Manifest Anchored</h2>
+              <p className="text-gray-400 text-base md:text-lg leading-relaxed mb-8 font-light">
                 Your credentials have been verified and bridged to the <span className="text-indigo-400 font-bold">NEURØN</span> collective. Prepare for initial contact.
               </p>
 
-              <div className="mb-12 p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/20 text-left">
+              <div className="mb-8 md:mb-12 p-5 md:p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/20 text-left">
                 <div className="flex items-center gap-3 mb-3">
-                  <Network className="text-indigo-400" size={20} />
+                  <Network className="text-indigo-400" size={18} />
                   <h4 className="text-sm font-bold uppercase tracking-widest text-indigo-400">Mandatory Action</h4>
                 </div>
                 <p className="text-xs text-gray-400 mb-6 leading-relaxed">
@@ -546,7 +546,7 @@ const JoinClub: React.FC = () => {
 
               <button 
                 onClick={() => window.location.href = '/'}
-                className="w-full px-12 py-5 bg-white/5 border border-white/10 rounded-3xl font-bold hover:bg-white/10 transition-all flex items-center justify-center gap-3 group"
+                className="w-full px-8 md:px-12 py-4 md:py-5 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl font-bold hover:bg-white/10 transition-all flex items-center justify-center gap-3 group"
               >
                 Return to Grid <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </button>
