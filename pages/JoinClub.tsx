@@ -522,12 +522,31 @@ const JoinClub: React.FC = () => {
                 <ShieldCheck size={64} strokeWidth={1.5} />
               </m.div>
               <h2 className="text-5xl font-black mb-4 uppercase tracking-tighter">Manifest Anchored</h2>
-              <p className="text-gray-400 text-lg leading-relaxed mb-12 font-light">
+              <p className="text-gray-400 text-lg leading-relaxed mb-8 font-light">
                 Your credentials have been verified and bridged to the <span className="text-indigo-400 font-bold">NEURØN</span> collective. Prepare for initial contact.
               </p>
+
+              <div className="mb-12 p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/20 text-left">
+                <div className="flex items-center gap-3 mb-3">
+                  <Network className="text-indigo-400" size={20} />
+                  <h4 className="text-sm font-bold uppercase tracking-widest text-indigo-400">Mandatory Action</h4>
+                </div>
+                <p className="text-xs text-gray-400 mb-6 leading-relaxed">
+                  To complete your integration and be considered for membership, you <span className="text-white font-bold">must</span> join our official communication node.
+                </p>
+                <a 
+                  href="https://chat.whatsapp.com/IMfjC8ex9ev3NW7moaDR4c?mode=gi_t" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full py-4 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-lg"
+                >
+                  <Phone size={18} /> Join WhatsApp Group
+                </a>
+              </div>
+
               <button 
                 onClick={() => window.location.href = '/'}
-                className="w-full px-12 py-5 bg-indigo-600 rounded-3xl font-bold hover:bg-indigo-500 transition-all flex items-center justify-center gap-3 group shadow-xl"
+                className="w-full px-12 py-5 bg-white/5 border border-white/10 rounded-3xl font-bold hover:bg-white/10 transition-all flex items-center justify-center gap-3 group"
               >
                 Return to Grid <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </button>
