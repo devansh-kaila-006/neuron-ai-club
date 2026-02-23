@@ -16,10 +16,7 @@ const Navbar: React.FC = () => {
     { label: 'Departments', path: '/departments' },
     { label: 'Mascot', path: '/mascot' },
     { label: 'Join Club', path: '/join' },
-    { label: 'TALOS Hackathon', path: '/hackathon' },
     { label: 'Team', path: '/team' },
-    { label: 'Register', path: '/register' },
-    { label: 'Admin', path: '/admin' },
   ];
 
   return (
@@ -52,12 +49,6 @@ const Navbar: React.FC = () => {
               {item.label}
             </Link>
           ))}
-          <Link
-            to="/register"
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
-          >
-            Join TALOS
-          </Link>
         </div>
 
         {/* Mobile Toggle */}

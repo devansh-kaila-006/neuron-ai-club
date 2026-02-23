@@ -120,7 +120,6 @@ const App: React.FC = () => {
                     <div className="flex flex-col gap-3 text-left">
                       <p className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-1">Grid Navigation</p>
                       <Link to="/" className="text-xs text-gray-600 hover:text-indigo-400">Hub Hub</Link>
-                      <Link to="/hackathon" className="text-xs text-gray-600 hover:text-indigo-400">TALOS 2026</Link>
                       <Link to="/departments" className="text-xs text-gray-600 hover:text-indigo-400">Squad Divisions</Link>
                       <Link to="/mascot" className="text-xs text-gray-600 hover:text-indigo-400">Mascot Blueprint</Link>
                       <Link to="/team" className="text-xs text-gray-600 hover:text-indigo-400">The Core Council</Link>
@@ -129,9 +128,7 @@ const App: React.FC = () => {
                     
                     <div className="flex flex-col gap-3 text-left">
                       <p className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-1">System Links</p>
-                      <Link to="/register" className="text-xs text-gray-600 hover:text-indigo-400">Registry Manifest</Link>
                       <button onClick={() => setShowLegal(true)} className="text-left text-xs text-gray-600 hover:text-indigo-400">Legal Manifest</button>
-                      <Link to="/admin" className="text-xs text-gray-600 hover:text-indigo-400">Admin Access</Link>
                     </div>
 
                     <div className="flex items-center self-center ml-auto md:ml-48 opacity-80 hover:opacity-100 transition-all duration-1000 pointer-events-none select-none relative group/blueprint min-w-[200px] md:min-w-[360px] min-h-[120px] md:min-h-[220px]">
