@@ -49,6 +49,12 @@ const Navbar: React.FC = () => {
               {item.label}
             </Link>
           ))}
+          <Link
+            to="/join"
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
+          >
+            Join Us
+          </Link>
         </div>
 
         {/* Mobile Toggle */}
