@@ -9,15 +9,27 @@ const Team: React.FC = () => {
   // Fix: Cast motion to any to resolve property missing errors in strict environments
   const m = motion as any;
 
-  const mentor = {
-    name: "Dr. Gopalakrishnan E. A.",
-    role: "Principal, School of Computing, Bengaluru",
-    subRole: "Professor, School of Computing",
-    image: "https://lh3.googleusercontent.com/d/1lZGMhEW5Srs4FOee38wN7B2N-T5eDhtJ",
-    bio: "Dr. Gopalakrishnan E. A. obtained his Ph.D. from IIT Madras and is a distinguished academic leader specializing in Artificial Intelligence and Complex Systems. His pioneering research in thermoacoustic systems has been cited by the UK Prime Minister's office. A former SFB TRR40 Summer Fellow at TU Munich and Visiting Scientist, his expertise spans Data-Driven Modelling, Nonlinear Dynamics, and Robust Early Warning Indicators.",
-    tag: "PRINCIPAL_DIRECTIVE",
-    credentials: ["Ph.D. IIT Madras", "TU Munich Fellow", "Nature Author"]
-  };
+  const mentors = [
+    {
+      name: "Dr. Gopalakrishnan E. A.",
+      role: "Principal, School of Computing, Bengaluru",
+      image: "https://lh3.googleusercontent.com/d/1lZGMhEW5Srs4FOee38wN7B2N-T5eDhtJ",
+      bio: "Dr. Gopalakrishnan E. A. specializes in Artificial Intelligence and Complex Systems. His pioneering research in thermoacoustic systems has been cited by the UK Prime Minister's office. A former SFB TRR40 Summer Fellow at TU Munich, his expertise spans Data-Driven Modelling and Nonlinear Dynamics.",
+      tag: "CLUB_PATRON",
+      credentials: ["Ph.D. IIT Madras", "TU Munich Fellow"],
+      interests: ["Complex Systems", "Data Driven AI", "Nonlinear Dynamics"]
+    },
+    {
+      name: "Dr. Manju Venugopalan",
+      role: "Assistant Professor (Sl. Gd.), Bengaluru",
+      image: "https://lh3.googleusercontent.com/d/1gkYYVLSJda7KzYGNvxErKY0Umzbzwcc1",
+      bio: "Dr. Manju Venugopalan has 13 years of teaching experience. Her research interests include Natural Language Processing, Machine Learning, and Big Data Analytics. She is currently exploring multimodal decision systems and NLP in the medical domain.",
+      tag: "CLUB_MENTOR",
+      credentials: ["Ph.D.", "M.Tech", "MCA"],
+      interests: ["NLP", "Machine Learning", "Big Data Analytics"],
+      email: "v_manju@blr.amrita.edu"
+    }
+  ];
 
   return (
     <div className="pt-32 min-h-screen px-6 pb-40 bg-transparent relative overflow-hidden">
@@ -26,7 +38,7 @@ const Team: React.FC = () => {
       <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] bg-purple-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
 
       <div className="max-w-7xl mx-auto space-y-24">
-        {/* Header Section - Perfectly matched with Departments consistency */}
+        {/* Header Section */}
         <header className="mb-20 space-y-4 text-left">
           <m.div
             initial={{ opacity: 0, x: -20 }}
@@ -52,95 +64,95 @@ const Team: React.FC = () => {
           </p>
         </header>
 
-        {/* 1. MENTOR SECTION */}
-        <section className="relative flex justify-center">
-          <m.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="glass max-w-5xl w-full rounded-[3.5rem] overflow-hidden flex flex-col md:flex-row border-white/5 hover:border-indigo-500/20 transition-all duration-700 shadow-2xl relative group bg-black/40"
-          >
-            {/* Background Grain & Detail */}
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] pointer-events-none" />
-            
-            {/* Image Container */}
-            <div className="md:w-[35%] overflow-hidden relative group/img bg-[#080808]">
-              <img 
-                src={mentor.image} 
-                alt={mentor.name} 
-                className="w-full h-full object-cover grayscale brightness-90 group-hover:grayscale-0 group-hover:brightness-105 transition-all duration-1000 group-hover:scale-105" 
-                onError={(e) => {
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800";
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent md:hidden" />
-              <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#050505]/40 to-transparent hidden md:block" />
+        {/* MENTORS VERTICAL STACK */}
+        <section className="flex flex-col gap-8 items-center">
+          {mentors.map((mentor, idx) => (
+            <m.div
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.2 }}
+              className="glass max-w-4xl w-full rounded-[2.5rem] overflow-hidden flex flex-col border-white/5 hover:border-indigo-500/20 transition-all duration-700 shadow-2xl relative group bg-black/40"
+            >
+              {/* Background Grain */}
+              <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] pointer-events-none" />
               
-              {/* Scanning Line */}
-              <m.div 
-                animate={{ y: ['-100%', '200%'] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-x-0 h-px bg-indigo-500/40 z-20 shadow-[0_0_15px_rgba(79,70,229,0.5)]"
-              />
-            </div>
-            
-            {/* Content Container */}
-            <div className="md:w-[65%] p-10 md:p-14 lg:p-16 flex flex-col justify-center relative z-10 space-y-8">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Fingerprint size={16} className="text-indigo-500" />
-                  <span className="text-indigo-500 font-black uppercase tracking-[0.4em] text-[9px] block font-mono">
-                    {mentor.tag}
-                  </span>
+              <div className="flex flex-col md:flex-row h-full">
+                {/* Image Container */}
+                <div className="md:w-[40%] overflow-hidden relative group/img bg-[#080808] min-h-[300px]">
+                  <img 
+                    src={mentor.image} 
+                    alt={mentor.name} 
+                    className="w-full h-full object-cover grayscale brightness-90 group-hover:grayscale-0 group-hover:brightness-105 transition-all duration-1000 group-hover:scale-105" 
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800";
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:bg-gradient-to-r md:from-transparent md:to-black/20" />
+                  
+                  {/* Scanning Line */}
+                  <m.div 
+                    animate={{ y: ['-100%', '200%'] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-x-0 h-px bg-indigo-500/40 z-20 shadow-[0_0_15px_rgba(79,70,229,0.5)]"
+                  />
                 </div>
                 
-                <div className="space-y-1">
-                  <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">
-                    {mentor.name}
-                  </h2>
-                  <p className="text-indigo-400 text-[10px] font-bold uppercase tracking-[0.3em] font-mono">{mentor.role}</p>
-                </div>
-
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {mentor.credentials.map((cred, idx) => (
-                    <div key={idx} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[8px] font-mono text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                      <Star size={8} className="text-indigo-500" /> {cred}
+                {/* Content Container */}
+                <div className="md:w-[60%] p-8 flex flex-col justify-between relative z-10">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <Fingerprint size={14} className="text-indigo-500" />
+                      <span className="text-indigo-500 font-black uppercase tracking-[0.4em] text-[8px] block font-mono">
+                        {mentor.tag}
+                      </span>
                     </div>
-                  ))}
-                </div>
-
-                <p className="text-gray-400 text-sm md:text-base leading-relaxed font-light max-w-xl">
-                  {mentor.bio}
-                </p>
-              </div>
-
-              {/* Research Interest Tags */}
-              <div className="pt-6 border-t border-white/5 grid grid-cols-2 lg:grid-cols-3 gap-6">
-                {[
-                  { icon: <Microscope size={14} />, text: "Complex Systems" },
-                  { icon: <Zap size={14} />, text: "Data Driven AI" },
-                  { icon: <BookOpen size={14} />, text: "Nonlinear Dynamics" }
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 group/item">
-                    <div className="text-indigo-500/60 group-hover/item:text-indigo-400 transition-colors">
-                      {item.icon}
+                    
+                    <div className="space-y-1">
+                      <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-tight">
+                        {mentor.name}
+                      </h2>
+                      <p className="text-indigo-400 text-[9px] font-bold uppercase tracking-[0.3em] font-mono leading-relaxed">{mentor.role}</p>
                     </div>
-                    <span className="text-[9px] font-mono text-gray-600 uppercase tracking-widest group-hover/item:text-gray-400 transition-colors">
-                      {item.text}
-                    </span>
+
+                    <div className="flex flex-wrap gap-2">
+                      {mentor.credentials.map((cred, i) => (
+                        <div key={i} className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-full text-[7px] font-mono text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                          <Star size={7} className="text-indigo-500" /> {cred}
+                        </div>
+                      ))}
+                    </div>
+
+                    <p className="text-gray-400 text-xs leading-relaxed font-light line-clamp-4">
+                      {mentor.bio}
+                    </p>
                   </div>
-                ))}
+
+                  <div className="pt-6 mt-6 border-t border-white/5 flex flex-wrap gap-3">
+                    {mentor.interests.map((interest, i) => (
+                      <div key={i} className="flex items-center gap-2 group/item">
+                        <div className="text-indigo-500/60 group-hover/item:text-indigo-400 transition-colors">
+                          <Zap size={10} />
+                        </div>
+                        <span className="text-[8px] font-mono text-gray-600 uppercase tracking-widest group-hover/item:text-gray-400 transition-colors">
+                          {interest}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-          </m.div>
+            </m.div>
+          ))}
         </section>
 
         {/* Improved Stats Grid */}
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {[
-            { label: "Research Impact", value: "Google Scholar", desc: "Global academic reach.", icon: <Star /> },
-            { label: "Global Synergy", value: "TU Munich", desc: "Scientific research fellowship.", icon: <Globe /> },
-            { label: "Policy Influence", value: "UK Govt Citation", desc: "Cited in governance policy.", icon: <Award /> }
+            { label: "Academic Profile", value: "ORCID ID", desc: "Open Researcher and Contributor ID.", icon: <Star /> },
+            { label: "Research Impact", value: "Google Scholar", desc: "Scholarly citations and metrics.", icon: <Globe /> },
+            { label: "Author Identity", value: "Scopus ID", desc: "Scopus Author Identifier.", icon: <Award /> }
           ].map((stat, i) => (
             <m.div
               key={i}
