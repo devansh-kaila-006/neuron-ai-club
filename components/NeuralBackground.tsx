@@ -26,9 +26,10 @@ const NeuralBackground: React.FC = () => {
     setCanvasSize();
 
     const nodes: any[] = [];
-    // Adjust density based on screen size
-    const nodeCount = Math.floor((width * height) / 8000); 
-    const connectionDist = 160;
+    // Increase density slightly as requested
+    const nodeCount = Math.min(Math.floor((width * height) / 12000), 160); 
+    const connectionDist = 140;
+    const connectionDistSq = connectionDist * connectionDist;
     const mouse = { x: -1000, y: -1000 };
 
     for (let i = 0; i < nodeCount; i++) {
@@ -96,10 +97,10 @@ const NeuralBackground: React.FC = () => {
           const dy = node.y - target.y;
           const distSq = dx * dx + dy * dy;
 
-          if (distSq < 25600) { // 160 * 160
+          if (distSq < connectionDistSq) { 
             const dist = Math.sqrt(distSq);
-            const alpha = (1 - dist / connectionDist) * 0.18;
-            ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
+            const alpha = Math.max(0, Math.min(0.18, (1 - dist / connectionDist) * 0.18));
+            ctx.strokeStyle = `rgba(99, 102, 241, ${isNaN(alpha) ? 0 : alpha})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(node.x, node.y);

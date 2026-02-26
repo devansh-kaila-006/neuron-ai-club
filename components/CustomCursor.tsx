@@ -19,6 +19,7 @@ const CustomCursor: React.FC = () => {
 
   const [isHovering, setIsHovering] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   // Position Motion Values
   const mouseX = useMotionValue(-100);
@@ -30,13 +31,14 @@ const CustomCursor: React.FC = () => {
   
   // Kinetic Metrics with NaN protection
   const speed = useTransform([velX, velY], ([latestX, latestY]: any[]) => {
-    const vx = latestX || 0;
-    const vy = latestY || 0;
-    return Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2));
+    const vx = Number(latestX) || 0;
+    const vy = Number(latestY) || 0;
+    const s = Math.sqrt(vx * vx + vy * vy);
+    return isNaN(s) ? 0 : s;
   });
 
-  const normalizedSpeed = useTransform(speed, [0, 2000], [0, 1]);
-  const auraOpacity = useTransform(speed, [0, 500], [0.2, 0.6]);
+  const normalizedSpeed = useTransform(speed, [0, 2000], [0, 1], { clamp: true });
+  const auraOpacity = useTransform(speed, [0, 500], [0.2, 0.6], { clamp: true });
   
   // Color Spectrum Shift (Indigo to Cyan)
   const cursorColor = useTransform(normalizedSpeed, [0, 1], ["#6366f1", "#22d3ee"]);
@@ -48,37 +50,45 @@ const CustomCursor: React.FC = () => {
   const auraX = useSpring(mouseX, { damping: 45, stiffness: 180, mass: 1 });
   const auraY = useSpring(mouseY, { damping: 45, stiffness: 180, mass: 1 });
 
-  // Synaptic Chain Shards
-  const s1X = useSpring(mouseX, { damping: 25, stiffness: 150, mass: 0.5 });
-  const s1Y = useSpring(mouseY, { damping: 25, stiffness: 150, mass: 0.5 });
-  const s2X = useSpring(mouseX, { damping: 35, stiffness: 100, mass: 0.8 });
-  const s2Y = useSpring(mouseY, { damping: 35, stiffness: 100, mass: 0.8 });
-  const s3X = useSpring(mouseX, { damping: 45, stiffness: 60, mass: 1.2 });
-  const s3Y = useSpring(mouseY, { damping: 45, stiffness: 60, mass: 1.2 });
-
   const handleMouseMove = useCallback((e: MouseEvent) => {
     mouseX.set(e.clientX);
     mouseY.set(e.clientY);
+    if (!isVisible) setIsVisible(true);
+
+    // Throttle hover detection to prevent constant re-renders
+    const now = Date.now();
+    if (now - (window as any)._lastCursorCheck < 50) return;
+    (window as any)._lastCursorCheck = now;
 
     const target = e.target as HTMLElement;
+    if (!target) return;
+    
     const isClickable = !!target.closest('a, button, input, select, textarea, [role="button"], .clickable, .group');
     if (isClickable !== isHovering) setIsHovering(isClickable);
-  }, [isHovering]);
+  }, [isHovering, isVisible]);
 
   useEffect(() => {
     if (isMobile) return;
+    (window as any)._lastCursorCheck = 0;
 
     const checkMobile = () => {
       setIsMobile(window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768);
     };
+
+    const handleMouseEnter = () => setIsVisible(true);
+    const handleMouseLeave = () => setIsVisible(false);
     
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('mouseenter', handleMouseEnter);
+    window.addEventListener('mouseleave', handleMouseLeave);
     window.addEventListener('mousedown', () => setIsClicking(true));
     window.addEventListener('mouseup', () => setIsClicking(false));
     window.addEventListener('resize', checkMobile);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseenter', handleMouseEnter);
+      window.removeEventListener('mouseleave', handleMouseLeave);
       window.removeEventListener('resize', checkMobile);
     };
   }, [handleMouseMove, isMobile]);
@@ -86,11 +96,11 @@ const CustomCursor: React.FC = () => {
   if (isMobile) return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[10000] no-print overflow-hidden">
+    <div className={`fixed inset-0 pointer-events-none z-[10000] no-print overflow-hidden transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
       
       {/* 1. KINETIC TELEMETRY HUB */}
       <m.div
-        style={{ x: coreX, y: coreY, xTranslate: '18px', yTranslate: '18px' }}
+        style={{ x: coreX, y: coreY, translateX: '18px', translateY: '18px' }}
         className="absolute flex flex-col gap-0.5 opacity-30 font-mono"
       >
         <div className="flex items-center gap-1.5">
@@ -102,34 +112,7 @@ const CustomCursor: React.FC = () => {
         </span>
       </m.div>
 
-      {/* 2. FRACTAL SYNAPSE (Dynamic SVG Connections) */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none">
-        <defs>
-          <linearGradient id="synapseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="rgba(99, 102, 241, 0.1)" />
-            <stop offset="100%" stopColor="rgba(34, 211, 238, 0.3)" />
-          </linearGradient>
-        </defs>
-        <m.line x1={coreX} y1={coreY} x2={s1X} y2={s1Y} stroke="url(#synapseGradient)" strokeWidth="0.5" style={{ opacity: auraOpacity }} />
-        <m.line x1={s1X} y1={s1Y} x2={s2X} y2={s2Y} stroke="url(#synapseGradient)" strokeWidth="0.5" style={{ opacity: useTransform(auraOpacity, (v: any) => v * 0.7) }} />
-        <m.line x1={s2X} y1={s2Y} x2={s3X} y2={s3Y} stroke="url(#synapseGradient)" strokeWidth="0.5" style={{ opacity: useTransform(auraOpacity, (v: any) => v * 0.4) }} />
-      </svg>
-
-      {/* 3. SYNAPTIC SHARDS */}
-      <m.div 
-        style={{ x: s3X, y: s3Y, translateX: '-50%', translateY: '-50%', scale: normalizedSpeed }}
-        className="absolute w-1 h-1 bg-indigo-500/20 rounded-full blur-[1px]"
-      />
-      <m.div 
-        style={{ x: s2X, y: s2Y, translateX: '-50%', translateY: '-50%', scale: useTransform(normalizedSpeed, [0, 1], [0.8, 1.2]) }}
-        className="absolute w-1.5 h-1.5 bg-cyan-400/30 rounded-full blur-[1px]"
-      />
-      <m.div 
-        style={{ x: s1X, y: s1Y, translateX: '-50%', translateY: '-50%' }}
-        className="absolute w-2 h-2 bg-indigo-300/40 rounded-full"
-      />
-
-      {/* 4. NEURAL AURA (Magnetic Perimeter) */}
+      {/* 2. NEURAL AURA (Magnetic Perimeter) */}
       <m.div
         style={{ x: auraX, y: auraY, translateX: '-50%', translateY: '-50%', opacity: auraOpacity }}
         animate={{
@@ -150,7 +133,7 @@ const CustomCursor: React.FC = () => {
         />
       </m.div>
 
-      {/* 5. THE NUCLEUS & ORBITAL ASSEMBLY */}
+      {/* 3. THE NUCLEUS & ORBITAL ASSEMBLY */}
       <m.div
         style={{ x: coreX, y: coreY, translateX: '-50%', translateY: '-50%' }}
         animate={{ scale: isClicking ? 1.4 : (isHovering ? 0.7 : 1) }}
