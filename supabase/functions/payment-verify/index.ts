@@ -73,12 +73,21 @@ serve(async (req) => {
       userEmailFallback = payment?.email;
 
       // Robust Team Data Extraction from Notes
-      if (payment?.notes?.teamData) {
+      if (payment?.notes?.teamdata) {
         try {
-          teamData = JSON.parse(payment.notes.teamData);
+          const rawData = JSON.parse(payment.notes.teamdata);
+          // Handle minified keys: tn, le, m, n, e, p
+          teamData = {
+            teamname: rawData.tn || rawData.teamName || "Squad Alpha",
+            leademail: rawData.le || rawData.leadEmail || userEmailFallback,
+            members: (rawData.m || []).map((m: any) => ({
+              name: m.n || m.name,
+              email: m.e || m.email,
+              phone: m.p || m.phone
+            }))
+          };
         } catch (e) {
-          console.error("Neural Parse Error: teamData note is malformed or truncated.");
-          // Fallback to individual notes if JSON fails
+          console.error("Neural Parse Error: teamdata note is malformed or truncated.");
           teamData = {
             teamname: payment?.notes?.teamName || "Squad Alpha",
             leademail: payment?.notes?.leadEmail || userEmailFallback

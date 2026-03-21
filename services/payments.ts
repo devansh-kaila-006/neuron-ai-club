@@ -13,7 +13,7 @@ declare global {
 }
 
 const RAZORPAY_KEY_ID = getEnv("RAZORPAY_KEY_ID");
-const RAZORPAY_PAYMENT_PAGE_URL = "https://rzp.io/rzp/42RvBVjR";
+const RAZORPAY_PAYMENT_PAGE_BASE_URL = "https://pages.razorpay.com/pl_STlwYmWAYb5zyU/view";
 
 export const paymentService = {
   async checkout(options: { 
@@ -23,10 +23,26 @@ export const paymentService = {
     phone: string, 
     onSuccess: (response: any) => void 
   }) {
-    // If we have a direct payment page URL, we can redirect or open it
-    // However, to maintain the app flow, we'll try to use the modal if possible, 
-    // but the user explicitly asked to use the rzp.io link.
-    window.open(RAZORPAY_PAYMENT_PAGE_URL, '_blank');
+    // 1. Construct the Minified JSON Object (Short Keys)
+    const minifiedData = {
+      tn: options.teamName,
+      le: options.email,
+      m: options.members.map(m => ({
+        n: m.name,
+        e: m.email,
+        p: m.phone
+      }))
+    };
+
+    // 2. Stringify and URL-Encode the JSON
+    const encodedTeamData = encodeURIComponent(JSON.stringify(minifiedData));
+
+    // 3. Construct the Final URL
+    const finalUrl = `${RAZORPAY_PAYMENT_PAGE_BASE_URL}?email=${encodeURIComponent(options.email)}&phone=${encodeURIComponent(options.phone)}&teamdata=${encodedTeamData}`;
+
+    // 4. Open the URL in a new tab
+    window.open(finalUrl, '_blank');
+    
     return { status: 'redirected' };
   },
 
