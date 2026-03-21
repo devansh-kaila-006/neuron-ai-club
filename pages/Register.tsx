@@ -148,7 +148,7 @@ const Register: React.FC = () => {
         onSuccess: async (response: any) => {
           toast.info("Synchronizing with Neural Grid...");
           try {
-            const verifyRes = await paymentService.verifyPayment(
+            const verifyRes = await paymentService.paymentVerify(
               response.razorpay_order_id || null, 
               response.razorpay_payment_id, 
               response.razorpay_signature || null, 

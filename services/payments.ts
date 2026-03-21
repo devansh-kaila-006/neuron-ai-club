@@ -59,7 +59,7 @@ export const paymentService = {
     });
   },
 
-  async verifyPayment(orderId: string | undefined | null, paymentId: string, signature: string | undefined | null, teamData: Partial<Team>, captchaToken?: string) {
+  async paymentVerify(orderId: string | undefined | null, paymentId: string, signature: string | undefined | null, teamData: Partial<Team>, captchaToken?: string) {
     return api.call(async () => {
       if (!supabase) throw new Error("Neural Grid Offline.");
 
@@ -75,7 +75,7 @@ export const paymentService = {
         captchaToken: captchaToken || null 
       };
 
-      const { data, error } = await supabase.functions.invoke('verify-payment', {
+      const { data, error } = await supabase.functions.invoke('payment-verify', {
         body: payload,
         headers: {
           'x-neural-auth': sessionHash || ''

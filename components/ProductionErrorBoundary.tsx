@@ -12,7 +12,7 @@ interface State {
   showDebug: boolean;
 }
 
-class ProductionErrorBoundary extends React.Component<Props, State> {
+class ProductionErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
     showDebug: false
