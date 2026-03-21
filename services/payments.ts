@@ -13,6 +13,7 @@ declare global {
 }
 
 const RAZORPAY_KEY_ID = getEnv("RAZORPAY_KEY_ID");
+const RAZORPAY_PAYMENT_PAGE_URL = "https://rzp.io/rzp/42RvBVjR";
 
 export const paymentService = {
   async checkout(options: { 
@@ -22,41 +23,11 @@ export const paymentService = {
     phone: string, 
     onSuccess: (response: any) => void 
   }) {
-    return api.call(async () => {
-      if (!RAZORPAY_KEY_ID) throw new Error("Payment Gateway Offline: Key ID missing.");
-      
-      const amountInPaise = 1 * 100; // TEST AMOUNT: ₹1
-
-      const rzpOptions = {
-        key: RAZORPAY_KEY_ID,
-        amount: amountInPaise,
-        currency: "INR",
-        name: "NEURØN Core",
-        description: `TALOS 2026 Registry - ${options.teamName}`,
-        image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=200",
-        handler: options.onSuccess,
-        notes: {
-          teamName: options.teamName,
-          leadEmail: options.email,
-          memberCount: options.members.length.toString()
-        },
-        prefill: {
-          name: options.teamName,
-          email: options.email,
-          contact: options.phone
-        },
-        theme: { color: "#4f46e5" },
-        modal: { 
-          ondismiss: () => {
-             console.log("NEURØN Security: Escrow sequence terminated by user.");
-          } 
-        }
-      };
-
-      const rzp = new window.Razorpay(rzpOptions);
-      rzp.open();
-      return { status: 'initiated' };
-    });
+    // If we have a direct payment page URL, we can redirect or open it
+    // However, to maintain the app flow, we'll try to use the modal if possible, 
+    // but the user explicitly asked to use the rzp.io link.
+    window.open(RAZORPAY_PAYMENT_PAGE_URL, '_blank');
+    return { status: 'redirected' };
   },
 
   async paymentVerify(orderId: string | undefined | null, paymentId: string, signature: string | undefined | null, teamData: Partial<Team>, captchaToken?: string) {

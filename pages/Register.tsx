@@ -132,50 +132,43 @@ const Register: React.FC = () => {
   const handlePayment = async () => {
     setIsSubmitting(true);
     try {
-      // Execute reCAPTCHA secure token generation
-      let captchaToken = '';
-      try {
-        captchaToken = await executeRecaptcha('registration');
-      } catch (err) {
-        console.warn("Security Module: reCAPTCHA failed, proceeding with manual sync.");
-      }
-
       await paymentService.checkout({
         teamName,
         members,
         email: members[0].email,
         phone: members[0].phone,
-        onSuccess: async (response: any) => {
-          toast.info("Synchronizing with Neural Grid...");
-          try {
-            const verifyRes = await paymentService.paymentVerify(
-              response.razorpay_order_id || null, 
-              response.razorpay_payment_id, 
-              response.razorpay_signature || null, 
-              { teamname: teamName, members, leademail: members[0].email },
-              captchaToken
-            );
-            
-            if (verifyRes.success && verifyRes.data) {
-              finishRegistration(verifyRes.data);
-            } else {
-              throw new Error("Verification failed.");
-            }
-          } catch (err: any) {
-            console.warn("Manual Neural Grid Re-sync initiated...");
-            const existing = await storage.getTeams();
-            const found = existing.find(t => t.razorpaypaymentid === response.razorpay_payment_id);
-            if (found) {
-              finishRegistration(found);
-            } else {
-              toast.error(`Verification Sequence Interrupted. Payment ID: ${response.razorpay_payment_id} will be synchronized.`);
-            }
-          }
-        }
+        onSuccess: () => {} // Not used in redirect mode
       });
+      
+      toast.info("Payment page opened in new tab. Complete payment and return here.");
+      
+      // We'll add a check status button or automatically poll
+      // For now, let's keep the user on step 2 with a "Check Status" option
     } catch (err: any) {
       toast.error(`Checkout Error: ${err.message}`);
     } finally { setIsSubmitting(false); }
+  };
+
+  const checkPaymentStatus = async () => {
+    setIsSubmitting(true);
+    try {
+      const teams = await storage.getTeams();
+      const found = teams.find(t => 
+        t.teamname.toLowerCase() === teamName.toLowerCase() && 
+        t.leademail.toLowerCase() === members[0].email.toLowerCase() &&
+        t.paymentstatus === PaymentStatus.PAID
+      );
+      
+      if (found) {
+        finishRegistration(found);
+      } else {
+        toast.error("Neural Manifest not yet anchored. Ensure payment is completed.");
+      }
+    } catch (err: any) {
+      toast.error(`Sync Check Failed: ${err.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const finishRegistration = async (team: Team) => {
@@ -414,7 +407,16 @@ const Register: React.FC = () => {
                   disabled={isSubmitting} 
                   className="w-full py-8 bg-indigo-600 rounded-[2.5rem] font-black uppercase tracking-[0.5em] text-xs flex items-center justify-center gap-4 hover:bg-indigo-500 shadow-2xl transition-all"
                 >
-                  {isSubmitting ? <Loader2 className="animate-spin" /> : <>Initiate Payment <Zap size={18}/></>}
+                  {isSubmitting ? <Loader2 className="animate-spin" /> : <>Open Payment Page <Zap size={18}/></>}
+                </button>
+
+                <button 
+                  onClick={checkPaymentStatus} 
+                  disabled={isSubmitting} 
+                  className="w-full py-4 glass border-white/10 rounded-[2rem] font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 hover:bg-white/10 transition-all"
+                >
+                  {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : <RefreshCw size={14} />}
+                  Check Sync Status
                 </button>
 
                 <p className="text-[7px] text-gray-800 font-mono uppercase tracking-widest">

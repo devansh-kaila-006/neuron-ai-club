@@ -84,6 +84,13 @@ serve(async (req) => {
             leademail: payment?.notes?.leadEmail || userEmailFallback
           };
         }
+      } else if (payment?.notes) {
+        // Direct mapping from Razorpay Payment Page custom fields
+        teamData = {
+          teamname: payment.notes.teamName || payment.notes.team_name || "Squad Alpha",
+          leademail: payment.notes.leadEmail || payment.notes.email || userEmailFallback || "lead@talos.ai",
+          members: [] // We might not have members from a simple payment page
+        };
       }
     }
 
