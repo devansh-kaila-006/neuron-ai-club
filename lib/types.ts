@@ -42,9 +42,12 @@ export interface BlogPost {
   excerpt: string;
   category: BlogCategory;
   author_id: string;
-  author_name: string;
   created_at: string;
   updated_at: string;
+  profiles?: {
+    full_name: string;
+    avatar_url?: string;
+  };
 }
 
 export interface ApiResponse<T = any> {

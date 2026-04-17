@@ -8,7 +8,7 @@ export const blogService = {
 
     let query = supabase
       .from('blog_posts')
-      .select('*')
+      .select('*, profiles(full_name, avatar_url)')
       .order('created_at', { ascending: false });
 
     if (category) {
@@ -25,7 +25,7 @@ export const blogService = {
     return data as BlogPost[];
   },
 
-  async createPost(post: Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'author_id' | 'author_name'>): Promise<ApiResponse<BlogPost>> {
+  async createPost(post: Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'author_id' | 'profiles'>): Promise<ApiResponse<BlogPost>> {
     if (!supabase) return { success: false, status: 500, error: "Neural Grid Offline." };
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -34,13 +34,12 @@ export const blogService = {
     const newPost = {
       ...post,
       author_id: user.id,
-      author_name: user.user_metadata.full_name || user.email?.split('@')[0] || 'Anonymous',
     };
 
     const { data, error } = await supabase
       .from('blog_posts')
       .insert([newPost])
-      .select()
+      .select('*, profiles(full_name, avatar_url)')
       .single();
 
     if (error) {
@@ -82,7 +81,7 @@ export const blogService = {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: window.location.origin + '/blog'
+          emailRedirectTo: window.location.origin
         }
       });
       if (error) throw error;
@@ -100,7 +99,7 @@ export const blogService = {
         data: {
           full_name: fullName
         },
-        emailRedirectTo: window.location.origin + '/blog'
+        emailRedirectTo: window.location.origin
       }
     });
 
@@ -117,5 +116,33 @@ export const blogService = {
     if (!supabase) return null;
     const { data: { user } } = await supabase.auth.getUser();
     return user;
+  },
+
+  async getProfile(userId: string) {
+    if (!supabase) return null;
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    if (error) return null;
+    return data;
+  },
+
+  async updateProfile(updates: { full_name?: string; avatar_url?: string; username?: string }) {
+    if (!supabase) return { success: false, error: "Neural Grid Offline." };
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Unauthorized." };
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
   }
 };

@@ -32,6 +32,11 @@ const Blog: React.FC = () => {
   const [authHoneypot, setAuthHoneypot] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
+  // Profile State
+  const [showProfile, setShowProfile] = useState(false);
+  const [profileData, setProfileData] = useState<any>(null);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
   // Editor State
   const [newPost, setNewPost] = useState({
     title: '',
@@ -65,6 +70,24 @@ const Blog: React.FC = () => {
   const checkUser = async () => {
     const currentUser = await blogService.getCurrentUser();
     setUser(currentUser);
+    if (currentUser) {
+      const profile = await blogService.getProfile(currentUser.id);
+      setProfileData(profile);
+    }
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdatingProfile(true);
+    const res = await blogService.updateProfile({ full_name: profileData.full_name });
+    if (res.success) {
+      toast.success("Neural Identity updated.");
+      setShowProfile(false);
+      fetchPosts();
+    } else {
+      toast.error(`Update Error: ${res.error}`);
+    }
+    setIsUpdatingProfile(false);
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -169,6 +192,13 @@ const Blog: React.FC = () => {
             {user ? (
               <div className="flex items-center gap-4">
                 <button 
+                  onClick={() => setShowProfile(true)}
+                  className="p-3 glass border-white/10 rounded-full text-indigo-400 hover:text-indigo-300 transition-all shadow-lg"
+                  title="Profile Metadata"
+                >
+                  <User size={18} />
+                </button>
+                <button 
                   onClick={() => setShowEditor(true)}
                   className="px-6 py-3 bg-indigo-600 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20"
                 >
@@ -261,9 +291,9 @@ const Blog: React.FC = () => {
                 <div className="px-8 py-6 border-t border-white/5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px] font-bold text-indigo-400">
-                      {post.author_name[0].toUpperCase()}
+                      {post.profiles?.full_name?.[0].toUpperCase() || 'A'}
                     </div>
-                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">{post.author_name}</span>
+                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">{post.profiles?.full_name || 'Anonymous'}</span>
                   </div>
                   <button 
                     onClick={() => setSelectedPost(post)}
@@ -313,10 +343,10 @@ const Blog: React.FC = () => {
                   </h2>
                   <div className="flex items-center gap-3 pt-2">
                     <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">
-                      {selectedPost.author_name[0].toUpperCase()}
+                      {selectedPost.profiles?.full_name?.[0].toUpperCase() || 'A'}
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-mono text-white uppercase tracking-widest">{selectedPost.author_name}</span>
+                      <span className="text-[10px] font-mono text-white uppercase tracking-widest">{selectedPost.profiles?.full_name || 'Anonymous'}</span>
                       <span className="text-[8px] font-mono text-gray-600 uppercase tracking-widest">Neural Contributor</span>
                     </div>
                   </div>
@@ -541,6 +571,68 @@ const Blog: React.FC = () => {
                     {loading ? <Loader2 className="animate-spin" /> : <><Zap size={18} /> Anchor to Grid</>}
                   </button>
                 </div>
+              </form>
+            </m.div>
+          </m.div>
+        )}
+      {/* Profile Modal */}
+      <AnimatePresence>
+        {showProfile && profileData && (
+          <m.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/85 backdrop-blur-2xl overflow-y-auto"
+          >
+            <m.div 
+              initial={{ scale: 0.9, y: 30 }} 
+              animate={{ scale: 1, y: 0 }}
+              className="glass w-full max-w-md p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] border-white/10 relative my-auto shadow-2xl"
+            >
+              <button 
+                onClick={() => setShowProfile(false)} 
+                className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors bg-white/5 p-2 rounded-full"
+              >
+                <X size={20} />
+              </button>
+              
+              <div className="text-center space-y-5 mb-10">
+                <div className="w-20 h-20 bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-400 mx-auto border border-indigo-500/20 shadow-[0_0_30px_rgba(79,70,229,0.1)]">
+                  <User size={40} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black uppercase tracking-tight text-white">Neural Identity</h2>
+                  <p className="text-[10px] text-gray-500 font-mono mt-1">{user?.email}</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleUpdateProfile} className="space-y-8">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 ml-2">Display Name</label>
+                    <input 
+                      type="text"
+                      required
+                      value={profileData.full_name || ''}
+                      onChange={(e) => setProfileData({...profileData, full_name: e.target.value})}
+                      placeholder="Neural Architect"
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-4 md:p-5 outline-none focus:border-indigo-500/50 transition-all font-mono text-xs md:text-sm"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1 px-2">
+                    <p className="text-[8px] uppercase text-gray-600 tracking-widest">Neural Link UID</p>
+                    <p className="text-[9px] font-mono text-indigo-500/60 truncate">{user?.id}</p>
+                  </div>
+                </div>
+
+                <button 
+                  type="submit"
+                  disabled={isUpdatingProfile}
+                  className="w-full py-5 bg-indigo-600 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px] md:text-xs hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-3"
+                >
+                  {isUpdatingProfile ? <Loader2 className="animate-spin" /> : <>Synchronize Profile</>}
+                </button>
               </form>
             </m.div>
           </m.div>
