@@ -174,7 +174,7 @@ const NeuralLoader: React.FC<NeuralLoaderProps> = ({ onComplete }) => {
         </div>
       </div>
 
-      <div className="absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay" />
+      <div className="absolute inset-0 pointer-events-none bg-[url('data:image/svg+xml,%3Csvg%20viewBox=%220%200%20200%20200%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter%20id=%22noiseFilter%22%3E%3CfeTurbulence%20type=%22fractalNoise%22%20baseFrequency=%220.65%22%20numOctaves=%223%22%20stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')] opacity-[0.02] mix-blend-overlay" />
       <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_20vw_rgba(0,0,0,0.9)]" />
       
       <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-40 h-[1px] bg-white/5">

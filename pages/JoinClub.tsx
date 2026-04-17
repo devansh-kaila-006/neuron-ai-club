@@ -205,7 +205,7 @@ const JoinClub: React.FC = () => {
       <div className="fixed inset-0 pointer-events-none -z-10">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-600/5 blur-[160px] rounded-full opacity-50" />
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-600/5 blur-[160px] rounded-full opacity-50" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20viewBox=%220%200%20200%20200%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter%20id=%22noiseFilter%22%3E%3CfeTurbulence%20type=%22fractalNoise%22%20baseFrequency=%220.65%22%20numOctaves=%223%22%20stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')] opacity-[0.03] mix-blend-overlay" />
       </div>
 
       <div className="max-w-7xl w-full">
