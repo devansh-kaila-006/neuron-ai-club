@@ -575,6 +575,7 @@ const Blog: React.FC = () => {
             </m.div>
           </m.div>
         )}
+      </AnimatePresence>
       {/* Profile Modal */}
       <AnimatePresence>
         {showProfile && profileData && (
