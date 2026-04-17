@@ -30,6 +30,23 @@ export interface NavItem {
   path: string;
 }
 
+export enum BlogCategory {
+  GENERAL = 'General',
+  TECHNICAL = 'Technical'
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  excerpt: string;
+  category: BlogCategory;
+  author_id: string;
+  author_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
