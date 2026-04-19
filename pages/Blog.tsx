@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Filter, Plus, LogIn, LogOut, Send, X, 
   BookOpen, Cpu, Globe, User, Calendar, Tag,
-  ChevronRight, Loader2, MessageSquare, Zap
+  ChevronRight, Loader2, MessageSquare, Zap,
+  Edit, Trash2
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import DOMPurify from 'dompurify';
@@ -45,6 +46,8 @@ const Blog: React.FC = () => {
     category: BlogCategory.GENERAL
   });
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
 
   useEffect(() => {
@@ -102,6 +105,7 @@ const Blog: React.FC = () => {
 
     setAuthLoading(true);
     try {
+      const email = authEmail.trim();
       // 2. reCAPTCHA Check
       const token = await executeRecaptcha('blog_auth');
       if (!token) {
@@ -114,10 +118,10 @@ const Blog: React.FC = () => {
 
       if (authMode === 'signUp') {
         if (!authName) throw new Error("Display Name required for new nodes.");
-        await blogService.signUp(authEmail, authPassword, authName);
+        await blogService.signUp(email, authPassword, authName);
         toast.success("Neural Identity established. Access Grid synchronized.");
       } else {
-        await blogService.signIn(authEmail, authPassword);
+        await blogService.signIn(email, authPassword);
         toast.success("Neural Link established.");
       }
       setShowAuth(false);
@@ -147,16 +151,53 @@ const Blog: React.FC = () => {
     }
 
     setLoading(true);
-    const res = await blogService.createPost(newPost);
+    const res = isEditing && editingId 
+      ? await blogService.updatePost(editingId, newPost)
+      : await blogService.createPost(newPost);
+      
     if (res.success) {
-      toast.success("Knowledge Node anchored to grid.");
-      setShowEditor(false);
-      setNewPost({ title: '', content: '', excerpt: '', category: BlogCategory.GENERAL });
+      toast.success(isEditing ? "Knowledge Node recalibrated." : "Knowledge Node anchored to grid.");
+      closeEditor();
       fetchPosts();
     } else {
       toast.error(`Write Error: ${res.error}`);
     }
     setLoading(false);
+  };
+
+  const handleEditPost = (e: React.MouseEvent, post: BlogPost) => {
+    e.stopPropagation();
+    setNewPost({
+      title: post.title,
+      content: post.content,
+      excerpt: post.excerpt,
+      category: post.category
+    });
+    setEditingId(post.id);
+    setIsEditing(true);
+    setShowEditor(true);
+  };
+
+  const handleDeletePost = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to sever this Knowledge Node? This action is irreversible.")) return;
+
+    setLoading(true);
+    const res = await blogService.deletePost(id);
+    if (res.success) {
+      toast.success("Knowledge Node severed.");
+      fetchPosts();
+    } else {
+      toast.error(`Severance Error: ${res.error}`);
+    }
+    setLoading(false);
+  };
+
+  const closeEditor = () => {
+    setShowEditor(false);
+    setIsEditing(false);
+    setEditingId(null);
+    setNewPost({ title: '', content: '', excerpt: '', category: BlogCategory.GENERAL });
   };
 
   const filteredPosts = posts.filter(post => 
@@ -273,7 +314,8 @@ const Blog: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="glass group rounded-[2.5rem] border-white/5 overflow-hidden hover:bg-white/[0.03] transition-all duration-500 flex flex-col"
+                className="glass group rounded-[2.5rem] border-white/5 overflow-hidden hover:bg-white/[0.03] transition-all duration-500 flex flex-col cursor-pointer active:scale-[0.98]"
+                onClick={() => setSelectedPost(post)}
               >
                 <div className="p-8 flex-1 space-y-6">
                   <div className="flex justify-between items-start">
@@ -282,9 +324,26 @@ const Blog: React.FC = () => {
                     }`}>
                       {post.category}
                     </div>
-                    <div className="text-[8px] font-mono text-gray-600 uppercase tracking-widest">
-                      {new Date(post.created_at).toLocaleDateString()}
-                    </div>
+                    {user?.id === post.author_id ? (
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={(e) => handleEditPost(e, post)}
+                          className="p-2 glass border-white/10 rounded-full text-indigo-400 hover:text-indigo-300 transition-all"
+                        >
+                          <Edit size={12} />
+                        </button>
+                        <button 
+                          onClick={(e) => handleDeletePost(e, post.id)}
+                          className="p-2 glass border-white/10 rounded-full text-red-500/50 hover:text-red-400 transition-all"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-[8px] font-mono text-gray-600 uppercase tracking-widest">
+                        {new Date(post.created_at).toLocaleDateString()}
+                      </div>
+                    )}
                   </div>
 
                   <h3 className="text-2xl font-black tracking-tight leading-tight group-hover:text-indigo-400 transition-colors">
@@ -506,11 +565,11 @@ const Blog: React.FC = () => {
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
               className="glass w-full max-w-4xl p-10 rounded-[3rem] border-white/10 relative my-auto"
             >
-              <button onClick={() => setShowEditor(false)} className="absolute top-8 right-8 text-gray-500 hover:text-white"><X size={24} /></button>
+              <button onClick={closeEditor} className="absolute top-8 right-8 text-gray-500 hover:text-white"><X size={24} /></button>
               
               <div className="flex items-center gap-4 mb-10 border-b border-white/5 pb-6">
-                <Plus className="text-indigo-500" size={32} />
-                <h2 className="text-3xl font-black uppercase tracking-widest">Anchor New Node</h2>
+                {isEditing ? <Edit className="text-indigo-500" size={32} /> : <Plus className="text-indigo-500" size={32} />}
+                <h2 className="text-3xl font-black uppercase tracking-widest">{isEditing ? 'Recalibrate Node' : 'Anchor New Node'}</h2>
               </div>
 
               <form onSubmit={handleSubmitPost} className="space-y-8">
@@ -576,7 +635,7 @@ const Blog: React.FC = () => {
                     disabled={loading}
                     className="px-12 py-5 bg-indigo-600 rounded-2xl font-black uppercase tracking-[0.4em] text-xs hover:bg-indigo-500 transition-all shadow-xl flex items-center justify-center gap-4"
                   >
-                    {loading ? <Loader2 className="animate-spin" /> : <><Zap size={18} /> Anchor to Grid</>}
+                    {loading ? <Loader2 className="animate-spin" /> : <>{isEditing ? <Zap size={18} /> : <Plus size={18} />} {isEditing ? 'Recalibrate' : 'Anchor to Grid'}</>}
                   </button>
                 </div>
               </form>

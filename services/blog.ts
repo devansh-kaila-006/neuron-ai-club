@@ -66,6 +66,27 @@ export const blogService = {
     return { success: true, status: 200 };
   },
 
+  async updatePost(id: string, post: Partial<Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'author_id' | 'profiles'>>): Promise<ApiResponse<BlogPost>> {
+    if (!supabase) return { success: false, status: 500, error: "Neural Grid Offline." };
+
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .update({
+        ...post,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select('*, profiles!author_id(full_name, avatar_url)')
+      .single();
+
+    if (error) {
+      console.error("Neural Archive Update Error:", error);
+      return { success: false, status: 500, error: error.message };
+    }
+
+    return { success: true, status: 200, data: data as BlogPost };
+  },
+
   async signIn(email: string, password: string) {
     if (!supabase) throw new Error("Neural Grid Offline.");
     
