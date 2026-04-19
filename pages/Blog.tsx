@@ -83,7 +83,8 @@ const Blog: React.FC = () => {
     if (res.success) {
       toast.success("Neural Identity updated.");
       setShowProfile(false);
-      fetchPosts();
+      await checkUser(); // Refresh local profile state
+      fetchPosts();      // Refresh posts names
     } else {
       toast.error(`Update Error: ${res.error}`);
     }
@@ -110,12 +111,13 @@ const Blog: React.FC = () => {
       if (authMode === 'signUp') {
         if (!authName) throw new Error("Display Name required for new nodes.");
         await blogService.signUp(authEmail, authPassword, authName);
-        toast.success("Neural Identity established. Check email for verification if required.");
+        toast.success("Neural Identity established. Access Grid synchronized.");
       } else {
         await blogService.signIn(authEmail, authPassword);
         toast.success("Neural Link established.");
       }
       setShowAuth(false);
+      await checkUser(); // Refresh user and profile state immediately
       setAuthPassword('');
       setAuthName('');
     } catch (err: any) {

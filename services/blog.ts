@@ -8,7 +8,7 @@ export const blogService = {
 
     let query = supabase
       .from('blog_posts')
-      .select('*, profiles(full_name, avatar_url)')
+      .select('*, profiles!author_id(full_name, avatar_url)')
       .order('created_at', { ascending: false });
 
     if (category) {
@@ -39,7 +39,7 @@ export const blogService = {
     const { data, error } = await supabase
       .from('blog_posts')
       .insert([newPost])
-      .select('*, profiles(full_name, avatar_url)')
+      .select('*, profiles!author_id(full_name, avatar_url)')
       .single();
 
     if (error) {
@@ -66,27 +66,15 @@ export const blogService = {
     return { success: true, status: 200 };
   },
 
-  async signIn(email: string, password?: string) {
+  async signIn(email: string, password: string) {
     if (!supabase) throw new Error("Neural Grid Offline.");
     
-    if (password) {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      if (error) throw error;
-      return { success: true, user: data.user };
-    } else {
-      // Fallback to Magic Link if no password provided (optional, but keeping it robust)
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: window.location.origin
-        }
-      });
-      if (error) throw error;
-      return { success: true };
-    }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    if (error) throw error;
+    return { success: true, user: data.user };
   },
 
   async signUp(email: string, password: string, fullName: string) {
@@ -134,15 +122,18 @@ export const blogService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Unauthorized." };
 
-    const { error } = await supabase
+    const { error, data } = await supabase
       .from('profiles')
       .update({
         ...updates,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', user.id);
+      .eq('id', user.id)
+      .select();
 
     if (error) return { success: false, error: error.message };
+    if (!data || data.length === 0) return { success: false, error: "Profile record not found or access denied." };
+    
     return { success: true };
   }
 };
