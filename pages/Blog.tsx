@@ -108,6 +108,10 @@ const Blog: React.FC = () => {
         throw new Error("Neural verification failed. Are you a bot?");
       }
 
+      if (authPassword.length < 6) {
+        throw new Error("Secure Key must be at least 6 characters.");
+      }
+
       if (authMode === 'signUp') {
         if (!authName) throw new Error("Display Name required for new nodes.");
         await blogService.signUp(authEmail, authPassword, authName);
@@ -121,7 +125,9 @@ const Blog: React.FC = () => {
       setAuthPassword('');
       setAuthName('');
     } catch (err: any) {
-      toast.error(`Auth Failure: ${err.message}`);
+      console.error("NEURØN Auth Error:", err);
+      // Show the actual message from Supabase (like "Email not confirmed")
+      toast.error(`Auth Failure: ${err.error_description || err.message || 'Signal lost.'}`);
     } finally {
       setAuthLoading(false);
     }
