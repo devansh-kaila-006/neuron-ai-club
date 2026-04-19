@@ -6,10 +6,22 @@ export const blogService = {
   async getPosts(category?: BlogCategory): Promise<BlogPost[]> {
     if (!supabase) return [];
 
+    const { data: { user } } = await supabase.auth.getUser();
+
     let query = supabase
       .from('blog_posts')
-      .select('*, profiles!author_id(full_name, avatar_url)')
+      .select(`
+        *, 
+        profiles!author_id(full_name, avatar_url),
+        user_vote:post_upvotes(user_id)
+      `)
       .order('created_at', { ascending: false });
+
+    if (user) {
+      // We can't easily filter the nested user_vote by user.id in the same select
+      // without affecting the upvotes_count logic if we were using it for count,
+      // but here we just want to see if the current user upvoted.
+    }
 
     if (category) {
       query = query.eq('category', category);
@@ -22,7 +34,10 @@ export const blogService = {
       return [];
     }
 
-    return data as BlogPost[];
+    return (data as any[]).map(post => ({
+      ...post,
+      user_has_upvoted: post.user_vote?.some((v: any) => v.user_id === user?.id)
+    })) as BlogPost[];
   },
 
   async createPost(post: Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'author_id' | 'profiles'>): Promise<ApiResponse<BlogPost>> {
@@ -85,6 +100,40 @@ export const blogService = {
     }
 
     return { success: true, status: 200, data: data as BlogPost };
+  },
+
+  async toggleUpvote(postId: string): Promise<ApiResponse> {
+    if (!supabase) return { success: false, status: 500, error: "Neural Grid Offline." };
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, status: 401, error: "Unauthorized." };
+
+    // Check if already upvoted
+    const { data: existing } = await supabase
+      .from('post_upvotes')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (existing) {
+      // Remove upvote
+      const { error } = await supabase
+        .from('post_upvotes')
+        .delete()
+        .eq('id', existing.id);
+      
+      if (error) return { success: false, status: 500, error: error.message };
+      return { success: true, status: 200 };
+    } else {
+      // Add upvote
+      const { error } = await supabase
+        .from('post_upvotes')
+        .insert([{ post_id: postId, user_id: user.id }]);
+      
+      if (error) return { success: false, status: 500, error: error.message };
+      return { success: true, status: 201 };
+    }
   },
 
   async signIn(email: string, password: string) {

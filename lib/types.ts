@@ -44,6 +44,8 @@ export interface BlogPost {
   author_id: string;
   created_at: string;
   updated_at: string;
+  upvotes_count: number;
+  user_has_upvoted?: boolean;
   profiles?: {
     full_name: string;
     avatar_url?: string;

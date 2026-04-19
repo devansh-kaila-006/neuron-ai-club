@@ -63,6 +63,13 @@ const Blog: React.FC = () => {
     return () => subscription?.unsubscribe();
   }, [category]);
 
+  useEffect(() => {
+    if (selectedPost) {
+      const updated = posts.find(p => p.id === selectedPost.id);
+      if (updated) setSelectedPost(updated);
+    }
+  }, [posts]);
+
   const fetchPosts = async () => {
     setLoading(true);
     const data = await blogService.getPosts(category === 'All' ? undefined : category);
@@ -141,6 +148,22 @@ const Blog: React.FC = () => {
     await blogService.signOut();
     setUser(null);
     toast.info("Neural Link severed.");
+  };
+
+  const handleToggleUpvote = async (e: React.MouseEvent, postId: string) => {
+    e.stopPropagation();
+    if (!user) {
+      toast.info("Connect to the collective to amplify this node.");
+      setShowAuth(true);
+      return;
+    }
+
+    const res = await blogService.toggleUpvote(postId);
+    if (res.success) {
+      fetchPosts();
+    } else {
+      toast.error(`Amplification Error: ${res.error}`);
+    }
   };
 
   const handleSubmitPost = async (e: React.FormEvent) => {
@@ -356,12 +379,27 @@ const Blog: React.FC = () => {
                 </div>
 
                 <div className="px-8 py-6 border-t border-white/5 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px] font-bold text-indigo-400">
-                      {post.profiles?.full_name?.[0].toUpperCase() || 'A'}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px] font-bold text-indigo-400">
+                        {post.profiles?.full_name?.[0].toUpperCase() || 'A'}
+                      </div>
+                      <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">{post.profiles?.full_name || 'Anonymous'}</span>
                     </div>
-                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">{post.profiles?.full_name || 'Anonymous'}</span>
+                    
+                    <button 
+                      onClick={(e) => handleToggleUpvote(e, post.id)}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full border transition-all ${
+                        post.user_has_upvoted 
+                        ? 'border-orange-500/30 text-orange-400 bg-orange-500/10' 
+                        : 'border-white/5 text-gray-600 hover:border-white/20 hover:text-gray-400'
+                      }`}
+                    >
+                      <Zap size={10} className={post.user_has_upvoted ? 'fill-orange-400' : ''} />
+                      <span className="text-[10px] font-bold font-mono">{post.upvotes_count || 0}</span>
+                    </button>
                   </div>
+                  
                   <button 
                     onClick={() => setSelectedPost(post)}
                     className="text-indigo-500 hover:text-indigo-400 transition-colors"
@@ -408,14 +446,31 @@ const Blog: React.FC = () => {
                   <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight uppercase italic">
                     {selectedPost.title}
                   </h2>
-                  <div className="flex items-center gap-3 pt-2">
-                    <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">
-                      {selectedPost.profiles?.full_name?.[0].toUpperCase() || 'A'}
+                  <div className="flex items-center justify-between gap-4 pt-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">
+                        {selectedPost.profiles?.full_name?.[0].toUpperCase() || 'A'}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-mono text-white uppercase tracking-widest">{selectedPost.profiles?.full_name || 'Anonymous'}</span>
+                        <span className="text-[8px] font-mono text-gray-600 uppercase tracking-widest">Neural Contributor</span>
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-mono text-white uppercase tracking-widest">{selectedPost.profiles?.full_name || 'Anonymous'}</span>
-                      <span className="text-[8px] font-mono text-gray-600 uppercase tracking-widest">Neural Contributor</span>
-                    </div>
+
+                    <button 
+                      onClick={(e) => handleToggleUpvote(e, selectedPost.id)}
+                      className={`flex items-center gap-3 px-6 py-3 rounded-2xl border transition-all ${
+                        selectedPost.user_has_upvoted 
+                        ? 'border-orange-500/30 text-orange-400 bg-orange-500/10 shadow-[0_0_20px_rgba(249,115,22,0.1)]' 
+                        : 'glass border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
+                      }`}
+                    >
+                      <Zap size={18} className={selectedPost.user_has_upvoted ? 'fill-orange-400' : ''} />
+                      <div className="flex flex-col items-start leading-none">
+                        <span className="text-xs font-black uppercase tracking-widest">{selectedPost.upvotes_count || 0}</span>
+                        <span className="text-[8px] font-mono uppercase tracking-widest opacity-60">Neural Pulse</span>
+                      </div>
+                    </button>
                   </div>
                 </div>
 
@@ -430,8 +485,13 @@ const Blog: React.FC = () => {
                       <button className="flex items-center gap-2 text-[10px] font-mono text-gray-500 hover:text-indigo-400 transition-colors">
                         <MessageSquare size={14} /> Discuss Node
                       </button>
-                      <button className="flex items-center gap-2 text-[10px] font-mono text-gray-500 hover:text-indigo-400 transition-colors">
-                        <Zap size={14} /> Amplify
+                      <button 
+                        onClick={(e) => handleToggleUpvote(e, selectedPost.id)}
+                        className={`flex items-center gap-2 text-[10px] font-mono transition-colors ${
+                          selectedPost.user_has_upvoted ? 'text-orange-400' : 'text-gray-500 hover:text-orange-400'
+                        }`}
+                      >
+                        <Zap size={14} className={selectedPost.user_has_upvoted ? 'fill-orange-400' : ''} /> Amplify Node
                       </button>
                    </div>
                    <button 
