@@ -40,7 +40,7 @@ export const blogService = {
     })) as BlogPost[];
   },
 
-  async createPost(post: Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'author_id' | 'profiles'>): Promise<ApiResponse<BlogPost>> {
+  async createPost(post: Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'author_id' | 'profiles' | 'upvotes_count' | 'user_has_upvoted'>): Promise<ApiResponse<BlogPost>> {
     if (!supabase) return { success: false, status: 500, error: "Neural Grid Offline." };
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -81,7 +81,7 @@ export const blogService = {
     return { success: true, status: 200 };
   },
 
-  async updatePost(id: string, post: Partial<Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'author_id' | 'profiles'>>): Promise<ApiResponse<BlogPost>> {
+  async updatePost(id: string, post: Partial<Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'author_id' | 'profiles' | 'upvotes_count' | 'user_has_upvoted'>>): Promise<ApiResponse<BlogPost>> {
     if (!supabase) return { success: false, status: 500, error: "Neural Grid Offline." };
 
     const { data, error } = await supabase

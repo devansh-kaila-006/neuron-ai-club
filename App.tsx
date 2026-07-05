@@ -24,6 +24,7 @@ const JoinClub = lazy(() => import('./pages/JoinClub.tsx'));
 const Departments = lazy(() => import('./pages/Departments.tsx'));
 const Mascot = lazy(() => import('./pages/Mascot.tsx'));
 const Blog = lazy(() => import('./pages/Blog.tsx'));
+const Events = lazy(() => import('./pages/Events.tsx'));
 
 /**
  * ScrollToTop: Logic component that resets scroll position on route changes.
@@ -67,6 +68,7 @@ const AnimatedRoutes: React.FC = () => {
             <Route path="/departments" element={<Departments />} />
             <Route path="/mascot" element={<Mascot />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/events" element={<Events />} />
           </Routes>
         </Suspense>
       </m.div>
@@ -124,7 +126,9 @@ const App: React.FC = () => {
                       <Link to="/" className="text-xs text-gray-600 hover:text-indigo-400">Hub Hub</Link>
                       <Link to="/departments" className="text-xs text-gray-600 hover:text-indigo-400">Squad Divisions</Link>
                       <Link to="/team" className="text-xs text-gray-600 hover:text-indigo-400">The Core Council</Link>
-                      <Link to="/blog" className="text-xs text-gray-600 hover:text-indigo-400">Neural Archive</Link>
+                      <Link to="/events" className="text-xs text-gray-600 hover:text-indigo-400">Neural Actions</Link>
+                      <Link to="/mascot" className="text-xs text-gray-600 hover:text-indigo-400">Mascot Core</Link>
+                      <Link to="/blog" className="text-xs text-gray-600 hover:text-indigo-400">Neural Blog (Archive)</Link>
                       <Link to="/join" className="text-xs text-gray-600 hover:text-indigo-400 font-bold text-indigo-400">Join the Club</Link>
                     </div>
                     
