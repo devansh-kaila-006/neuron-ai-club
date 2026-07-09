@@ -1,5 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
-
 export default async function handler(req, res) {
   // If CRON_SECRET is configured in Vercel, verify the authorization header to prevent spamming
   const cronSecret = process.env.CRON_SECRET;
@@ -15,23 +13,41 @@ export default async function handler(req, res) {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     return res.status(500).json({ 
-      error: 'Supabase credentials are not configured in Vercel environment variables. Please add SUPABASE_URL and SUPABASE_ANON_KEY.' 
+      error: 'Supabase credentials are not configured in Vercel environment variables. Please add SUPABASE_URL and SUPABASE_ANON_KEY.',
+      envStatus: {
+        SUPABASE_URL_CONFIGURED: !!supabaseUrl,
+        SUPABASE_ANON_KEY_CONFIGURED: !!supabaseAnonKey
+      }
     });
   }
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    
-    // Ping the 'teams' table to trigger database activity externally
-    const { data, error } = await supabase.from('teams').select('id').limit(1);
+    // Format the Supabase URL correctly and fetch from teams table
+    const cleanUrl = supabaseUrl.replace(/\/$/, "");
+    const pingUrl = `${cleanUrl}/rest/v1/teams?select=id&limit=1`;
 
-    if (error) throw error;
+    const response = await fetch(pingUrl, {
+      method: 'GET',
+      headers: {
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Supabase API responded with status ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
 
     return res.status(200).json({
       success: true,
-      message: 'Supabase kept active successfully via Vercel scheduled cron.',
+      message: 'Supabase kept active successfully via Vercel scheduled cron (Native Fetch).',
       timestamp: new Date().toISOString(),
-      pinged: true
+      pinged: true,
+      recordsFound: data.length
     });
   } catch (err) {
     return res.status(500).json({
