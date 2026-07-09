@@ -4,7 +4,10 @@ export default async function handler(req, res) {
   if (cronSecret) {
     const authHeader = req.headers.authorization;
     if (authHeader !== `Bearer ${cronSecret}`) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid cron trigger.' });
+      return res.status(401).json({ 
+        error: 'Unauthorized: Invalid cron trigger.',
+        tip: 'Ensure your request includes the header: Authorization: Bearer <YOUR_CRON_SECRET>'
+      });
     }
   }
 
@@ -13,19 +16,24 @@ export default async function handler(req, res) {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     return res.status(500).json({ 
-      error: 'Supabase credentials are not configured in Vercel environment variables. Please add SUPABASE_URL and SUPABASE_ANON_KEY.',
-      envStatus: {
+      success: false,
+      error: 'Supabase credentials are missing in your Vercel environment variables.',
+      envDiagnostics: {
         SUPABASE_URL_CONFIGURED: !!supabaseUrl,
-        SUPABASE_ANON_KEY_CONFIGURED: !!supabaseAnonKey
-      }
+        SUPABASE_ANON_KEY_CONFIGURED: !!supabaseAnonKey,
+        CRON_SECRET_CONFIGURED: !!cronSecret
+      },
+      actionRequired: 'Please go to your Vercel Project Settings > Environment Variables, and add SUPABASE_URL and SUPABASE_ANON_KEY.'
     });
   }
 
-  try {
-    // Format the Supabase URL correctly and fetch from teams table
-    const cleanUrl = supabaseUrl.replace(/\/$/, "");
-    const pingUrl = `${cleanUrl}/rest/v1/teams?select=id&limit=1`;
+  // Format the Supabase URL correctly
+  const cleanUrl = supabaseUrl.replace(/\/$/, "");
 
+  // Try querying the teams table first, with a fallback to the root API endpoint
+  // This ensures the ping succeeds even if the teams table doesn't exist!
+  try {
+    const pingUrl = `${cleanUrl}/rest/v1/teams?select=id&limit=1`;
     const response = await fetch(pingUrl, {
       method: 'GET',
       headers: {
@@ -35,24 +43,48 @@ export default async function handler(req, res) {
       }
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Supabase API responded with status ${response.status}: ${errorText}`);
+    if (response.ok) {
+      const data = await response.json();
+      return res.status(200).json({
+        success: true,
+        message: 'Database kept active successfully (Primary Table Ping).',
+        timestamp: new Date().toISOString(),
+        tablePing: 'success',
+        records: data.length
+      });
     }
 
-    const data = await response.json();
+    // Fallback: Query the root API endpoint (always exists on Supabase PostgREST)
+    const rootUrl = `${cleanUrl}/rest/v1/`;
+    const fallbackResponse = await fetch(rootUrl, {
+      method: 'GET',
+      headers: {
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+      }
+    });
+
+    if (!fallbackResponse.ok) {
+      const errorText = await fallbackResponse.text();
+      throw new Error(`Supabase PostgREST API responded with status ${fallbackResponse.status}: ${errorText}`);
+    }
 
     return res.status(200).json({
       success: true,
-      message: 'Supabase kept active successfully via Vercel scheduled cron (Native Fetch).',
+      message: 'Database kept active successfully (Schema Root Fallback Ping).',
       timestamp: new Date().toISOString(),
-      pinged: true,
-      recordsFound: data.length
+      fallbackPing: 'success'
     });
+
   } catch (err) {
     return res.status(500).json({
       success: false,
-      error: err.message || 'Database ping failure.'
+      error: err.message || 'Database ping failure.',
+      diagnostics: {
+        supabaseUrlConfigured: !!supabaseUrl,
+        supabaseUrlValue: supabaseUrl ? `${cleanUrl.substring(0, 15)}...` : null,
+        timestamp: new Date().toISOString()
+      }
     });
   }
 }
