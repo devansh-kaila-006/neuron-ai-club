@@ -127,7 +127,6 @@ const App: React.FC = () => {
                       <Link to="/departments" className="text-xs text-gray-600 hover:text-indigo-400">Squad Divisions</Link>
                       <Link to="/team" className="text-xs text-gray-600 hover:text-indigo-400">The Core Council</Link>
                       <Link to="/events" className="text-xs text-gray-600 hover:text-indigo-400">Neural Actions</Link>
-                      <Link to="/mascot" className="text-xs text-gray-600 hover:text-indigo-400">Mascot Core</Link>
                       <Link to="/blog" className="text-xs text-gray-600 hover:text-indigo-400">Neural Blog (Archive)</Link>
                       <Link to="/join" className="text-xs text-gray-600 hover:text-indigo-400 font-bold text-indigo-400">Join the Club</Link>
                     </div>

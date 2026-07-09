@@ -6,7 +6,7 @@ import DecryptedText from '../components/DecryptedText.tsx';
 import { 
   Calendar, MapPin, Users, Award, Sparkles, BookOpen, 
   Clock, Phone, ChevronRight, Share2, Terminal, Compass, 
-  Zap, ArrowRight, Play, ExternalLink, HelpCircle, Flame
+  Zap, ExternalLink, HelpCircle
 } from 'lucide-react';
 
 // Import our beautiful moved images
@@ -17,13 +17,13 @@ import event1_2 from '../events/event1_2.jpeg';
 // @ts-ignore
 import event1_3 from '../events/event1_3.jpeg';
 // @ts-ignore
+import event1_4 from '../events/event1_4.jpeg';
+// @ts-ignore
 import event2_1 from '../events/event2_1.jpeg';
 // @ts-ignore
 import event2_2 from '../events/event2_2.jpeg';
 // @ts-ignore
 import event2_3 from '../events/event2_3.jpeg';
-// @ts-ignore
-import event2_4 from '../events/event2_4.jpeg';
 // @ts-ignore
 import event3_1 from '../events/event3_1.jpeg';
 // @ts-ignore
@@ -35,7 +35,7 @@ interface EventType {
   id: string;
   title: string;
   tagline: string;
-  category: 'Summit' | 'Launch' | 'Competition';
+  category: 'Tech Talk' | 'Competition';
   date: string;
   time: string;
   venue: string;
@@ -53,53 +53,58 @@ interface EventType {
 
 const eventsData: EventType[] = [
   {
-    id: 'summit-atmanirbhar',
-    title: 'AI for Atmanirbhar Bharat',
-    tagline: 'Inaugural Pre-Summit & Flagship NEURØN AI Club Launch',
-    category: 'Summit',
-    date: 'March 2026',
-    time: 'Pre-Summit Sessions',
+    id: 'neuron-inauguration',
+    title: 'Official Inauguration of NEURØN – The AI Club',
+    tagline: 'Fostering a Community of Practice for Artificial Intelligence',
+    category: 'Tech Talk',
+    date: '4th February 2026',
+    time: 'Flagship Inauguration Program',
     venue: 'Amrita Vishwa Vidyapeetham, Bengaluru Campus',
     featuredImage: event1_1,
     gallery: [
       event1_1,
       event1_2,
-      event1_3
+      event1_3,
+      event1_4
     ],
-    description: 'Stepping into the Amrita Vishwa Vidyapeetham, Bengaluru Campus as Chief Guest for the AI for Atmanirbhar Bharat pre-summit, part of India AI Impact 2026, was a truly humbling experience. Looking at the bright, eager faces in the audience reminded us why SeedlingLabs Private Limited began - to create spaces where curiosity meets courage and ideas find the confidence to grow.\n\nOur heartfelt thanks to Manoj P (Ph.D.) – Dean, Amrita School of Business & Campus Director, Bengaluru, and Sudhir Kumar Patnaik PhD – Professor & Centre Director, Corporate & Industry Relations, for graciously hosting us and inaugurating the new AI Club. The energy on campus reaffirmed our belief that India’s AI future is being shaped at institutions like these.',
+    description: 'The Official Inauguration marked the formal launch of NEURØN - The Artificial Intelligence Club at Amrita Vishwa Vidyapeetham, Bengaluru Campus. The club’s idea fosters a Community of Practice - the vision of creating an inclusive learning community where students from all disciplines can come together to explore Artificial Intelligence, exchange knowledge, collaborate on projects, and develop practical skills. The event witnessed the participation of approximately 180 students, along with faculty members and institutional leaders. The ceremony was graced by Ms. Shanti Kuropati, Founder and CEO of Seedling Lab, Dr. Manoj, Campus Director, and Dr. Sudhir Patnaik, Head of CIR. The programme began with a welcome address, followed by the ceremonial lamp lighting and keynote addresses highlighting the growing significance of Artificial Intelligence in academia, industry, and society. The NEURØN core team introduced the club\'s vision, mission, and planned activities, focusing on hands-on projects, workshops, hackathons, research initiatives, industry interactions, and responsible AI practices. The event concluded by encouraging students to actively engage in AI-driven learning, interdisciplinary collaboration, and innovation-driven initiatives under the NEURØN community.',
     keyTakeaways: [
-      'Stay grounded like a seed, but realise your true potential by growing and reaching for the stars.',
-      'AI innovation is ultimately an expression of human intelligence. The tools are powerful, but it is people who give them purpose.',
-      'Three thoughts for the future: Dream big, stay curious, and remain humble.'
+      'The inauguration provided students with valuable exposure to Artificial Intelligence and its real-world applications while creating awareness about the club\'s vision and future activities.',
+      'Through the addresses delivered by the guest speaker and institutional leaders, students gained insights into the importance of AI in solving practical problems and contributing to society.',
+      'The event encouraged curiosity, critical thinking, interdisciplinary collaboration, and lifelong learning while motivating students to participate in technical projects, research, workshops, and hackathons organised under NEURØN.'
     ],
     highlights: [
-      'Inauguration of the NEURØN AI Club',
-      'Chief Guest address on Digital Public Infrastructure & SeedlingLabs Journey',
-      'Interactive sessions with final-year engineering students'
+      'Welcome Address & Ceremonial Lamp Lighting',
+      'Keynote on the growing significance of AI in academia, industry, and society',
+      'Formal introduction of NEURØN\'s vision, mission, and scheduled pipeline'
     ],
-    meta: 'SUMMIT_SYS_INIT',
+    meta: 'SYS_LAUNCH_4_FEB',
     badgeColor: 'border-indigo-500/30 text-indigo-400 bg-indigo-500/5'
   },
   {
     id: 'neuron-unbox',
-    title: 'NEURØN’s Unbox Event',
-    tagline: 'Inauguration, Club Launch & Tech Workshops',
-    category: 'Launch',
+    title: 'NEURØN – The Unbox Event',
+    tagline: 'Interactive panel discussion on innovation, sovereign systems, and emerging technologies',
+    category: 'Tech Talk',
     date: '26th March 2026',
-    time: '9:00 AM – 3:40 PM',
-    venue: 'Amriteshwari Hall & CSE Labs',
+    time: 'Flagship Interactive Panel Session',
+    venue: 'Amrita Vishwa Vidyapeetham, Bengaluru Campus',
     featuredImage: event2_1,
     gallery: [
       event2_1,
       event2_2,
-      event2_3,
-      event2_4
+      event2_3
     ],
-    description: 'The official flagship launch event of the Neuron AI Club featured Dr. Pramod Varma—Co-Founder & Chief Architect of India’s Digital Public Infrastructure (Aadhaar, UPI, Beckn)—as the Chief Guest. This grand unboxing marked the beginning of a synthetic intelligence revolution on campus, bringing industry leaders and student innovators together under one grid.',
+    description: 'The NEURØN Unbox Event was conducted as an interactive panel discussion featuring Dr. Pramod Varma, Co-Founder and Chief Architect at NFH. The event saw the enthusiastic participation of approximately 250 students, along with faculty members and institutional leaders. The session focused on innovation, digital transformation, public technology, governance, entrepreneurship, and the evolving role of Artificial Intelligence in society. Through a series of carefully curated questions, Dr. Pramod Varma shared insights from his experience in building large-scale digital systems and discussed the importance of designing technology with inclusivity, scalability, and long-term societal impact. The discussion concluded with the felicitation of the Chief Guest and encouraged students to actively participate in innovation-driven learning, interdisciplinary collaboration, and responsible AI practices under the NEURØN community.',
+    keyTakeaways: [
+      'The event provided students with valuable insights into the practical applications of technology, digital public infrastructure, and Artificial Intelligence in addressing real-world challenges.',
+      'Participants developed a deeper understanding of how innovation intersects with governance, entrepreneurship, and societal impact.',
+      'The discussion encouraged critical thinking, analytical skills, and awareness of the ethical and responsible use of emerging technologies while helping bridge the gap between academic learning and real-world implementation.'
+    ],
     highlights: [
-      'Inaugural Ceremony by Dr. Pramod Varma',
-      'Official Neuron Club Introduction & Ecosystem Reveal',
-      'Interactive Panel Discussion on Digital Public Infrastructure & Sovereign AI'
+      'Interactive panel discussion featuring industry giant Dr. Pramod Varma',
+      'Enthusiastic participation of over 250 students, faculty, and campus directors',
+      'Bridged key parameters between university theory and high-scale technical systems'
     ],
     workshops: [
       { title: 'NSDC — Bug to Breach', host: 'Cyber Security Unit', desc: 'A thrilling dive into AI-assisted vulnerability testing, penetration testing vectors, and defensive shielding.' },
@@ -107,91 +112,52 @@ const eventsData: EventType[] = [
       { title: 'ACROM — AI-Integrated Robotics', host: 'Robotics & 3D Printing Lab', desc: 'Showcase of 3D-printed synthetic kinetic limbs guided by real-time computer vision models.' },
       { title: 'JIDO — AI Automata', host: 'Autonomous Systems Unit', desc: 'Building multi-agent task loops, autonomous triggers, and stateful workflow assistants.' }
     ],
-    regLink: 'https://docs.google.com/forms/d/1vd-1d4kZpvvq-YoaMGKh2_RoM05x0afyBSqirPTEgT4/edit',
-    meta: 'SYSTEM_UNBOX_INIT',
+    meta: 'SYSTEM_UNBOX_26_MAR',
     badgeColor: 'border-cyan-500/30 text-cyan-400 bg-cyan-500/5'
   },
   {
     id: 'com-ai-cal-escape',
-    title: 'comAIcal Escape',
-    tagline: 'Build Stories with AI — A Gamified Storytelling Challenge',
+    title: 'ComAIcal Escape',
+    tagline: 'AI-Powered Comic Creation & Narrative Visual Competition',
     category: 'Competition',
     date: '21st April 2026',
-    time: '1:30 PM – 3:30 PM',
-    venue: 'CSE Lab 1 (5th Floor, E Block)',
+    time: 'Kalanjali Cultural Fest',
+    venue: 'CSE Labs, Amrita Vishwa Vidyapeetham',
     featuredImage: event3_1,
     gallery: [
       event3_1,
       event3_2,
       event3_3
     ],
-    description: 'We all use AI tools - but what if you could turn that into a story that actually means something? comAIcal Escape is a highly gamified AI storytelling event where you don’t just create, you earn your narrative assets. Solve logical algorithms, unlock mystery spins, and weave your graphic comic masterwork using state-of-the-art visual models.',
+    description: 'Conducted as part of Kalanjali Cultural Fest, ComAIcal Escape was an AI-powered comic creation competition organised by NEURØN – The AI Club. The competition brought together participants with teams each tasked with creating a five-to-six-page comic using AI tools. Teams first answered AI-related questions to qualify before receiving randomly assigned characters and themes through a wheel spin. Participants were given two hours to create their comics and later presented their work to the judging panel, explaining their storyline, AI workflow, and prompting strategies. The event combined AI image generation with creative storytelling, encouraging participants to think creatively while working within time and content constraints.',
+    keyTakeaways: [
+      'The competition gave students hands-on experience in using AI tools for visual generation and narrative construction.',
+      'Participants learned prompt engineering, AI-assisted image generation, visual storytelling, comic panel composition, teamwork under time pressure, and public presentation of creative work.',
+      'The event demonstrated that AI can serve as a powerful creative partner beyond traditional technical applications, giving students a broader understanding of AI\'s role in art and storytelling.'
+    ],
     highlights: [
-      'Crack AI-based challenges to unlock characters, settings, and twists',
-      'Spin the structural wheels to obtain unpredictable conflict mechanics',
-      'Pitch your creations to a jury; top comics printed & preserved in the college library'
+      'Formally hosted as part of the landmark Kalanjali Cultural Fest',
+      'High-energy 2-hour narrative design sprint with real-time prompt engineering',
+      'Presented active comic slides and prompt workflows to a professional evaluation panel'
     ],
     contacts: [
       { name: 'Tanay Ashish', phone: '8210160750' },
       { name: 'Prajukta', phone: '7008756533' }
     ],
-    regLink: 'https://forms.gle/LCmBwCjnwSa3YUy9A',
-    meta: 'COMIC_STORY_ENG',
+    meta: 'COMIC_ESCAPE_21_APR',
     badgeColor: 'border-pink-500/30 text-pink-400 bg-pink-500/5'
   }
 ];
 
 const Events: React.FC = () => {
   const m = motion as any;
-  const [activeTab, setActiveTab] = useState<'All' | 'Summit' | 'Launch' | 'Competition'>('All');
+  const [activeTab, setActiveTab] = useState<'All' | 'Tech Talk' | 'Competition'>('All');
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
   const openEventModal = (event: EventType) => {
     setSelectedEvent(event);
     setActiveImage(event.featuredImage);
-  };
-
-  // Interactive Spin Wheel State for comAIcal Escape Playground
-  const [wheelState, setWheelState] = useState({
-    protagonist: '?',
-    genre: '?',
-    conflict: '?',
-    aiConcept: '?',
-    spinning: false
-  });
-
-  const spinStoryWheel = () => {
-    if (wheelState.spinning) return;
-    
-    setWheelState(prev => ({ ...prev, spinning: true }));
-    
-    const protagonists = ['Synthetic Detective', 'Neural Botanist', 'Time-Looping Intern', 'Legacy Chatbot', 'Quantum Archivist'];
-    const genres = ['Cyberpunk Noir', 'Solarpunk Mythos', 'Retro-Futuristic Mystery', 'Deep Space Satire', 'Steampunk Rebellion'];
-    const conflicts = ['Stray Memory Leak', 'Rogue Feedback Loop', 'Sentient Neural Grid', 'Corrupted Training Data', 'Timeline Anomaly'];
-    const concepts = ['RAG (Retrieval-Augmented Gen)', 'Generative Adversarial Nets', 'RLHF (Feedback Training)', 'Zero-Shot Inference', 'Multimodal Synth'];
-
-    let cycles = 0;
-    const interval = setInterval(() => {
-      setWheelState({
-        protagonist: protagonists[Math.floor(Math.random() * protagonists.length)],
-        genre: genres[Math.floor(Math.random() * genres.length)],
-        conflict: conflicts[Math.floor(Math.random() * conflicts.length)],
-        aiConcept: concepts[Math.floor(Math.random() * concepts.length)],
-        spinning: true
-      });
-      cycles++;
-      if (cycles > 15) {
-        clearInterval(interval);
-        setWheelState({
-          protagonist: protagonists[Math.floor(Math.random() * protagonists.length)],
-          genre: genres[Math.floor(Math.random() * genres.length)],
-          conflict: conflicts[Math.floor(Math.random() * conflicts.length)],
-          aiConcept: concepts[Math.floor(Math.random() * concepts.length)],
-          spinning: false
-        });
-      }
-    }, 100);
   };
 
   const filteredEvents = activeTab === 'All' 
@@ -218,7 +184,6 @@ const Events: React.FC = () => {
 
           <div className="flex flex-col">
             <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black tracking-tighter leading-[0.85] text-white flex flex-col select-none uppercase">
-              <span className="block text-gray-500">GRID</span>
               <DecryptedText 
                 text="EVENTS" 
                 className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent italic"
@@ -232,7 +197,7 @@ const Events: React.FC = () => {
 
         {/* Categories Tab Bar */}
         <div className="flex flex-wrap gap-3 border-b border-white/5 pb-6">
-          {(['All', 'Summit', 'Launch', 'Competition'] as const).map((tab) => (
+          {(['All', 'Tech Talk', 'Competition'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -255,7 +220,8 @@ const Events: React.FC = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="glass rounded-[2.5rem] border-white/5 overflow-hidden flex flex-col group hover:border-white/10 hover:bg-white/[0.01] transition-all duration-500 relative"
+              onClick={() => openEventModal(event)}
+              className="glass rounded-[2.5rem] border-white/5 overflow-hidden flex flex-col group hover:border-white/10 hover:bg-white/[0.01] hover:shadow-2xl hover:shadow-indigo-500/5 transition-all duration-500 relative cursor-pointer"
             >
               {/* Highlight badge */}
               <div className="absolute top-6 left-6 z-20">
@@ -300,7 +266,10 @@ const Events: React.FC = () => {
                     {event.meta}
                   </span>
                   <button 
-                    onClick={() => openEventModal(event)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEventModal(event);
+                    }}
                     className="flex items-center gap-2 text-xs font-bold text-indigo-400 group-hover:text-indigo-300 transition-colors"
                   >
                     Explore Node <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
@@ -310,94 +279,6 @@ const Events: React.FC = () => {
             </m.div>
           ))}
         </div>
-
-        {/* comAIcal Escape Interactive Sandbox */}
-        <m.section 
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="glass rounded-[3rem] border-white/10 p-8 md:p-12 relative overflow-hidden bg-gradient-to-br from-indigo-950/20 via-transparent to-purple-950/10"
-        >
-          {/* Neon filament glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-indigo-500/10 blur-[80px] rounded-full pointer-events-none -z-10 animate-pulse" />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-pink-500/10 border border-pink-500/20 rounded-full text-pink-400">
-                <Flame size={12} />
-                <span className="text-[9px] font-bold uppercase tracking-wider font-mono">comAIcal escape playground</span>
-              </div>
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white leading-none">
-                Narrative Core Generator
-              </h2>
-              <p className="text-gray-400 text-sm font-light leading-relaxed">
-                Experience the core mechanics of <strong className="text-pink-400">comAIcal Escape</strong>. In the real event, students crack computational challenges to trigger randomized narrative constraints, then weave them into a tech comic. Spin our virtual core below to generate your random AI comic prompt!
-              </p>
-              
-              <div className="flex flex-wrap gap-4 pt-4">
-                <Link 
-                  to="/join" 
-                  className="px-6 py-3 bg-gradient-to-r from-pink-600 to-indigo-600 hover:from-pink-500 hover:to-indigo-500 text-white rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center gap-2"
-                >
-                  Join Neuron Club <ArrowRight size={14} />
-                </Link>
-                <a 
-                  href="https://forms.gle/LCmBwCjnwSa3YUy9A" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="px-6 py-3 glass border-white/10 hover:border-white/20 text-gray-300 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center gap-2"
-                >
-                  View Registry Form <ExternalLink size={14} />
-                </a>
-              </div>
-            </div>
-
-            <div className="lg:col-span-5">
-              <div className="glass border-white/10 rounded-[2.5rem] p-6 space-y-6 relative overflow-hidden bg-black/40">
-                <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                  <div className="flex items-center gap-2 text-[10px] font-mono text-pink-400 uppercase tracking-widest">
-                    <Terminal size={12} /> Narrative core: ACTIVE
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-ping" />
-                </div>
-
-                <div className="space-y-4">
-                  {/* Wheel categories */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-3">
-                      <p className="text-[8px] uppercase tracking-wider text-gray-500 font-mono mb-1">PROTAGONIST</p>
-                      <p className={`text-xs font-bold ${wheelState.spinning ? 'text-pink-400 animate-pulse' : 'text-white'}`}>{wheelState.protagonist}</p>
-                    </div>
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-3">
-                      <p className="text-[8px] uppercase tracking-wider text-gray-500 font-mono mb-1">GENRE</p>
-                      <p className={`text-xs font-bold ${wheelState.spinning ? 'text-indigo-400 animate-pulse' : 'text-white'}`}>{wheelState.genre}</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-3">
-                      <p className="text-[8px] uppercase tracking-wider text-gray-500 font-mono mb-1">CONFLICT TYPE</p>
-                      <p className={`text-xs font-bold ${wheelState.spinning ? 'text-purple-400 animate-pulse' : 'text-white'}`}>{wheelState.conflict}</p>
-                    </div>
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-3">
-                      <p className="text-[8px] uppercase tracking-wider text-gray-500 font-mono mb-1">AI CORE TOPIC</p>
-                      <p className={`text-xs font-bold ${wheelState.spinning ? 'text-cyan-400 animate-pulse' : 'text-white'}`}>{wheelState.aiConcept}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={spinStoryWheel}
-                  disabled={wheelState.spinning}
-                  className="w-full py-4 bg-gradient-to-r from-pink-600 to-indigo-600 disabled:from-pink-900 disabled:to-indigo-900 disabled:cursor-not-allowed text-white rounded-2xl text-xs font-bold uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 font-mono shadow-lg"
-                >
-                  <Play size={14} className={wheelState.spinning ? 'animate-spin' : ''} />
-                  {wheelState.spinning ? 'GENERATING PROMPT...' : 'SPIN STORY CORE'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </m.section>
 
         {/* Modal: Interactive Details explorer */}
         <AnimatePresence>
@@ -539,26 +420,6 @@ const Events: React.FC = () => {
                           ))}
                         </div>
                       </div>
-
-                      {/* Dynamic action forms link or contacts */}
-                      {selectedEvent.regLink && (
-                        <div className="glass border-indigo-500/20 rounded-3xl p-6 space-y-4 bg-indigo-950/10">
-                          <h4 className="text-xs font-bold uppercase tracking-widest font-mono text-indigo-400 flex items-center gap-2">
-                            <Zap size={14} className="animate-pulse" /> Register Node
-                          </h4>
-                          <p className="text-xs text-gray-400 leading-relaxed">
-                            Registration portals are archived. Access active registration details here.
-                          </p>
-                          <a 
-                            href={selectedEvent.regLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs font-black uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/20"
-                          >
-                            Explore Registry Form <ExternalLink size={14} />
-                          </a>
-                        </div>
-                      )}
 
                       {/* Contacts if any */}
                       {selectedEvent.contacts && (
