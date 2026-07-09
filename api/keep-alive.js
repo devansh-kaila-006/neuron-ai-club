@@ -11,24 +11,33 @@ export default async function handler(req, res) {
     }
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+  const supabaseUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
+  const supabaseAnonKey = (process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "").trim();
 
   if (!supabaseUrl || !supabaseAnonKey) {
     return res.status(500).json({ 
       success: false,
       error: 'Supabase credentials are missing in your Vercel environment variables.',
       envDiagnostics: {
-        SUPABASE_URL_CONFIGURED: !!supabaseUrl,
-        SUPABASE_ANON_KEY_CONFIGURED: !!supabaseAnonKey,
+        SUPABASE_URL_CONFIGURED: !!process.env.SUPABASE_URL,
+        VITE_SUPABASE_URL_CONFIGURED: !!process.env.VITE_SUPABASE_URL,
+        SUPABASE_ANON_KEY_CONFIGURED: !!process.env.SUPABASE_ANON_KEY,
+        VITE_SUPABASE_ANON_KEY_CONFIGURED: !!process.env.VITE_SUPABASE_ANON_KEY,
         CRON_SECRET_CONFIGURED: !!cronSecret
       },
-      actionRequired: 'Please go to your Vercel Project Settings > Environment Variables, and add SUPABASE_URL and SUPABASE_ANON_KEY.'
+      actionRequired: 'Please go to your Vercel Project Settings > Environment Variables, and ensure either SUPABASE_URL or VITE_SUPABASE_URL is configured along with the anonymous key.'
     });
   }
 
   // Format the Supabase URL correctly
-  const cleanUrl = supabaseUrl.replace(/\/$/, "");
+  let cleanUrl = supabaseUrl.replace(/\/$/, "");
+  if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
+    if (/^[a-zA-Z0-9-]{10,}$/.test(cleanUrl)) {
+      cleanUrl = `https://${cleanUrl}.supabase.co`;
+    } else {
+      cleanUrl = `https://${cleanUrl}`;
+    }
+  }
 
   // Try querying the teams table first, with a fallback to the root API endpoint
   // This ensures the ping succeeds even if the teams table doesn't exist!
