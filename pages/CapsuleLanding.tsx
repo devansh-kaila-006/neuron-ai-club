@@ -7,6 +7,7 @@ import {
   Binary, ChevronRight, ChevronLeft, ArrowRight, Database, AlertCircle, RefreshCw
 } from 'lucide-react';
 import { capsuleService } from '../lib/capsules.ts';
+import { commsService } from '../services/comms.ts';
 import { CapsuleStatus } from '../lib/types.ts';
 import { useToast } from '../context/ToastContext.tsx';
 
@@ -159,7 +160,7 @@ const CapsuleLanding: React.FC = () => {
         cohort_year: CURRENT_COHORT_YEAR
       });
 
-      toast.success("AI Time Capsule successfully sealed.");
+      toast.success("Time Capsule successfully sealed.");
       
       // Navigate to the success ticket layout
       navigate('/capsule/success', { state: { capsule } });
@@ -200,10 +201,10 @@ const CapsuleLanding: React.FC = () => {
               <Sparkles size={10} className="animate-pulse" /> NEURØN COHORT SPECIAL
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-200 to-indigo-400 bg-clip-text text-transparent font-sans mb-6">
-              The AI Time Capsule
+              The Time Capsule
             </h1>
             <p className="text-gray-400 text-sm leading-relaxed max-w-xl mb-6">
-              Write to your future self. Express your goals, project your technological forecast for the year <span className="text-indigo-400 font-bold">{GRADUATION_YEAR}</span>, and write down private memories. Our serverless intelligence will weave your entries into a customized sealed letter that is encrypted and locked in our vault until the unsealing date.
+              Write to your future self. Express your goals, project your technological forecast for the year <span className="text-indigo-400 font-bold">{GRADUATION_YEAR}</span>, and write down private memories. Your entries will be encrypted and safely locked in our digital vault until your graduation date.
             </p>
             <div className="flex flex-wrap gap-4 text-xs font-mono text-gray-500">
               <span className="flex items-center gap-1.5"><Lock size={12} className="text-indigo-500" /> AES-256 Encrypted</span>
@@ -443,7 +444,7 @@ const CapsuleLanding: React.FC = () => {
                         <div className="p-4 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl flex items-start gap-3">
                           <ShieldCheck size={18} className="text-indigo-400 shrink-0 mt-0.5" />
                           <p className="text-[10px] text-gray-500 font-mono leading-relaxed">
-                            Upon sealing, an AI system will compile your data. Your private reminders (Q3) will be wrapped and sealed securely, bypassing human admin visibility. It will be stored in our cryptographically protected Supabase cluster.
+                            Upon sealing, your capsule parameters and private reminders (Q3) will be wrapped and sealed securely, bypassing human admin visibility. It will be stored in our cryptographically protected Supabase cluster.
                           </p>
                         </div>
 
@@ -465,7 +466,7 @@ const CapsuleLanding: React.FC = () => {
                             {isSubmitting ? (
                               <>Sealing Vault <RefreshCw className="animate-spin" size={14} /></>
                             ) : (
-                              <>Seal AI Capsule <Send size={14} /></>
+                              <>Seal Time Capsule <Send size={14} /></>
                             )}
                           </button>
                         </div>
@@ -527,35 +528,11 @@ const CapsuleLanding: React.FC = () => {
 
                   {/* Sealed Vault Representation */}
                   <div className="p-8 bg-black/60 border border-white/5 rounded-3xl text-center space-y-4 relative">
-                    {searchedCapsule.status === CapsuleStatus.SUBMITTED && (
-                      <>
-                        <Lock className="text-amber-500 mx-auto animate-pulse" size={36} />
-                        <h3 className="font-mono text-sm font-bold text-amber-400">CAPSULE SEALED & QUEUED</h3>
-                        <p className="text-[11px] text-gray-500 font-mono leading-relaxed max-w-md mx-auto">
-                          Your submission is registered and sealed in digital transit. Our serverless artificial intelligence core will process the records and compile your personalized letter soon. Check back again later!
-                        </p>
-                      </>
-                    )}
-
-                    {searchedCapsule.status === CapsuleStatus.GENERATED && (
-                      <>
-                        <ShieldCheck className="text-green-500 mx-auto" size={36} />
-                        <h3 className="font-mono text-sm font-bold text-green-400">LETTER COMPILED & LOCKED</h3>
-                        <p className="text-[11px] text-gray-500 font-mono leading-relaxed max-w-md mx-auto">
-                          Our Gemini AI Core has successfully processed your parameters and written your futuristic letter. The envelope has been sealed and holds an active lock. It will remain locked until your graduation in <span className="text-indigo-400 font-bold">{searchedCapsule.cohort_year + 4}</span>.
-                        </p>
-                      </>
-                    )}
-
-                    {searchedCapsule.status === CapsuleStatus.SEALED && (
-                      <>
-                        <Lock className="text-indigo-500 mx-auto" size={36} />
-                        <h3 className="font-mono text-sm font-bold text-indigo-400">COSMICALLY ARCHIVED</h3>
-                        <p className="text-[11px] text-gray-500 font-mono leading-relaxed max-w-md mx-auto">
-                          This capsule has been cosmically archived and is completely sealed. No further updates are permitted. It is securely waiting for the unsealing gate to open on July 1, {searchedCapsule.cohort_year + 4}.
-                        </p>
-                      </>
-                    )}
+                    <Lock className="text-indigo-500 mx-auto animate-pulse" size={36} />
+                    <h3 className="font-mono text-sm font-bold text-indigo-400">CAPSULE SECURELY SEALED</h3>
+                    <p className="text-[11px] text-gray-500 font-mono leading-relaxed max-w-md mx-auto">
+                      Your capsule is registered and securely sealed in the NEURØN digital archive vault. No further updates are permitted. It will remain locked and automatically delivered to <span className="text-indigo-400 font-bold">{searchedCapsule.email}</span> upon your graduation in July <span className="text-indigo-400 font-bold">{searchedCapsule.cohort_year + 4}</span>.
+                    </p>
                   </div>
                 </m.div>
               )}

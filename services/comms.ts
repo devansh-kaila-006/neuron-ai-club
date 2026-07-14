@@ -1,7 +1,7 @@
 
 import { api } from './api.ts';
 import { supabase } from '../lib/storage.ts';
-import { Team } from '../lib/types.ts';
+import { Team, Capsule } from '../lib/types.ts';
 import { authService } from './auth.ts';
 
 /**
@@ -30,6 +30,34 @@ export const commsService = {
 
       if (data && data.success === false) {
         throw new Error(data.error || "Neural dispatch rejected.");
+      }
+
+      return data;
+    });
+  },
+
+  async triggerUnsealDelivery(params: { capsuleId?: string; forceUnseal?: boolean; targetCohort?: number } = {}) {
+    return api.call(async () => {
+      console.log(`NEURØN Service: Requesting unseal delivery sequence...`, params);
+      
+      if (!supabase) throw new Error("Neural Connection Lost.");
+
+      const sessionHash = authService.getStoredHash();
+
+      const { data, error } = await supabase.functions.invoke('unseal-delivery', {
+        body: params,
+        headers: {
+          'x-neural-auth': sessionHash || ''
+        }
+      });
+
+      if (error) {
+        console.error("Supabase Invoke Error (unseal-delivery):", error);
+        throw new Error(`Dispatch Error: Unsealing system unavailable.`);
+      }
+
+      if (data && data.success === false) {
+        throw new Error(data.error || "Neural unsealing sequence rejected.");
       }
 
       return data;

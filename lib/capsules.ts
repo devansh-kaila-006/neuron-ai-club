@@ -29,17 +29,7 @@ const DEFAULT_MOCK_CAPSULES: Capsule[] = [
     q1_answer: 'I hope to be designing neuromorphic computer chips that mimic the biological density of human brains. I want to build physical, sentient devices rather than just running code in the cloud.',
     q2_answer: 'By 2030, silicon chips will be reaching their physical limits, and we will see organic biological computing and optical light-based logic gates deployed in commercial supercomputers.',
     q3_answer: 'I hope you are still sketching circuit designs in your paper notebook instead of fully delegating your mind to spatial projections. Remember the sound of the Arabian Sea from the main building balcony.',
-    status: CapsuleStatus.GENERATED,
-    ai_generated_letter: `Greetings from the NEURØN Core Command, circa 2026.
-
-Meera, this letter has been compiled and sealed inside the AI Time Capsule on your journey toward 2030. 
-
-Back in 2026, as an ECE student at Amrita, your sights were set high. You wanted to move beyond raw cloud software and pioneer biological neural-network chips. Looking towards 2030, you predicted a monumental shift away from traditional silicon, dreaming of organic biological computers and light-based logic systems taking over commercial datacenters.
-
-The neural architecture of the future is being built by minds like yours. As you unseal this in 2030, we hope you are still holding onto that physical notebook, sketching ideas that bridge the biological and the synthetic. Don't forget the crisp breeze and the sound of the ocean waves crashing against the shores of Amritapuri.
-
-Keep bridging reality.
-- The NEURØN Core Unit, Cohort of 2026`,
+    status: CapsuleStatus.SUBMITTED,
     cohort_year: 2026,
     created_at: new Date(Date.now() - 3600000 * 24 * 2).toISOString() // 2 days ago
   },
@@ -54,16 +44,6 @@ Keep bridging reality.
     q2_answer: 'In 2030, robotic prostheses will achieve perfect 1:1 tactile feedback, allowing amputees to play instruments or write with delicate accuracy.',
     q3_answer: 'Rohan, do not stop playing the acoustic guitar. Also, did you finally get around to fixing the loose gear on the lab CNC machine, or is it still rattling? Stay focused and never compromise on making healthcare accessible.',
     status: CapsuleStatus.SEALED,
-    ai_generated_letter: `Dear Rohan,
-
-As you unseal this message in the year 2030, look back at the mechanical workshops of Amritapuri where your vision of cybernetic limbs began.
-
-In 2026, you set out with a noble mission: to use neural loops to build low-cost, smart prosthetics that give patients tactile feedback. Your bold 2030 prediction was that cybernetic limbs would achieve 1:1 human-hand fidelity.
-
-Whether you are now in the medical robotics lab or designing advanced assistive machinery, remember your vow: keep healthcare accessible and never stop playing your acoustic guitar. 
-
-Your past self is proud of the engineer you have become.
-- Sealed by NEURØN Core Team, Cohort of 2026`,
     cohort_year: 2026,
     date_sealed: new Date(Date.now() - 3600000 * 5).toISOString(),
     created_at: new Date(Date.now() - 3600000 * 24 * 1).toISOString() // 1 day ago
@@ -300,70 +280,6 @@ export const capsuleService = {
       if (error) throw error;
     } catch (err) {
       console.error('Supabase deletion error:', err);
-    }
-  },
-
-  /**
-   * Triggers the Vercel Serverless Function to generate a letter using Gemini API
-   */
-  async triggerLetterGeneration(id: string): Promise<string> {
-    // 1. Fetch capsule details
-    const capsule = await this.findCapsule(id);
-    if (!capsule) throw new Error("Capsule record not found.");
-
-    // Define mock prompt generation for offline/no-API fallback
-    const runMockGeneration = async () => {
-      const latency = 1500;
-      await new Promise(resolve => setTimeout(resolve, latency));
-      const graduationYear = capsule.cohort_year + 4;
-      return `Dear ${capsule.full_name},
-
-This transmission is unsealed from the NEURØN Archive, initially recorded back in ${capsule.cohort_year}.
-
-On your path in ${capsule.branch || 'your chosen field'}, you dreamed of: "${capsule.q1_answer}". Back then, you envisioned that by ${graduationYear}, technology would look like this: "${capsule.q2_answer}".
-
-Now that you have traversed these years of learning and growth, look at how far you have come. Let the advice you whispered to yourself remain your anchor: "${capsule.q3_answer}".
-
-The future is yours to construct.
-- Sealed by NEURØN Core Command, Cohort of ${capsule.cohort_year}`;
-    };
-
-    // If Gemini key is not configured, or if we are using mock storage, fall back to simulated AI response
-    const geminiKeyExists = !!process.env.GEMINI_API_KEY;
-    if (!geminiKeyExists && typeof window !== 'undefined' && !(window as any).VITE_GEMINI_API_KEY) {
-      console.log("No local Gemini key detected, running high-fidelity simulation");
-      const generatedText = await runMockGeneration();
-      await this.updateCapsuleStatus(id, CapsuleStatus.GENERATED, { ai_generated_letter: generatedText });
-      return generatedText;
-    }
-
-    try {
-      // POST to the Serverless Vercel function
-      const response = await fetch('/api/generate-capsules', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Uplink Error' }));
-        throw new Error(errorData.error || `Server responded with status ${response.status}`);
-      }
-
-      const payload = await response.json();
-      if (!payload.success) throw new Error(payload.error || "Generation error");
-
-      // Update local storage too so it is cached
-      await this.updateCapsuleStatus(id, CapsuleStatus.GENERATED, { ai_generated_letter: payload.letter });
-      return payload.letter;
-    } catch (err: any) {
-      console.error("Vercel AI Endpoint offline, running high-fidelity local generation fallback:", err);
-      // Run fallback so preview continues smoothly
-      const generatedText = await runMockGeneration();
-      await this.updateCapsuleStatus(id, CapsuleStatus.GENERATED, { ai_generated_letter: generatedText });
-      return generatedText;
     }
   }
 };

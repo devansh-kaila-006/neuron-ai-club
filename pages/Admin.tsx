@@ -12,6 +12,7 @@ import { storage } from '../lib/storage.ts';
 import { authService } from '../services/auth.ts';
 import { Team, PaymentStatus, Capsule, CapsuleStatus } from '../lib/types.ts';
 import { capsuleService } from '../lib/capsules.ts';
+import { commsService } from '../services/comms.ts';
 import Skeleton from '../components/Skeleton.tsx';
 import { useToast } from '../context/ToastContext.tsx';
 
@@ -44,6 +45,7 @@ const Admin: React.FC = () => {
   const [isBatchGenerating, setIsBatchGenerating] = useState(false);
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
   const [isCapsuleActionLoading, setIsCapsuleActionLoading] = useState<string | null>(null);
+  const [isProcessingUnseal, setIsProcessingUnseal] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -308,9 +310,22 @@ const Admin: React.FC = () => {
   const handleCapsuleStatusUpdate = async (id: string, status: CapsuleStatus) => {
     setIsCapsuleActionLoading(id);
     try {
-      await capsuleService.updateCapsuleStatus(id, status);
+      const updated = await capsuleService.updateCapsuleStatus(id, status);
       toast.success(`Capsule status changed to ${status.toUpperCase()}`);
       addLog(`Capsule updated to ${status}`, 'success');
+      
+      // If unsealed/delivered, trigger email dispatch
+      if (status === CapsuleStatus.DELIVERED) {
+        try {
+          await commsService.triggerUnsealDelivery({ capsuleId: id });
+          toast.success("Unsealed capsule contents dispatched to owner.");
+          addLog(`Unsealed contents delivered for ${updated.capsule_code}`, 'success');
+        } catch (commsErr: any) {
+          console.warn("Could not dispatch unsealed email:", commsErr);
+          toast.info("Capsule delivered, but unsealed email dispatch failed.");
+        }
+      }
+
       const caps = await capsuleService.getCapsules();
       setCapsules(caps);
     } catch (err: any) {
@@ -336,56 +351,33 @@ const Admin: React.FC = () => {
     }
   };
 
-  const handleGenerateLetter = async (id: string) => {
-    setIsCapsuleActionLoading(id);
-    try {
-      toast.info("Connecting with Gemini AI Core...");
-      const letter = await capsuleService.triggerLetterGeneration(id);
-      toast.success("AI letter compiled successfully!");
-      addLog("AI letter compiled", 'success');
-      const caps = await capsuleService.getCapsules();
-      setCapsules(caps);
-    } catch (err: any) {
-      toast.error(err.message || "AI generation failed.");
-    } finally {
-      setIsCapsuleActionLoading(null);
-    }
-  };
-
-  const handleBatchGenerate = async () => {
-    const pendingCapsules = capsules.filter(c => c.status === CapsuleStatus.SUBMITTED);
-    if (pendingCapsules.length === 0) {
-      toast.info("No submitted capsules found that require generation.");
-      return;
-    }
-
-    if (!window.confirm(`Initialize batch compilation for ${pendingCapsules.length} capsules?`)) return;
-
-    setIsBatchGenerating(true);
-    setBatchProgress({ current: 0, total: pendingCapsules.length });
-    addLog(`Starting batch AI compile for ${pendingCapsules.length} records`, 'info');
-
-    let successCount = 0;
-    let failureCount = 0;
-
-    for (let i = 0; i < pendingCapsules.length; i++) {
-      const capsule = pendingCapsules[i];
-      setBatchProgress(prev => ({ ...prev, current: i + 1 }));
-      try {
-        await capsuleService.triggerLetterGeneration(capsule.id);
-        successCount++;
-      } catch (err) {
-        console.error(`Failed to generate letter for ${capsule.full_name}:`, err);
-        failureCount++;
-      }
-    }
-
-    setIsBatchGenerating(false);
-    toast.success(`Batch completed! Success: ${successCount}, Failures: ${failureCount}`);
-    addLog(`Batch compile finished. Success: ${successCount}, Failed: ${failureCount}`, successCount > 0 ? 'success' : 'warn');
+  const handleTriggerAutomatedUnseal = async () => {
+    const force = window.confirm(
+      "NEURØN AUTOMATION ENGINE\n\nClick OK to FORCE unseal all sealed capsules immediately (For demonstration/testing).\n\nClick Cancel to run the actual calendar temporal check (requires unsealing date July 1st, 2030 to be reached)."
+    );
     
-    const caps = await capsuleService.getCapsules();
-    setCapsules(caps);
+    setIsProcessingUnseal(true);
+    addLog(force ? "FORCING global unseal delivery sequence..." : "Scanning global grids for unseal-eligible capsules...", "info");
+    try {
+      const res = await commsService.triggerUnsealDelivery({ forceUnseal: force }) as any;
+      if (res.success) {
+        if (res.deliveredCount > 0) {
+          toast.success(`Successfully unsealed & delivered ${res.deliveredCount} capsules!`);
+          addLog(`Automated unseal success: delivered [${res.delivered.join(', ')}]`, 'success');
+        } else {
+          toast.info("Automation scans complete. Zero capsules met the gate criteria.");
+          addLog("Zero unseal-eligible capsules found in scan.", "info");
+        }
+        // Refresh list
+        const caps = await capsuleService.getCapsules();
+        setCapsules(caps);
+      }
+    } catch (err: any) {
+      toast.error(`Automated Unseal Failed: ${err.message || 'Service offline'}`);
+      addLog(`Automation Error: ${err.message || 'Service offline'}`, 'warn');
+    } finally {
+      setIsProcessingUnseal(false);
+    }
   };
 
   const handleDownloadCapsulesCSV = () => {
@@ -482,15 +474,6 @@ const Admin: React.FC = () => {
               </>
             ) : (
               <>
-                <button 
-                  onClick={handleBatchGenerate} 
-                  disabled={isBatchGenerating || capsules.filter(c => c.status === CapsuleStatus.SUBMITTED).length === 0}
-                  className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-all flex items-center gap-2 group shadow-lg disabled:opacity-40"
-                  title="Batch Compile Letters"
-                >
-                  {isBatchGenerating ? <Loader2 size={20} className="animate-spin" /> : <Sparkles size={20} className="group-hover:scale-110 transition-transform" />}
-                  <span className="hidden sm:inline text-xs font-bold uppercase tracking-widest">Batch AI Compile</span>
-                </button>
                 <button onClick={handleDownloadCapsulesCSV} className="p-3 glass border-white/10 rounded-xl hover:bg-white/5 transition-all text-indigo-400" title="Export Capsules CSV">
                   <Download size={20} />
                 </button>
@@ -570,10 +553,9 @@ const Admin: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {[
               { icon: <Database />, label: "Submissions", val: capsules.length },
-              { icon: <Sparkles className="text-indigo-400" />, label: "AI Letter Compiled", val: capsules.filter(c => c.status !== CapsuleStatus.SUBMITTED).length },
               { icon: <Lock className="text-indigo-400" />, label: "Sealed & Archived", val: capsules.filter(c => c.status === CapsuleStatus.SEALED).length },
               { icon: <Clock />, label: "Active Cohort", val: `2026` },
             ].map((s_stat, i) => (
@@ -646,11 +628,19 @@ const Admin: React.FC = () => {
                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
                      <input placeholder="Filter by Name, Code, Enrollment ID or Email..." className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-6 text-sm outline-none focus:border-indigo-500 font-mono" value={capsuleSearchTerm} onChange={e => setCapsuleSearchTerm(e.target.value)} />
                   </div>
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-2 flex-wrap items-center">
                     <button onClick={() => setCapsuleFilter('all')} className={`px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${capsuleFilter === 'all' ? 'bg-indigo-600 text-white' : 'glass border-white/5 text-gray-500'}`}>All</button>
                     <button onClick={() => setCapsuleFilter(CapsuleStatus.SUBMITTED)} className={`px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${capsuleFilter === CapsuleStatus.SUBMITTED ? 'bg-indigo-600 text-white' : 'glass border-white/5 text-gray-500'}`}>New</button>
-                    <button onClick={() => setCapsuleFilter(CapsuleStatus.GENERATED)} className={`px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${capsuleFilter === CapsuleStatus.GENERATED ? 'bg-indigo-600 text-white' : 'glass border-white/5 text-gray-500'}`}>Compiled</button>
                     <button onClick={() => setCapsuleFilter(CapsuleStatus.SEALED)} className={`px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${capsuleFilter === CapsuleStatus.SEALED ? 'bg-indigo-600 text-white' : 'glass border-white/5 text-gray-500'}`}>Sealed</button>
+                    
+                    <button 
+                      onClick={handleTriggerAutomatedUnseal} 
+                      disabled={isProcessingUnseal}
+                      className="ml-2 px-3 py-2 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 transition-all disabled:opacity-50"
+                    >
+                      {isProcessingUnseal ? <Loader2 className="animate-spin" size={12} /> : <RefreshCw size={12} />}
+                      Run Unseal Automation
+                    </button>
                   </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -684,40 +674,24 @@ const Admin: React.FC = () => {
                             <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase font-mono ${
                               capsule.status === CapsuleStatus.SUBMITTED 
                                 ? 'bg-blue-500/10 text-blue-400' 
-                                : capsule.status === CapsuleStatus.GENERATED 
-                                  ? 'bg-amber-500/10 text-amber-400' 
-                                  : 'bg-green-500/10 text-green-400'
+                                : 'bg-green-500/10 text-green-400'
                             }`}>
                               {capsule.status}
                             </span>
                           </td>
                           <td className="px-6 py-6 text-right">
                             <div className="flex justify-end gap-2">
-                              {/* Action: Generate AI letter */}
-                              {capsule.status === CapsuleStatus.SUBMITTED && (
-                                <button 
-                                  disabled={isCapsuleActionLoading === capsule.id}
-                                  onClick={() => handleGenerateLetter(capsule.id)}
-                                  className="p-2 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white rounded-lg transition-all"
-                                  title="Compile AI Letter with Gemini"
-                                >
-                                  {isCapsuleActionLoading === capsule.id ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                                </button>
-                              )}
-
-                              {/* Action: Review letter */}
-                              {capsule.status !== CapsuleStatus.SUBMITTED && (
-                                <button 
-                                  onClick={() => setSelectedCapsule(capsule)}
-                                  className="p-2 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white rounded-lg transition-all"
-                                  title="Review Generated Letter"
-                                >
-                                  <Eye size={14} />
-                                </button>
-                              )}
+                              {/* Action: Review entry */}
+                              <button 
+                                onClick={() => setSelectedCapsule(capsule)}
+                                className="p-2 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white rounded-lg transition-all"
+                                title="Review Capsule Entry"
+                              >
+                                <Eye size={14} />
+                              </button>
 
                               {/* Action: Seal envelope */}
-                              {capsule.status === CapsuleStatus.GENERATED && (
+                              {capsule.status === CapsuleStatus.SUBMITTED && (
                                 <button 
                                   disabled={isCapsuleActionLoading === capsule.id}
                                   onClick={() => handleCapsuleStatusUpdate(capsule.id, CapsuleStatus.SEALED)}
@@ -883,7 +857,7 @@ const Admin: React.FC = () => {
                 {/* Modal Header */}
                 <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/2">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold font-mono text-indigo-400 uppercase tracking-wider">Reviewing Capsule Letter</span>
+                    <span className="text-[10px] font-bold font-mono text-indigo-400 uppercase tracking-wider">Reviewing Capsule Entry</span>
                     <h3 className="text-lg font-bold font-mono text-white">{selectedCapsule.full_name} ({selectedCapsule.capsule_code})</h3>
                   </div>
                   <button 
@@ -915,17 +889,58 @@ const Admin: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <h4 className="text-xs font-bold font-mono text-indigo-400 uppercase tracking-widest">COMPILED DIGITAL LETTER</h4>
-                    <div className="p-6 bg-white/2 border border-white/5 rounded-2xl text-xs font-mono whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto custom-scrollbar">
-                      {selectedCapsule.ai_generated_letter || "No letter compiled yet. Press 'Generate Letter' in the actions menu."}
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold font-mono text-indigo-400 uppercase tracking-widest">1. Career & Professional Aspirations (Q1)</h4>
+                      <div className="p-4 bg-white/2 border border-white/5 rounded-xl text-xs text-gray-300 font-sans leading-relaxed">
+                        {selectedCapsule.q1_answer}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold font-mono text-indigo-400 uppercase tracking-widest">2. Technological Landscape Prediction (Q2)</h4>
+                      <div className="p-4 bg-white/2 border border-white/5 rounded-xl text-xs text-gray-300 font-sans leading-relaxed">
+                        {selectedCapsule.q2_answer}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold font-mono text-indigo-400 uppercase tracking-widest">3. Private Warning / Advice to Future Self (Q3)</h4>
+                      <div className="p-4 bg-white/2 border border-white/5 rounded-xl text-xs text-gray-300 font-sans leading-relaxed">
+                        {selectedCapsule.q3_answer}
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Modal Footer */}
                 <div className="p-6 border-t border-white/5 flex justify-end gap-3 bg-white/2">
-                  {selectedCapsule.status === CapsuleStatus.GENERATED && (
+                  <button 
+                    disabled={isCapsuleActionLoading === selectedCapsule.id}
+                    onClick={async () => {
+                      setIsCapsuleActionLoading(selectedCapsule.id);
+                      try {
+                        await commsService.triggerUnsealDelivery({ capsuleId: selectedCapsule.id, forceUnseal: true });
+                        toast.success("Capsule unsealed & email delivered successfully.");
+                        addLog(`Manual unseal & delivery for ${selectedCapsule.capsule_code}`, 'success');
+                        setSelectedCapsule(null);
+                        
+                        // Reload lists to reflect 'delivered' status
+                        const caps = await capsuleService.getCapsules();
+                        setCapsules(caps);
+                      } catch (commsErr: any) {
+                        toast.error(`Unseal Dispatch Failed: ${commsErr.message || 'Offline'}`);
+                      } finally {
+                        setIsCapsuleActionLoading(null);
+                      }
+                    }}
+                    className="px-5 py-3 bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-xl text-xs font-bold font-mono tracking-widest uppercase transition-all flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {isCapsuleActionLoading === selectedCapsule.id ? <Loader2 size={12} className="animate-spin" /> : <Mail size={12} />}
+                    Trigger Unseal Delivery
+                  </button>
+
+                  {selectedCapsule.status === CapsuleStatus.SUBMITTED && (
                     <button 
                       onClick={() => {
                         handleCapsuleStatusUpdate(selectedCapsule.id, CapsuleStatus.SEALED);

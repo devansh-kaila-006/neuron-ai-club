@@ -1,12 +1,13 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 // @ts-ignore - Fixing react-router-dom exports false positive
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  CheckCircle2, Printer, ArrowLeft, ArrowRight, ShieldCheck, Clock, QrCode, Sparkles, AlertCircle
+  CheckCircle2, Printer, ArrowLeft, ArrowRight, ShieldCheck, Clock, QrCode, Sparkles, AlertCircle, Mail, Loader2
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useToast } from '../context/ToastContext.tsx';
+import { commsService } from '../services/comms.ts';
 
 const CapsuleSuccess: React.FC = () => {
   const m = motion as any;
@@ -14,6 +15,7 @@ const CapsuleSuccess: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const printRef = useRef<HTMLDivElement>(null);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   // Extract capsule details from location state
   const capsule = location.state?.capsule;
@@ -114,24 +116,16 @@ const CapsuleSuccess: React.FC = () => {
                 <div className="p-4 bg-white/2 border border-white/5 rounded-2xl flex gap-3">
                   <span className="text-indigo-500 font-bold">01</span>
                   <div>
-                    <p className="text-gray-300 font-bold">AI Letter Generation</p>
-                    <p className="text-[11px]">The NEURØN admin crew will trigger our high-scale Gemini serverless function to write your inspiring cohort-spanning digital letter.</p>
+                    <p className="text-gray-300 font-bold">Sealed in Vault</p>
+                    <p className="text-[11px]">Your time capsule coordinates are locked securely inside the Supabase tables, protected with advanced digital rules.</p>
                   </div>
                 </div>
 
                 <div className="p-4 bg-white/2 border border-white/5 rounded-2xl flex gap-3">
                   <span className="text-indigo-500 font-bold">02</span>
                   <div>
-                    <p className="text-gray-300 font-bold">Sealed in Vault</p>
-                    <p className="text-[11px]">Once written, the letter is locked securely inside the Supabase tables, waiting for the cohort release date.</p>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-white/2 border border-white/5 rounded-2xl flex gap-3">
-                  <span className="text-indigo-500 font-bold">03</span>
-                  <div>
                     <p className="text-gray-300 font-bold">Unsealing in July {capsule.cohort_year + 4}</p>
-                    <p className="text-[11px]">A cron scheduler triggers, unencrypting all letters and automatically delivering them back to your designated inbox.</p>
+                    <p className="text-[11px]">A cron scheduler triggers on the release date, automatically unsealing and delivering your original entries back to your designated inbox.</p>
                   </div>
                 </div>
               </div>

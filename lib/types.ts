@@ -61,8 +61,6 @@ export interface ApiResponse<T = any> {
 
 export enum CapsuleStatus {
   SUBMITTED = 'submitted',
-  GENERATED = 'generated',
-  REVIEWED = 'reviewed',
   SEALED = 'sealed',
   DELIVERED = 'delivered'
 }

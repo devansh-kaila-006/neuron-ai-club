@@ -1,4 +1,3 @@
-
 // 1. NEURØN Global Environment Bridge
 (globalThis as any).process = {
   env: new Proxy({}, {
@@ -79,7 +78,7 @@ serve(async (req) => {
     }
 
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${team.teamid}&bgcolor=050505&color=4f46e5&margin=10`;
-    
+
     let lastError = null;
     let success = false;
     let responseData = null;
