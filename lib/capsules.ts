@@ -200,7 +200,18 @@ export const capsuleService = {
         throw new Error(`Database submission failure: ${error.message}`);
       }
 
-      return data as Capsule;
+      const dbRecord = data as Capsule;
+      // Sync local storage cache with the correct UUID from database
+      const cachedData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      const tempIndex = cachedData.findIndex((c: Capsule) => c.capsule_code === dbRecord.capsule_code);
+      if (tempIndex !== -1) {
+        cachedData[tempIndex] = dbRecord;
+      } else {
+        cachedData.push(dbRecord);
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cachedData));
+
+      return dbRecord;
     } catch (err: any) {
       console.warn('Supabase insert failed, using local storage cache:', err.message);
       // Mark as using mock for this session since database was write-blocked
@@ -216,7 +227,45 @@ export const capsuleService = {
     this.initLocalStorage();
     const localData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     const index = localData.findIndex((c: Capsule) => c.id === id);
-    
+
+    if (supabase && !this.isUsingMock) {
+      try {
+        const updatePayload: any = {
+          status,
+          ...extra,
+        };
+        if (status === CapsuleStatus.SEALED && !extra.date_sealed) {
+          updatePayload.date_sealed = new Date().toISOString();
+        }
+        if (status === CapsuleStatus.DELIVERED && !extra.date_delivered) {
+          updatePayload.date_delivered = new Date().toISOString();
+        }
+
+        const { data, error } = await supabase
+          .from('capsules')
+          .update(updatePayload)
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        const dbRecord = data as Capsule;
+
+        // Synchronize local cache
+        if (index !== -1) {
+          localData[index] = dbRecord;
+        } else {
+          localData.push(dbRecord);
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(localData));
+
+        return dbRecord;
+      } catch (err: any) {
+        console.warn('Supabase status update failed, falling back to local storage cache:', err.message);
+      }
+    }
+
+    // Local Storage Mock Mode / Fallback Flow
     if (index === -1) {
       throw new Error("Capsule sequence not found.");
     }
@@ -237,27 +286,7 @@ export const capsuleService = {
     localData[index] = updated;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(localData));
 
-    if (!supabase || this.isUsingMock) {
-      return updated;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('capsules')
-        .update({
-          status,
-          ...extra,
-          date_sealed: updated.date_sealed || null,
-          date_delivered: updated.date_delivered || null
-        })
-        .eq('id', id);
-
-      if (error) throw error;
-      return updated;
-    } catch (err: any) {
-      console.warn('Supabase status update failed, fallback saved to cache:', err.message);
-      return updated;
-    }
+    return updated;
   },
 
   /**
