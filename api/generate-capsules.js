@@ -14,7 +14,8 @@ export default async function handler(req, res) {
 
   // 1. Resolve Supabase Environment Variables
   const supabaseUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "").trim();
-  const supabaseAnonKey = (process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "").trim();
+  // Prioritize using the service_role key on the server to bypass RLS, falling back to anon key
+  const supabaseServiceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "").trim();
   const geminiApiKey = (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || "").trim();
 
   if (!geminiApiKey) {
@@ -23,19 +24,19 @@ export default async function handler(req, res) {
       error: 'GEMINI_API_KEY is not configured in Vercel. Please add it to your environment secrets.',
       diagnostics: {
         SUPABASE_URL_CONFIGURED: !!supabaseUrl,
-        SUPABASE_ANON_KEY_CONFIGURED: !!supabaseAnonKey,
+        SUPABASE_SERVICE_KEY_CONFIGURED: !!supabaseServiceKey,
         GEMINI_API_KEY_CONFIGURED: false
       }
     });
   }
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !supabaseServiceKey) {
     return res.status(500).json({
       success: false,
       error: 'Supabase credentials are not configured in Vercel. Cannot fetch or save the generated letter.',
       diagnostics: {
         SUPABASE_URL_CONFIGURED: !!supabaseUrl,
-        SUPABASE_ANON_KEY_CONFIGURED: !!supabaseAnonKey,
+        SUPABASE_SERVICE_KEY_CONFIGURED: !!supabaseServiceKey,
         GEMINI_API_KEY_CONFIGURED: true
       }
     });
@@ -57,8 +58,8 @@ export default async function handler(req, res) {
     const fetchResponse = await fetch(fetchUrl, {
       method: 'GET',
       headers: {
-        'apikey': supabaseAnonKey,
-        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'apikey': supabaseServiceKey,
+        'Authorization': `Bearer ${supabaseServiceKey}`,
         'Content-Type': 'application/json',
       }
     });
@@ -133,8 +134,8 @@ export default async function handler(req, res) {
     const updateResponse = await fetch(updateUrl, {
       method: 'PATCH',
       headers: {
-        'apikey': supabaseAnonKey,
-        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'apikey': supabaseServiceKey,
+        'Authorization': `Bearer ${supabaseServiceKey}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
       },
