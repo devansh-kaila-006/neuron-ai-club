@@ -201,34 +201,34 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="pt-32 min-h-screen px-6 pb-40 bg-transparent relative overflow-hidden">
+    <div className="pt-32 min-h-screen px-4 sm:px-6 pb-32 bg-transparent relative overflow-hidden">
       {/* Background Ambience */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-500/5 blur-[160px] rounded-full pointer-events-none -z-10" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 blur-[160px] rounded-full opacity-50" />
 
       <div className="max-w-5xl mx-auto">
-        <div className="flex justify-center mb-20 no-print">
-          <div className="relative flex items-center justify-between w-full max-w-lg">
-             <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-white/5 z-0" />
+        <div className="flex justify-center mb-10 md:mb-20 no-print px-2">
+          <div className="relative flex items-center justify-between w-full max-w-lg gap-2">
+             <div className="absolute left-0 top-[20px] sm:top-1/2 -translate-y-1/2 w-full h-px bg-white/5 z-0" />
              <m.div 
                initial={{ width: 0 }}
                animate={{ width: `${((step - 1) / 2) * 100}%` }}
-               className="absolute left-0 top-1/2 -translate-y-1/2 h-px bg-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.5)] z-0" 
+               className="absolute left-0 top-[20px] sm:top-1/2 -translate-y-1/2 h-px bg-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.5)] z-0" 
              />
 
              {[1, 2, 3].map(s => (
-               <div key={s} className="relative flex flex-col items-center gap-4 z-10">
+               <div key={s} className="relative flex flex-col items-center gap-2 sm:gap-4 z-10 flex-1">
                  <m.div 
                     animate={{ 
-                      scale: step === s ? 1.2 : 1,
+                      scale: step === s ? 1.1 : 1,
                       backgroundColor: step >= s ? 'rgba(79, 70, 229, 1)' : 'rgba(5, 5, 5, 1)',
                       borderColor: step >= s ? 'rgba(129, 140, 248, 0.5)' : 'rgba(255, 255, 255, 0.1)'
                     }}
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center border font-mono font-black text-sm transition-all duration-500 ${step >= s ? 'text-white' : 'text-gray-700'}`}
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center border font-mono font-black text-xs sm:text-sm transition-all duration-500 ${step >= s ? 'text-white' : 'text-gray-700'}`}
                  >
-                   {step > s ? <CheckCircle size={20} /> : s}
+                   {step > s ? <CheckCircle size={18} /> : s}
                  </m.div>
-                 <span className={`text-[9px] font-mono font-bold uppercase tracking-[0.3em] ${step >= s ? 'text-indigo-400' : 'text-gray-700'}`}>
+                 <span className={`text-[7px] sm:text-[9px] font-mono font-bold uppercase tracking-[0.1em] sm:tracking-[0.3em] text-center ${step >= s ? 'text-indigo-400' : 'text-gray-700'}`}>
                    {s === 1 ? 'REGISTRY' : s === 2 ? 'ESCROW' : 'DEPLOYED'}
                  </span>
                </div>
@@ -269,7 +269,7 @@ const Register: React.FC = () => {
 
               <div className="grid lg:grid-cols-12 gap-12">
                 <div className="lg:col-span-8 space-y-8">
-                  <div className="glass p-10 rounded-[3.5rem] border-white/5 space-y-6 relative overflow-hidden group">
+                  <div className="glass p-5 sm:p-10 rounded-[1.5rem] sm:rounded-[3.5rem] border-white/5 space-y-6 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-[0.02] group-hover:opacity-[0.06] transition-opacity">
                       <Zap size={140} strokeWidth={0.5} />
                     </div>
@@ -279,12 +279,12 @@ const Register: React.FC = () => {
                         value={teamName} 
                         onChange={e => setTeamName(e.target.value)}
                         placeholder="Ex: CYBER_SYNTH"
-                        className={`w-full bg-white/[0.02] border rounded-[2.5rem] p-8 pl-16 outline-none transition-all text-2xl font-black font-tech uppercase tracking-tighter ${errors.teamName ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500 focus:bg-white/[0.04]'}`}
+                        className={`w-full bg-white/[0.02] border rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-8 pl-12 sm:pl-16 outline-none transition-all text-lg sm:text-2xl font-black font-tech uppercase tracking-tighter ${errors.teamName ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500 focus:bg-white/[0.04]'}`}
                       />
-                      <Hash className="absolute left-7 top-1/2 -translate-y-1/2 text-gray-700" size={24} />
-                      {nameAvailability === 'checking' && <Loader2 className="absolute right-7 top-1/2 -translate-y-1/2 text-indigo-500 animate-spin" size={20} />}
-                      {nameAvailability === 'available' && <CheckCircle className="absolute right-7 top-1/2 -translate-y-1/2 text-green-500" size={20} />}
-                      {nameAvailability === 'taken' && <AlertTriangle className="absolute right-7 top-1/2 -translate-y-1/2 text-red-500" size={20} />}
+                      <Hash className="absolute left-4 sm:left-7 top-1/2 -translate-y-1/2 text-gray-700" size={20} />
+                      {nameAvailability === 'checking' && <Loader2 className="absolute right-4 sm:right-7 top-1/2 -translate-y-1/2 text-indigo-500 animate-spin" size={20} />}
+                      {nameAvailability === 'available' && <CheckCircle className="absolute right-4 sm:right-7 top-1/2 -translate-y-1/2 text-green-500" size={20} />}
+                      {nameAvailability === 'taken' && <AlertTriangle className="absolute right-4 sm:right-7 top-1/2 -translate-y-1/2 text-red-500" size={20} />}
                     </div>
                     {errors.teamName && <p className="text-[10px] text-red-500 font-mono pl-4 uppercase tracking-widest">{errors.teamName}</p>}
                   </div>
@@ -299,7 +299,7 @@ const Register: React.FC = () => {
                           key={i} 
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className="glass p-8 rounded-[3rem] border-white/5 space-y-6 relative group/member"
+                          className="glass p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[3rem] border-white/5 space-y-6 relative group/member"
                         >
                           <div className="flex justify-between items-center mb-2">
                              <span className="text-[10px] font-mono font-black text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full uppercase tracking-widest">Operator 0{i+1} — {m_member.role}</span>
@@ -338,7 +338,7 @@ const Register: React.FC = () => {
                     </div>
 
                     {members.length < 4 && (
-                      <button onClick={addMember} className="w-full py-6 glass border-dashed border-white/10 rounded-[2.5rem] flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 hover:text-indigo-400 hover:border-indigo-500/50 transition-all group">
+                      <button onClick={addMember} className="w-full py-4 sm:py-6 glass border-dashed border-white/10 rounded-[1.5rem] sm:rounded-[2.5rem] flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 hover:text-indigo-400 hover:border-indigo-500/50 transition-all group">
                          <Plus size={18} className="group-hover:rotate-90 transition-transform duration-500" /> Append Operator Sequence
                       </button>
                     )}
@@ -346,7 +346,7 @@ const Register: React.FC = () => {
                 </div>
 
                 <div className="lg:col-span-4 space-y-8">
-                  <div className="glass p-10 rounded-[3.5rem] border-white/5 space-y-8 h-fit sticky top-32">
+                  <div className="glass p-5 sm:p-10 rounded-[1.5rem] sm:rounded-[3.5rem] border-white/5 space-y-8 h-fit sticky top-32">
                      <div className="flex items-center gap-4 border-b border-white/5 pb-6">
                         <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500">
                            <ShieldCheck size={24} />
@@ -369,7 +369,7 @@ const Register: React.FC = () => {
 
                      <button 
                        onClick={handleProceedToPayment} 
-                       className={`w-full py-8 rounded-[2.5rem] font-black uppercase tracking-[0.5em] text-xs flex items-center justify-center gap-4 shadow-2xl group transition-all duration-500 active:scale-95 ${
+                       className={`w-full py-5 sm:py-8 rounded-[1.5rem] sm:rounded-[2.5rem] font-black uppercase tracking-[0.5em] text-xs flex items-center justify-center gap-4 shadow-2xl group transition-all duration-500 active:scale-95 ${
                          isUpdateMode ? 'bg-purple-600 hover:bg-purple-500' : 'bg-indigo-600 hover:bg-indigo-500'
                        }`}
                      >
@@ -394,7 +394,7 @@ const Register: React.FC = () => {
                 <p className="text-gray-500 font-light text-sm">Escrow link established. Finalize registry payment to anchor your manifest in the neural grid.</p>
               </div>
 
-              <div className="glass p-12 rounded-[4rem] border-indigo-500/20 shadow-2xl space-y-12 relative overflow-hidden text-center">
+              <div className="glass p-6 sm:p-12 rounded-[2rem] sm:rounded-[4rem] border-indigo-500/20 shadow-2xl space-y-8 sm:space-y-12 relative overflow-hidden text-center">
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
                 
                 <div className="space-y-2">
@@ -405,7 +405,7 @@ const Register: React.FC = () => {
                 <button 
                   onClick={handlePayment} 
                   disabled={isSubmitting} 
-                  className="w-full py-8 bg-indigo-600 rounded-[2.5rem] font-black uppercase tracking-[0.5em] text-xs flex items-center justify-center gap-4 hover:bg-indigo-500 shadow-2xl transition-all"
+                  className="w-full py-5 sm:py-8 bg-indigo-600 rounded-[1.5rem] sm:rounded-[2.5rem] font-black uppercase tracking-[0.5em] text-xs flex items-center justify-center gap-4 hover:bg-indigo-500 shadow-2xl transition-all"
                 >
                   {isSubmitting ? <Loader2 className="animate-spin" /> : <>Open Payment Page <Zap size={18}/></>}
                 </button>
@@ -442,20 +442,23 @@ const Register: React.FC = () => {
                   </h1>
                </div>
 
-               <div className="glass p-12 md:p-20 rounded-[4rem] border-white/5 shadow-2xl manifest-card relative bg-[#080808] overflow-hidden">
+               <div className="glass p-5 sm:p-12 md:p-20 rounded-[2rem] sm:rounded-[4rem] border-white/5 shadow-2xl manifest-card relative bg-[#080808] overflow-hidden">
                   <div className="relative z-10 space-y-12">
                      <div className="flex flex-col items-center gap-6">
-                        <div className="bg-white p-10 rounded-[3rem] shadow-[0_0_40px_rgba(255,255,255,0.05)] border border-white/10 group hover:scale-105 transition-transform duration-700">
-                           <QRCodeSVG 
-                             value={registeredTeam?.teamid || ''} 
-                             size={200} 
-                             level="H" 
-                             includeMargin={false} 
-                             fgColor="#000000" 
-                             bgColor="#ffffff" 
-                           />
-                           <div className="mt-8 pt-8 border-t border-gray-100">
-                              <p className="text-3xl font-black font-mono tracking-[0.5em] text-black italic">{registeredTeam?.teamid}</p>
+                        <div className="bg-white p-4 sm:p-10 rounded-[1.5rem] sm:rounded-[3rem] shadow-[0_0_40px_rgba(255,255,255,0.05)] border border-white/10 group hover:scale-105 transition-transform duration-700 w-full max-w-[280px] sm:max-w-none flex flex-col items-center">
+                           <div className="w-40 h-40 sm:w-[200px] sm:h-[200px]">
+                             <QRCodeSVG 
+                               value={registeredTeam?.teamid || ''} 
+                               size={160} 
+                               style={{ width: '100%', height: '100%' }}
+                               level="H" 
+                               includeMargin={false} 
+                               fgColor="#000000" 
+                               bgColor="#ffffff" 
+                             />
+                           </div>
+                           <div className="mt-4 sm:mt-8 pt-4 sm:pt-8 border-t border-gray-100 w-full text-center">
+                              <p className="text-xl sm:text-3xl font-black font-mono tracking-[0.2em] sm:tracking-[0.5em] text-black italic break-all">{registeredTeam?.teamid}</p>
                            </div>
                         </div>
                      </div>

@@ -16,6 +16,7 @@ const Navbar: React.FC = () => {
     { label: 'Departments', path: '/departments' },
     { label: 'Events', path: '/events' },
     { label: 'Team', path: '/team' },
+    { label: 'Time Capsule', path: '/capsule' },
     { label: 'Blog', path: '/blog' },
   ];
 
@@ -35,7 +36,7 @@ const Navbar: React.FC = () => {
             NEURØN
           </span>
         </Link>
-
+ 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
           {navItems.map((item) => (
@@ -43,7 +44,7 @@ const Navbar: React.FC = () => {
               key={item.path}
               to={item.path}
               className={`text-sm font-medium transition-colors hover:text-indigo-400 ${
-                location.pathname === item.path ? 'text-indigo-500' : 'text-gray-400'
+                location.pathname === item.path ? 'text-indigo-500 font-bold' : 'text-gray-400'
               }`}
             >
               {item.label}
@@ -81,6 +82,13 @@ const Navbar: React.FC = () => {
               {item.label}
             </Link>
           ))}
+          <Link
+            to="/join"
+            onClick={() => setIsOpen(false)}
+            className="mt-2 text-center bg-gradient-to-r from-indigo-600 to-purple-600 py-3 rounded-full text-base font-semibold text-white hover:opacity-90 transition-opacity"
+          >
+            Join Us
+          </Link>
         </m.div>
       )}
     </nav>

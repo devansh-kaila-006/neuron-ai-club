@@ -58,3 +58,30 @@ export interface ApiResponse<T = any> {
   error?: string;
   status: number;
 }
+
+export enum CapsuleStatus {
+  SUBMITTED = 'submitted',
+  GENERATED = 'generated',
+  REVIEWED = 'reviewed',
+  SEALED = 'sealed',
+  DELIVERED = 'delivered'
+}
+
+export interface Capsule {
+  id: string;
+  capsule_code: string;
+  enrollment_no: string;
+  full_name: string;
+  branch: string;
+  email: string;
+  q1_answer: string; // Who they want to become
+  q2_answer: string; // 2030 tech prediction
+  q3_answer: string; // Advice to future self (private)
+  ai_generated_letter?: string;
+  status: CapsuleStatus;
+  cohort_year: number; // e.g. 2026
+  date_sealed?: string;
+  date_delivered?: string;
+  created_at: string;
+}
+

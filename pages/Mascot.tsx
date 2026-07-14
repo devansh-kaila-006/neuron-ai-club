@@ -1,14 +1,23 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import NeuralMascot from '../components/NeuralMascot.tsx';
 import { Shield, Zap, Cpu } from 'lucide-react';
 
 const MascotPage: React.FC = () => {
   const m = motion as any;
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const mascotSize = Math.min(windowWidth - 80, 400);
 
   return (
-    <div className="pt-32 pb-20 px-6 min-h-screen">
+    <div className="pt-32 pb-20 px-4 sm:px-6 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Side: Content */}
@@ -63,27 +72,27 @@ const MascotPage: React.FC = () => {
             <div className="absolute inset-0 bg-indigo-500/20 blur-[120px] rounded-full animate-pulse" />
             
             {/* Large Mascot */}
-            <div className="relative z-10 p-12 glass rounded-[3rem] border-indigo-500/20 shadow-2xl">
-              <NeuralMascot size={400} />
+            <div className="relative z-10 p-6 sm:p-12 glass rounded-[1.5rem] sm:rounded-[3rem] border-indigo-500/20 shadow-2xl">
+              <NeuralMascot size={mascotSize} />
             </div>
 
             {/* Floating Data Points */}
             <m.div 
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-10 -right-10 glass p-4 rounded-2xl border-white/10 backdrop-blur-xl"
+              className="absolute -top-4 sm:-top-10 -right-4 sm:-right-10 glass p-3 sm:p-4 rounded-xl sm:rounded-2xl border-white/10 backdrop-blur-xl"
             >
-              <p className="text-[10px] text-gray-500 font-mono uppercase mb-1">Status</p>
-              <p className="text-xs text-green-500 font-bold">ONLINE</p>
+              <p className="text-[9px] sm:text-[10px] text-gray-500 font-mono uppercase mb-1">Status</p>
+              <p className="text-2xs sm:text-xs text-green-500 font-bold">ONLINE</p>
             </m.div>
 
             <m.div 
               animate={{ y: [0, 10, 0] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute -bottom-10 -left-10 glass p-4 rounded-2xl border-white/10 backdrop-blur-xl"
+              className="absolute -bottom-4 sm:-bottom-10 -left-4 sm:-left-10 glass p-3 sm:p-4 rounded-xl sm:rounded-2xl border-white/10 backdrop-blur-xl"
             >
-              <p className="text-[10px] text-gray-500 font-mono uppercase mb-1">Version</p>
-              <p className="text-xs text-indigo-400 font-bold">v2.5.0-ALPHA</p>
+              <p className="text-[9px] sm:text-[10px] text-gray-500 font-mono uppercase mb-1">Version</p>
+              <p className="text-2xs sm:text-xs text-indigo-400 font-bold">v2.5.0-ALPHA</p>
             </m.div>
           </m.div>
         </div>

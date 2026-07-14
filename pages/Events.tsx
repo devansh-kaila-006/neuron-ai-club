@@ -287,57 +287,58 @@ const Events: React.FC = () => {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              className="fixed inset-0 z-[100] flex items-center justify-center px-6 bg-black/90 backdrop-blur-2xl overflow-y-auto"
+              className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:px-6 bg-black/90 backdrop-blur-2xl overflow-y-auto py-6"
             >
               <m.div 
                 initial={{ scale: 0.95, y: 20 }} 
                 animate={{ scale: 1, y: 0 }} 
                 exit={{ scale: 0.95, y: 20 }}
-                className="glass w-full max-w-4xl p-8 md:p-14 rounded-[3rem] border-white/10 relative my-10 max-h-[85vh] overflow-y-auto custom-scrollbar"
+                className="glass w-full max-w-4xl p-5 sm:p-8 md:p-14 rounded-[1.5rem] sm:rounded-[3rem] border-white/10 relative my-4 sm:my-10 max-h-[90vh] sm:max-h-[85vh] overflow-y-auto custom-scrollbar"
               >
                 {/* Close trigger */}
                 <button 
                   onClick={() => setSelectedEvent(null)} 
-                  className="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"
+                  className="absolute top-5 right-5 sm:top-8 sm:right-8 text-gray-500 hover:text-white transition-colors p-2 bg-white/5 hover:bg-white/10 rounded-full z-[110]"
+                  aria-label="Close modal"
                 >
-                  <XIcon size={24} />
+                  <XIcon size={18} />
                 </button>
 
-                <div className="space-y-10">
+                <div className="space-y-6 sm:space-y-10">
                   {/* Tagline & Title */}
                   <div className="space-y-3">
                     <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${selectedEvent.badgeColor}`}>
                       {selectedEvent.category}
                     </span>
-                    <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white leading-none">
+                    <h2 className="text-xl sm:text-3xl md:text-5xl font-black uppercase tracking-tight text-white leading-tight">
                       {selectedEvent.title}
                     </h2>
-                    <p className="text-sm text-indigo-400 font-mono tracking-wider">{selectedEvent.tagline}</p>
+                    <p className="text-xs sm:text-sm text-indigo-400 font-mono tracking-wider">{selectedEvent.tagline}</p>
                   </div>
 
                   {/* Primary Grid metadata */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white/[0.01] border border-white/5 rounded-3xl p-6 text-xs font-mono">
-                    <div className="flex items-center gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white/[0.01] border border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-xs font-mono">
+                    <div className="flex items-center gap-3 min-w-0">
                       <Calendar size={18} className="text-indigo-400 shrink-0" />
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-[8px] text-gray-500 uppercase tracking-widest">TIMELINE</p>
-                        <p className="text-white font-bold">{selectedEvent.date}</p>
+                        <p className="text-white font-bold text-xs sm:text-sm leading-normal">{selectedEvent.date}</p>
                         <p className="text-[10px] text-gray-400">{selectedEvent.time}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       <MapPin size={18} className="text-indigo-400 shrink-0" />
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-[8px] text-gray-500 uppercase tracking-widest">COORDINATES</p>
-                        <p className="text-white font-bold truncate max-w-[200px]">{selectedEvent.venue}</p>
+                        <p className="text-white font-bold text-xs sm:text-sm leading-normal whitespace-normal break-words">{selectedEvent.venue}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       <Terminal size={18} className="text-indigo-400 shrink-0" />
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-[8px] text-gray-500 uppercase tracking-widest">STATUS</p>
-                        <p className="text-green-400 font-bold flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <p className="text-green-400 font-bold flex items-center gap-1.5 text-xs sm:text-sm">
+                          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" />
                           ARCHIVED_SUCCESS
                         </p>
                       </div>
@@ -346,7 +347,7 @@ const Events: React.FC = () => {
 
                   {/* Featured Cover / Active Image */}
                   <div className="space-y-4">
-                    <div className="w-full h-80 md:h-[450px] rounded-[2.5rem] overflow-hidden border border-white/5 relative group bg-black/40">
+                    <div className="w-full h-48 xs:h-64 sm:h-80 md:h-[450px] rounded-[1.25rem] sm:rounded-[2.5rem] overflow-hidden border border-white/5 relative group bg-black/40">
                       <img 
                         src={activeImage || selectedEvent.featuredImage} 
                         alt={selectedEvent.title} 
@@ -357,12 +358,12 @@ const Events: React.FC = () => {
 
                     {/* Thumbnails Gallery */}
                     {selectedEvent.gallery && selectedEvent.gallery.length > 1 && (
-                      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
+                      <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-none">
                         {selectedEvent.gallery.map((imgUrl, i) => (
                           <button
                             key={i}
                             onClick={() => setActiveImage(imgUrl)}
-                            className={`relative h-20 w-32 shrink-0 rounded-2xl overflow-hidden border transition-all duration-300 ${
+                            className={`relative h-14 w-24 sm:h-20 sm:w-32 shrink-0 rounded-xl sm:rounded-2xl overflow-hidden border transition-all duration-300 ${
                               (activeImage || selectedEvent.featuredImage) === imgUrl
                                 ? 'border-indigo-500 ring-2 ring-indigo-500/20 scale-95'
                                 : 'border-white/5 hover:border-white/10 hover:scale-105'
@@ -381,9 +382,9 @@ const Events: React.FC = () => {
                   </div>
 
                   {/* Detailed summary */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-10">
                     <div className="lg:col-span-7 space-y-6">
-                      <div className="space-y-4 text-gray-300 leading-relaxed text-sm font-light">
+                      <div className="space-y-4 text-gray-300 leading-relaxed text-xs sm:text-sm font-light">
                         {selectedEvent.description.split('\n\n').map((para, i) => (
                           <p key={i}>{para}</p>
                         ))}
@@ -392,7 +393,7 @@ const Events: React.FC = () => {
                       {/* Takeaways / Highlights */}
                       {selectedEvent.keyTakeaways && (
                         <div className="space-y-4">
-                          <h4 className="text-sm font-bold uppercase tracking-widest font-mono text-indigo-400 flex items-center gap-2">
+                          <h4 className="text-xs sm:text-sm font-bold uppercase tracking-widest font-mono text-indigo-400 flex items-center gap-2">
                             <Compass size={14} /> core teachings
                           </h4>
                           <ul className="space-y-3">
@@ -407,9 +408,9 @@ const Events: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="lg:col-span-5 space-y-8">
+                    <div className="lg:col-span-5 space-y-6 sm:space-y-8">
                       {/* Event highlights checklist */}
-                      <div className="glass border-white/5 rounded-3xl p-6 space-y-4">
+                      <div className="glass border-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-6 space-y-4">
                         <h4 className="text-xs font-bold uppercase tracking-widest font-mono text-purple-400">Highlights</h4>
                         <div className="space-y-3">
                           {selectedEvent.highlights?.map((hl, i) => (
@@ -423,7 +424,7 @@ const Events: React.FC = () => {
 
                       {/* Contacts if any */}
                       {selectedEvent.contacts && (
-                        <div className="glass border-white/5 rounded-3xl p-6 space-y-4">
+                        <div className="glass border-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-6 space-y-4">
                           <h4 className="text-xs font-bold uppercase tracking-widest font-mono text-gray-400">Operation Contacts</h4>
                           <div className="space-y-3">
                             {selectedEvent.contacts.map((contact, i) => (
@@ -443,15 +444,15 @@ const Events: React.FC = () => {
                   {/* Workshops section for unbox event */}
                   {selectedEvent.workshops && (
                     <div className="space-y-6 pt-6 border-t border-white/5">
-                      <h3 className="text-lg font-black uppercase tracking-widest font-mono text-cyan-400">
+                      <h3 className="text-base sm:text-lg font-black uppercase tracking-widest font-mono text-cyan-400">
                         Post-Event Synthetic Workshops
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         {selectedEvent.workshops.map((ws, i) => (
-                          <div key={i} className="glass border-white/5 rounded-2xl p-5 space-y-2 hover:border-white/10 transition-colors">
-                            <div className="flex justify-between items-center">
+                          <div key={i} className="glass border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-5 space-y-2 hover:border-white/10 transition-colors">
+                            <div className="flex justify-between items-start sm:items-center gap-2">
                               <h4 className="text-xs font-bold text-white font-mono">{ws.title}</h4>
-                              <span className="text-[8px] font-mono uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded-full">
+                              <span className="text-[8px] font-mono uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded-full shrink-0">
                                 {ws.host}
                               </span>
                             </div>
@@ -463,10 +464,10 @@ const Events: React.FC = () => {
                   )}
 
                   {/* Close trigger */}
-                  <div className="pt-8 border-t border-white/5 flex justify-end">
+                  <div className="pt-6 sm:pt-8 border-t border-white/5 flex justify-end">
                     <button 
                       onClick={() => setSelectedEvent(null)}
-                      className="px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs font-bold font-mono uppercase tracking-widest transition-all"
+                      className="px-6 py-2.5 sm:px-8 sm:py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-[10px] sm:text-xs font-bold font-mono uppercase tracking-widest transition-all"
                     >
                       Close Node
                     </button>

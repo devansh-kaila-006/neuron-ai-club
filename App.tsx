@@ -25,6 +25,8 @@ const Departments = lazy(() => import('./pages/Departments.tsx'));
 const Mascot = lazy(() => import('./pages/Mascot.tsx'));
 const Blog = lazy(() => import('./pages/Blog.tsx'));
 const Events = lazy(() => import('./pages/Events.tsx'));
+const CapsuleLanding = lazy(() => import('./pages/CapsuleLanding.tsx'));
+const CapsuleSuccess = lazy(() => import('./pages/CapsuleSuccess.tsx'));
 
 /**
  * ScrollToTop: Logic component that resets scroll position on route changes.
@@ -69,6 +71,8 @@ const AnimatedRoutes: React.FC = () => {
             <Route path="/mascot" element={<Mascot />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/capsule" element={<CapsuleLanding />} />
+            <Route path="/capsule/success" element={<CapsuleSuccess />} />
           </Routes>
         </Suspense>
       </m.div>

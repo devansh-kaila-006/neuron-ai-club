@@ -59,7 +59,7 @@ const Hackathon: React.FC = () => {
   const [openRule, setOpenRule] = useState<number | null>(0);
 
   return (
-    <div className="pt-32 min-h-screen px-6 pb-40 bg-transparent relative overflow-hidden">
+    <div className="pt-32 min-h-screen px-4 sm:px-6 pb-32 bg-transparent relative overflow-hidden">
       {/* Background Ambience */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
@@ -104,12 +104,12 @@ const Hackathon: React.FC = () => {
             </div>
 
             <div className="shrink-0 w-full md:w-auto">
-              <div className="glass p-8 rounded-[3rem] border-indigo-500/20 shadow-2xl relative group overflow-hidden">
+              <div className="glass p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[3rem] border-indigo-500/20 shadow-2xl relative group overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-indigo-500/20 group-hover:bg-indigo-500/60 transition-colors" />
-                <div className="flex items-center justify-center gap-10">
+                <div className="flex items-center justify-center gap-4 sm:gap-10">
                    {Object.entries(timeLeft).map(([key, val], i) => (
                      <div key={key} className="flex flex-col items-center">
-                        <span className="text-4xl md:text-5xl font-black font-mono tracking-tighter">
+                        <span className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-black font-mono tracking-tighter">
                           {val.toString().padStart(2, '0')}
                         </span>
                         <span className="text-[8px] font-mono uppercase tracking-[0.3em] text-indigo-400 mt-2 font-black">{key}</span>
@@ -142,7 +142,7 @@ const Hackathon: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="glass p-8 rounded-[2.5rem] flex flex-col gap-6 hover:bg-white/[0.03] transition-all border-white/5 group hover:border-indigo-500/20"
+              className="glass p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] flex flex-col gap-6 hover:bg-white/[0.03] transition-all border-white/5 group hover:border-indigo-500/20"
             >
               <div className={`w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-gray-500 group-hover:text-white transition-colors border border-white/5 group-hover:border-indigo-500/30`}>
                 {feature.icon}
@@ -214,7 +214,7 @@ const Hackathon: React.FC = () => {
                  </div>
               </div>
               
-              <div className="glass p-10 rounded-[3rem] border-white/5 relative overflow-hidden group">
+              <div className="glass p-5 sm:p-10 rounded-[1.5rem] sm:rounded-[3rem] border-white/5 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
                    <MapPin size={120} strokeWidth={1} />
                 </div>
@@ -240,10 +240,10 @@ const Hackathon: React.FC = () => {
               <h2 className="text-3xl font-black uppercase tracking-tight px-2"><DecryptedText text="Grid Policies" /></h2>
               <div className="space-y-4">
                 {rules.map((rule, i) => (
-                  <div key={i} className="glass rounded-3xl overflow-hidden border-white/5 hover:border-indigo-500/10 transition-colors">
+                  <div key={i} className="glass rounded-[1.5rem] overflow-hidden border-white/5 hover:border-indigo-500/10 transition-colors">
                     <button 
                       onClick={() => setOpenRule(openRule === i ? null : i)} 
-                      className="w-full flex items-center justify-between p-7 text-left font-bold hover:bg-white/5 transition-colors group"
+                      className="w-full flex items-center justify-between p-4 sm:p-7 text-left font-bold hover:bg-white/5 transition-colors group"
                     >
                       <span className="text-sm uppercase tracking-widest group-hover:text-indigo-400 transition-colors">{rule.q}</span>
                       {openRule === i ? <ChevronUp size={18} className="text-indigo-500" /> : <ChevronDown size={18} className="text-gray-600" />}
@@ -256,7 +256,7 @@ const Hackathon: React.FC = () => {
                           exit={{ height: 0, opacity: 0 }} 
                           className="overflow-hidden"
                         >
-                          <div className="p-7 pt-0 text-xs text-gray-500 leading-relaxed font-light border-t border-white/5 bg-white/[0.01]">
+                          <div className="p-4 sm:p-7 pt-0 text-xs text-gray-500 leading-relaxed font-light border-t border-white/5 bg-white/[0.01]">
                             {rule.a}
                           </div>
                         </m.div>
@@ -269,11 +269,11 @@ const Hackathon: React.FC = () => {
 
             <m.div 
               whileHover={{ scale: 1.02 }}
-              className="p-1 glass rounded-[3rem] border-indigo-500/30 overflow-hidden shadow-2xl"
+              className="p-1 glass rounded-[1.5rem] sm:rounded-[3rem] border-indigo-500/30 overflow-hidden shadow-2xl"
             >
               <Link 
                 to="/register" 
-                className="w-full py-8 bg-indigo-600 rounded-[2.8rem] flex flex-col items-center justify-center gap-2 hover:bg-indigo-500 transition-all text-white shadow-xl group"
+                className="w-full py-4 sm:py-8 bg-indigo-600 rounded-[1.2rem] sm:rounded-[2.8rem] flex flex-col items-center justify-center gap-2 hover:bg-indigo-500 transition-all text-white shadow-xl group"
               >
                 <span className="text-xs font-black uppercase tracking-[0.5em] ml-[0.5em]">Sync to Manifest</span>
                 <span className="text-[8px] font-mono text-white/50 group-hover:text-white/80 uppercase tracking-widest">Registration Sequence Active</span>

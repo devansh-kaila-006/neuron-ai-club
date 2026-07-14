@@ -84,7 +84,7 @@ const Departments: React.FC = () => {
   const m = motion as any;
 
   return (
-    <div className="pt-24 min-h-screen px-6 pb-40 flex flex-col items-center bg-transparent relative overflow-hidden">
+    <div className="pt-24 min-h-screen px-4 sm:px-6 pb-32 flex flex-col items-center bg-transparent relative overflow-hidden">
       {/* Decorative Orbs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
       <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] bg-purple-500/5 blur-[100px] rounded-full pointer-events-none -z-10" />
@@ -123,7 +123,7 @@ const Departments: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.6 }}
-              className={`glass group p-10 rounded-[3.5rem] border-white/5 hover:${dept.borderClass} transition-all duration-700 relative overflow-hidden flex flex-col`}
+              className={`glass group p-6 sm:p-10 rounded-[1.5rem] sm:rounded-[3.5rem] border-white/5 hover:${dept.borderClass} transition-all duration-700 relative overflow-hidden flex flex-col`}
             >
               {/* Tactical Background Element */}
               <div className={`absolute -right-12 -bottom-12 opacity-[0.02] group-hover:opacity-[0.06] ${dept.colorClass} transition-all duration-1000 group-hover:scale-110 group-hover:-rotate-12`}>
@@ -172,7 +172,7 @@ const Departments: React.FC = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="mt-32 p-16 glass rounded-[5rem] border-indigo-500/10 text-center space-y-10 relative overflow-hidden group/footer"
+          className="mt-16 sm:mt-32 p-6 sm:p-16 glass rounded-[2rem] sm:rounded-[5rem] border-indigo-500/10 text-center space-y-10 relative overflow-hidden group/footer"
         >
           <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/[0.02] to-transparent opacity-0 group-hover/footer:opacity-100 transition-opacity duration-1000" />
           

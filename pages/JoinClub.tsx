@@ -200,7 +200,7 @@ const JoinClub: React.FC = () => {
   };
 
   return (
-    <div className="pt-32 min-h-screen px-6 pb-40 flex flex-col items-center bg-transparent">
+    <div className="pt-32 min-h-screen px-4 sm:px-6 pb-32 flex flex-col items-center bg-transparent">
       {/* Dynamic Background */}
       <div className="fixed inset-0 pointer-events-none -z-10">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-600/5 blur-[160px] rounded-full opacity-50" />
@@ -249,7 +249,7 @@ const JoinClub: React.FC = () => {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: i * 0.1 }}
-                      className={`glass p-6 rounded-[2.5rem] border-white/5 group hover:bg-white/[0.04] transition-all duration-500 ${perk.className}`}
+                      className={`glass p-6 rounded-[1.5rem] sm:rounded-[2.5rem] border-white/5 group hover:bg-white/[0.04] transition-all duration-500 ${perk.className}`}
                     >
                       <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                         {perk.icon}
@@ -279,7 +279,7 @@ const JoinClub: React.FC = () => {
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.15 }}
-                        className="glass group/mission p-6 rounded-[2rem] border-white/5 relative overflow-hidden transition-all duration-500 hover:border-indigo-500/20 hover:bg-indigo-500/[0.02]"
+                        className="glass group/mission p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border-white/5 relative overflow-hidden transition-all duration-500 hover:border-indigo-500/20 hover:bg-indigo-500/[0.02]"
                       >
                         <div className="absolute -right-4 -bottom-4 opacity-5 group-hover/mission:opacity-10 transition-opacity">
                           {m_mission.icon}
@@ -317,25 +317,25 @@ const JoinClub: React.FC = () => {
 
               {/* Right Column */}
               <div className="lg:col-span-6">
-                <div className="glass rounded-[4rem] border-white/5 shadow-[0_0_80px_rgba(99,102,241,0.05)] overflow-hidden relative">
+                <div className="glass rounded-[2rem] sm:rounded-[4rem] border-white/5 shadow-[0_0_80px_rgba(99,102,241,0.05)] overflow-hidden relative">
                   <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
                   
-                  <div className="p-8 md:p-14 relative z-10">
-                    <div className="flex justify-between items-center mb-16">
+                  <div className="p-5 sm:p-8 md:p-14 relative z-10">
+                    <div className="flex justify-between items-center mb-10 md:mb-16 gap-2">
                       {[1, 2, 3].map(s => (
-                        <div key={s} className="flex flex-col items-center gap-3 relative flex-1">
+                        <div key={s} className="flex flex-col items-center gap-2 relative flex-1">
                           <m.div 
                             animate={{ 
                               scale: phase === s ? 1.1 : 1,
                               backgroundColor: phase >= s ? 'rgba(99, 102, 241, 1)' : 'rgba(255, 255, 255, 0.03)',
                               borderColor: phase >= s ? 'rgba(129, 140, 248, 0.5)' : 'rgba(255, 255, 255, 0.08)'
                             }}
-                            className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-white border transition-all z-10"
+                            className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center font-bold text-white border transition-all z-10 text-xs sm:text-base"
                           >
-                            {phase > s ? <CheckCircle size={24} /> : s}
+                            {phase > s ? <CheckCircle size={18} className="sm:w-6 sm:h-6" /> : s}
                           </m.div>
                           {s < 3 && (
-                            <div className="absolute left-[calc(50%+1.5rem)] right-[-50%] top-7 h-[1px] bg-white/5 z-0">
+                            <div className="absolute left-[calc(50%+1rem)] sm:left-[calc(50%+1.5rem)] right-[-50%] top-5 sm:top-7 h-[1px] bg-white/5 z-0">
                               <m.div 
                                 initial={{ scaleX: 0 }}
                                 animate={{ scaleX: phase > s ? 1 : 0 }}
@@ -343,7 +343,7 @@ const JoinClub: React.FC = () => {
                               />
                             </div>
                           )}
-                          <span className={`text-[10px] font-mono font-bold uppercase tracking-[0.2em] ${phase >= s ? 'text-indigo-400' : 'text-gray-700'}`}>
+                          <span className={`text-[7px] sm:text-[10px] font-mono font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] text-center ${phase >= s ? 'text-indigo-400' : 'text-gray-700'}`}>
                             {s === 1 ? 'PERSONNEL' : s === 2 ? 'ACADEMIC' : 'DEPLOY'}
                           </span>
                         </div>
@@ -363,9 +363,9 @@ const JoinClub: React.FC = () => {
                               <div className="relative group">
                                 <input 
                                   name="name" value={formData.name} onChange={handleChange} placeholder="FULL NAME"
-                                  className={`w-full bg-white/[0.01] border rounded-[2rem] p-6 pl-14 outline-none transition-all focus:bg-white/[0.03] font-mono text-sm ${errors.name ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
+                                  className={`w-full bg-white/[0.01] border rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 pl-12 sm:pl-14 outline-none transition-all focus:bg-white/[0.03] font-mono text-xs sm:text-sm ${errors.name ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
                                 />
-                                <Fingerprint className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500 transition-colors" size={20} />
+                                <Fingerprint className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500 transition-colors" size={20} />
                               </div>
                             </div>
 
@@ -374,9 +374,9 @@ const JoinClub: React.FC = () => {
                               <div className="relative group">
                                 <input 
                                   name="regNumber" value={formData.regNumber} onChange={handleChange} placeholder="BL.EN.U4..."
-                                  className={`w-full bg-white/[0.01] border rounded-[2rem] p-6 pl-14 outline-none transition-all focus:bg-white/[0.03] font-mono text-sm ${errors.regNumber ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
+                                  className={`w-full bg-white/[0.01] border rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 pl-12 sm:pl-14 outline-none transition-all focus:bg-white/[0.03] font-mono text-xs sm:text-sm ${errors.regNumber ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
                                 />
-                                <Hash className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500 transition-colors" size={20} />
+                                <Hash className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500 transition-colors" size={20} />
                               </div>
                             </div>
 
@@ -385,13 +385,13 @@ const JoinClub: React.FC = () => {
                               <div className="relative group">
                                 <input 
                                   name="phone" value={formData.phone} onChange={handleChange} maxLength={10} placeholder="PHONE NUMBER"
-                                  className={`w-full bg-white/[0.01] border rounded-[2rem] p-6 pl-14 outline-none transition-all focus:bg-white/[0.03] font-mono text-sm ${errors.phone ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
+                                  className={`w-full bg-white/[0.01] border rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 pl-12 sm:pl-14 outline-none transition-all focus:bg-white/[0.03] font-mono text-xs sm:text-sm ${errors.phone ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
                                 />
-                                <Phone className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500 transition-colors" size={20} />
+                                <Phone className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500 transition-colors" size={20} />
                               </div>
                             </div>
 
-                            <button type="button" onClick={nextPhase} className="w-full py-6 bg-indigo-600 rounded-[2rem] font-black uppercase tracking-[0.4em] text-xs hover:bg-indigo-500 transition-all hover:scale-[1.01] active:scale-[0.98] shadow-[0_20px_40px_rgba(79,70,229,0.3)] flex items-center justify-center gap-3">
+                            <button type="button" onClick={nextPhase} className="w-full py-5 sm:py-6 bg-indigo-600 rounded-[1.5rem] sm:rounded-[2rem] font-black uppercase tracking-[0.4em] text-xs hover:bg-indigo-500 transition-all hover:scale-[1.01] active:scale-[0.98] shadow-[0_20px_40px_rgba(79,70,229,0.3)] flex items-center justify-center gap-3">
                               Continue Calibration <ChevronRight size={18} />
                             </button>
                           </m.div>
@@ -408,9 +408,9 @@ const JoinClub: React.FC = () => {
                               <div className="relative group">
                                 <input 
                                   name="branch" value={formData.branch} onChange={handleChange} placeholder="BRANCH / SPECIALIZATION"
-                                  className={`w-full bg-white/[0.01] border rounded-[2rem] p-6 pl-14 outline-none transition-all focus:bg-white/[0.03] font-mono text-sm ${errors.branch ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
+                                  className={`w-full bg-white/[0.01] border rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 pl-12 sm:pl-14 outline-none transition-all focus:bg-white/[0.03] font-mono text-xs sm:text-sm ${errors.branch ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
                                 />
-                                <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500 transition-colors" size={20} />
+                                <MapPin className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-indigo-500 transition-colors" size={20} />
                               </div>
                             </div>
 
@@ -422,7 +422,7 @@ const JoinClub: React.FC = () => {
                                     key={s}
                                     type="button"
                                     onClick={() => setFormData(prev => ({ ...prev, semester: s.toString() }))}
-                                    className={`p-5 rounded-2xl border font-mono text-sm transition-all ${
+                                    className={`p-3 sm:p-5 rounded-xl sm:rounded-2xl border font-mono text-xs sm:text-sm transition-all ${
                                       formData.semester === s.toString() 
                                       ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg scale-105 z-10' 
                                       : 'bg-white/[0.02] border-white/5 text-gray-500 hover:border-white/20'
@@ -435,10 +435,10 @@ const JoinClub: React.FC = () => {
                             </div>
 
                             <div className="flex gap-4 pt-4">
-                              <button type="button" onClick={prevPhase} className="w-24 py-6 glass border-white/10 rounded-[2rem] flex items-center justify-center hover:bg-white/10 transition-all text-gray-400">
+                              <button type="button" onClick={prevPhase} className="w-24 py-5 sm:py-6 glass border-white/10 rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center hover:bg-white/10 transition-all text-gray-400">
                                 <ArrowLeft size={24} />
                               </button>
-                              <button type="button" onClick={nextPhase} className="flex-1 py-6 bg-indigo-600 rounded-[2rem] font-black uppercase tracking-[0.4em] text-xs hover:bg-indigo-500 transition-all shadow-[0_20px_40px_rgba(79,70,229,0.3)] flex items-center justify-center gap-3">
+                              <button type="button" onClick={nextPhase} className="flex-1 py-5 sm:py-6 bg-indigo-600 rounded-[1.5rem] sm:rounded-[2rem] font-black uppercase tracking-[0.4em] text-xs hover:bg-indigo-500 transition-all shadow-[0_20px_40px_rgba(79,70,229,0.3)] flex items-center justify-center gap-3">
                                 Validate Manifest <ChevronRight size={18} />
                               </button>
                             </div>
@@ -462,7 +462,7 @@ const JoinClub: React.FC = () => {
                                   key={dept.id}
                                   type="button"
                                   onClick={() => selectDepartment(dept.id)}
-                                  className={`relative p-6 rounded-[2.5rem] border text-left transition-all group overflow-hidden ${
+                                  className={`relative p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2.5rem] border text-left transition-all group overflow-hidden ${
                                     formData.department === dept.id 
                                     ? 'bg-indigo-600/10 border-indigo-500 shadow-xl scale-[1.02]' 
                                     : 'bg-white/[0.01] border-white/5 hover:border-white/15'
@@ -482,13 +482,13 @@ const JoinClub: React.FC = () => {
                             </div>
 
                             <div className="flex gap-2 pt-4">
-                              <button type="button" onClick={prevPhase} className="w-24 py-6 glass border-white/10 rounded-[2rem] flex items-center justify-center hover:bg-white/10 transition-all text-gray-400">
+                              <button type="button" onClick={prevPhase} className="w-24 py-5 sm:py-6 glass border-white/10 rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center hover:bg-white/10 transition-all text-gray-400">
                                 <ArrowLeft size={24} />
                               </button>
                               <button 
                                 type="submit" 
                                 disabled={isSubmitting}
-                                className="flex-1 py-6 bg-indigo-600 rounded-[2rem] font-black uppercase tracking-[0.4em] text-xs hover:bg-indigo-500 transition-all disabled:opacity-50 shadow-[0_20px_50px_rgba(79,70,229,0.4)] flex items-center justify-center gap-4 group"
+                                className="flex-1 py-5 sm:py-6 bg-indigo-600 rounded-[1.5rem] sm:rounded-[2rem] font-black uppercase tracking-[0.4em] text-xs hover:bg-indigo-500 transition-all disabled:opacity-50 shadow-[0_20px_50px_rgba(79,70,229,0.4)] flex items-center justify-center gap-4 group"
                               >
                                 {isSubmitting ? <Loader2 className="animate-spin" /> : <><Send size={18} className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" /> Commit Manifest</>}
                               </button>
@@ -510,7 +510,7 @@ const JoinClub: React.FC = () => {
               key="success"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-xl glass p-8 md:p-16 rounded-[2.5rem] md:rounded-[4rem] text-center border-emerald-500/20 shadow-2xl relative mx-auto"
+              className="w-full max-w-xl glass p-5 sm:p-8 md:p-16 rounded-[1.5rem] sm:rounded-[2.5rem] md:rounded-[4rem] text-center border-emerald-500/20 shadow-2xl relative mx-auto"
             >
               <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500/30" />
               <m.div 

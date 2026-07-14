@@ -17,6 +17,17 @@ const Home: React.FC = () => {
   // Fix: Cast motion to any to resolve property missing errors in strict environments
   const m = motion as any;
 
+  const activities = [
+    { style: { top: '10%', left: '50%', transform: 'translate(-50%, -50%)' }, icon: <Sparkles />, label: "INTRO SESSIONS", d: "Foundational AI concepts overview" },
+    { style: { top: '21.7%', left: '78.3%', transform: 'translate(-50%, -50%)' }, icon: <Code />, label: "TECH WORKSHOPS", d: "Python & Deep Learning implementation" },
+    { style: { top: '50%', left: '90%', transform: 'translate(-50%, -50%)' }, icon: <Layers />, label: "AI PLATFORMS", d: "Computer Vision & Process Automation" },
+    { style: { top: '78.3%', left: '78.3%', transform: 'translate(-50%, -50%)' }, icon: <Rocket />, label: "MINI PROJECTS", d: "Rapid prototype guided build sessions" },
+    { style: { top: '90%', left: '50%', transform: 'translate(-50%, -50%)' }, icon: <Users />, label: "GUEST LECTURES", d: "Direct industry expert tech insights" },
+    { style: { top: '78.3%', left: '21.7%', transform: 'translate(-50%, -50%)' }, icon: <Share2 />, label: "PEER CIRCLES", d: "Collaborative mentoring & sync" },
+    { style: { top: '50%', left: '10%', transform: 'translate(-50%, -50%)' }, icon: <Microscope />, label: "RESEARCH", d: "Case studies & scientific paper synthesis" },
+    { style: { top: '21.7%', left: '21.7%', transform: 'translate(-50%, -50%)' }, icon: <Target />, label: "SOLVING", d: "Competitive ideation & problem events" }
+  ];
+
   return (
     <div className="min-h-screen bg-transparent overflow-x-hidden font-display text-white selection:bg-indigo-500/30 pb-32">
       
@@ -245,11 +256,37 @@ const Home: React.FC = () => {
               </p>
            </div>
 
-           {/* Tactical Hub Container - Increased leftward shift to -translate-x-10 for phone per user request */}
-           <div className="relative h-[650px] md:h-[900px] w-full flex items-center justify-center -translate-x-10 md:-translate-x-32 transition-transform duration-700">
+           {/* Tactical Hub - Split mobile/desktop layout */}
+            {/* Mobile/Tablet Tactical Operations Cards - High contrast, perfectly centered and responsive */}
+            <div className="md:hidden w-full max-w-xl px-4 flex flex-col gap-5 relative z-20 mb-10">
+               {activities.map((act, i) => (
+                  <m.div 
+                     key={i}
+                     initial={{ opacity: 0, y: 15 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     viewport={{ once: true }}
+                     transition={{ delay: i * 0.05, duration: 0.4 }}
+                     className="glass p-5 rounded-[1.5rem] border border-white/5 bg-black/40 backdrop-blur-md hover:bg-white/[0.03] hover:border-indigo-500/20 active:scale-[0.98] transition-all flex items-center gap-4 group"
+                  >
+                     <div className="shrink-0 w-12 h-12 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 group-hover:text-indigo-300 transition-all duration-300">
+                        {React.cloneElement(act.icon as React.ReactElement<any>, { size: 20 })}
+                     </div>
+                     <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                           <h4 className="text-sm font-black font-mono tracking-wider text-indigo-400 uppercase leading-none">{act.label}</h4>
+                           <span className="text-[8px] font-mono text-gray-600 uppercase tracking-widest shrink-0">NODE_0{i+1}</span>
+                        </div>
+                        <p className="text-xs text-gray-400 font-light leading-relaxed">{act.d}</p>
+                     </div>
+                  </m.div>
+               ))}
+            </div>
+
+            {/* Desktop Octagonal Alignment Hub - Rendered exclusively on larger displays */}
+            <div className="hidden md:flex relative h-[900px] w-full items-center justify-center md:-translate-x-32 transition-transform duration-700">
               
               {/* Responsive Scaling Wrapper - High scale for readability on phones */}
-              <div className="relative w-full h-full flex items-center justify-center scale-[0.88] xs:scale-[0.92] sm:scale-95 md:scale-100 transition-transform duration-500 origin-center">
+              <div className="relative w-full h-full flex items-center justify-center scale-100 transition-transform duration-500 origin-center">
                 
                 {/* Central HUB */}
                 <m.div 
@@ -420,7 +457,7 @@ const Home: React.FC = () => {
                     initial={{ opacity: 0, scale: 0.9 }} 
                     whileInView={{ opacity: 1, scale: 1 }} 
                     transition={{ delay: i * 0.05 }}
-                    className="px-10 py-5 glass rounded-2xl border-white/5 text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] hover:text-indigo-400 hover:border-indigo-500/30 transition-all cursor-default shadow-sm"
+                    className="px-4 sm:px-10 py-3 sm:py-5 glass rounded-2xl border-white/5 text-[8px] sm:text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] sm:tracking-[0.4em] hover:text-indigo-400 hover:border-indigo-500/30 transition-all cursor-default shadow-sm text-center"
                   >
                     {impact}
                   </m.div>
