@@ -79,6 +79,17 @@ serve(async (req) => {
         if (forceUnseal) return true;
         if (targetCohort && capsule.cohort_year === Number(targetCohort)) return true;
 
+        // NEW: 2 minutes from sealing for easy testing and framework validation
+        if (capsule.date_sealed) {
+          const sealedTime = new Date(capsule.date_sealed).getTime();
+          const nowTime = new Date().getTime();
+          const elapsedMinutes = (nowTime - sealedTime) / (1000 * 60);
+          if (elapsedMinutes >= 2) {
+            console.log(`Capsule ${capsule.capsule_code} has reached its 2-minute testing threshold (elapsed: ${elapsedMinutes.toFixed(2)} min). Unsealing...`);
+            return true;
+          }
+        }
+
         // Actual automated unsealing constraint: July 1st of (cohort_year + 4)
         const unsealYear = (capsule.cohort_year || 2026) + 4;
         if (currentYear > unsealYear) return true;
