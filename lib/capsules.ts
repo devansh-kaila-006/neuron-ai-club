@@ -172,7 +172,8 @@ export const capsuleService = {
       ...entry,
       id: `capsule-${Math.random().toString(36).substring(2, 11)}`,
       capsule_code: capsuleCode,
-      status: CapsuleStatus.SUBMITTED,
+      status: CapsuleStatus.SEALED,
+      date_sealed: new Date().toISOString(),
       created_at: new Date().toISOString()
     };
 
