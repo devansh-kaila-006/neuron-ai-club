@@ -110,13 +110,13 @@ const App: React.FC = () => {
             <Navbar />
             <ToastContainer />
             
-            <main className="relative z-10 bg-transparent min-h-[80vh]">
+            <main className="relative z-30 bg-transparent min-h-[80vh]">
               <AnimatedRoutes />
             </main>
             
             <NeuralAssistant />
             
-            <footer className="relative z-20 py-16 px-6 border-t border-white/5 bg-[#030303]/90 backdrop-blur-xl">
+            <footer className="relative z-10 py-16 px-6 border-t border-white/5 bg-[#030303]/90 backdrop-blur-xl">
               <div className="max-w-7xl mx-auto text-center md:text-left">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                   <div className="col-span-1 text-left">
