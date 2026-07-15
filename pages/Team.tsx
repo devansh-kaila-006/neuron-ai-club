@@ -496,7 +496,7 @@ const Team: React.FC = () => {
               </div>
             </m.div>
 
-            {/* Prajukta (Treasurer) */}
+            {/* Prajukta Behera (Treasurer) */}
             <m.div
               initial={{ opacity: 0, y: 35 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -513,7 +513,7 @@ const Team: React.FC = () => {
                       Treasurer
                     </span>
                     <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight">
-                      Prajukta
+                      Prajukta Behera
                     </h3>
                     <p className="text-gray-500 text-[9px] font-mono uppercase tracking-widest">
                       Treasurer, NEURØN
@@ -524,7 +524,7 @@ const Team: React.FC = () => {
                   <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border border-white/10 shadow-xl relative group/portrait self-start sm:self-center shrink-0">
                     <img
                       src="https://lh3.googleusercontent.com/d/1x_Fp6QcbqbQaLvK0BqUTMvkLTLt1gGM-"
-                      alt="Prajukta"
+                      alt="Prajukta Behera"
                       className="w-full h-full object-cover scale-120 group-hover/portrait:scale-130 grayscale group-hover/portrait:grayscale-0 transition-all duration-700"
                       onError={(e) => {
                         e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800";

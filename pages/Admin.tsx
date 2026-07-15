@@ -353,7 +353,7 @@ const Admin: React.FC = () => {
 
   const handleTriggerAutomatedUnseal = async () => {
     const force = window.confirm(
-      "NEURØN AUTOMATION ENGINE\n\nClick OK to FORCE unseal all sealed capsules immediately.\n\nClick Cancel to run the standard automation scanning engine (which automatically unseals any capsule sealed for >= 2 minutes, or matching the 4-year cohort duration)."
+      "NEURØN AUTOMATION ENGINE\n\nClick OK to FORCE unseal all sealed capsules immediately.\n\nClick Cancel to run the standard automation scanning engine (which automatically unseals any capsule matching the 4-year cohort duration)."
     );
     
     setIsProcessingUnseal(true);
