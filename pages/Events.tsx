@@ -89,7 +89,7 @@ const eventsData: EventType[] = [
     date: '26th March 2026',
     time: 'Flagship Interactive Panel Session',
     venue: 'Amrita Vishwa Vidyapeetham, Bengaluru Campus',
-    featuredImage: event2_1,
+    featuredImage: event2_3,
     gallery: [
       event2_1,
       event2_2,

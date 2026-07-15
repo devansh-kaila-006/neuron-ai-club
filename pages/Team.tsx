@@ -147,31 +147,6 @@ const Team: React.FC = () => {
           ))}
         </section>
 
-        {/* Improved Stats Grid */}
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {[
-            { label: "Academic Profile", value: "ORCID ID", desc: "Open Researcher and Contributor ID.", icon: <Star /> },
-            { label: "Research Impact", value: "Google Scholar", desc: "Scholarly citations and metrics.", icon: <Globe /> },
-            { label: "Author Identity", value: "Scopus ID", desc: "Scopus Author Identifier.", icon: <Award /> }
-          ].map((stat, i) => (
-            <m.div
-              key={i}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="glass p-8 rounded-[2.5rem] border-white/5 hover:border-indigo-500/10 transition-all text-center group bg-white/[0.01]"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center mx-auto mb-6 text-indigo-500 group-hover:scale-110 transition-transform border border-indigo-500/20">
-                {React.cloneElement(stat.icon as React.ReactElement<any>, { size: 20 })}
-              </div>
-              <h4 className="text-[9px] font-mono text-gray-600 uppercase tracking-[0.4em] mb-2">{stat.label}</h4>
-              <p className="text-xl font-black text-white mb-1 uppercase tracking-tight">{stat.value}</p>
-              <p className="text-[10px] text-gray-600 italic font-light tracking-wide">{stat.desc}</p>
-            </m.div>
-          ))}
-        </div>
-
         {/* Global Footer Decoration */}
         <footer className="text-center pt-20 space-y-6">
           <div className="w-24 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent mx-auto" />
