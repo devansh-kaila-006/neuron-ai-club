@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import DecryptedText from '../components/DecryptedText.tsx';
 // @ts-ignore
-import { ShieldCheck, Cpu, Award, BookOpen, Microscope, Zap, Fingerprint, Star, Globe } from 'lucide-react';
+import { ShieldCheck, Cpu, Award, BookOpen, Microscope, Zap, Fingerprint, Star, Globe, Quote, Sparkles } from 'lucide-react';
 
 const Team: React.FC = () => {
   // Fix: Cast motion to any to resolve property missing errors in strict environments
@@ -145,6 +145,84 @@ const Team: React.FC = () => {
               </div>
             </m.div>
           ))}
+        </section>
+
+        {/* FOUNDER'S VISION SECTION */}
+        <section className="mt-32 max-w-4xl mx-auto">
+          <m.div
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="glass w-full rounded-[2.5rem] overflow-hidden flex flex-col border-white/5 hover:border-indigo-500/20 transition-all duration-700 shadow-2xl relative bg-black/40"
+          >
+            {/* Background glowing orb */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-indigo-500/10 to-purple-500/5 blur-3xl rounded-full pointer-events-none" />
+
+            <div className="p-8 md:p-12 space-y-8">
+              {/* Header metadata */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-8">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Sparkles size={14} className="text-indigo-400 animate-pulse" />
+                    <span className="text-indigo-400 font-black uppercase tracking-[0.4em] text-[8px] font-mono">
+                      Founder's Vision
+                    </span>
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter leading-tight">
+                    Hem Srimanvith Pedda
+                  </h2>
+                  <p className="text-indigo-400 text-[9px] font-bold uppercase tracking-[0.3em] font-mono">
+                    Founder & President, NEURØN
+                  </p>
+                </div>
+
+                {/* Premium Large Portrait */}
+                <div className="w-40 h-40 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl relative group/portrait self-start md:self-center shrink-0">
+                  <img
+                    src="https://lh3.googleusercontent.com/d/13rzAaXeE2etnwxLVDxKNNMQcSaYHVDhK"
+                    alt="Hem Srimanvith Pedda"
+                    className="w-full h-full object-cover scale-120 group-hover/portrait:scale-130 grayscale group-hover/portrait:grayscale-0 transition-all duration-700"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800";
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-indigo-500/10 mix-blend-color opacity-100 group-hover/portrait:opacity-0 transition-opacity" />
+                </div>
+              </div>
+
+              {/* Quote Block */}
+              <div className="relative">
+                <div className="absolute -top-6 -left-4 text-indigo-500/10 select-none pointer-events-none">
+                  <Quote size={80} />
+                </div>
+                <blockquote className="text-gray-300 text-sm md:text-base leading-relaxed font-light italic relative z-10 pl-6 border-l border-indigo-500/20">
+                  "At NEURØN, we are not just building models; we are building a playground for the future. Our community was born out of a simple idea: that artificial intelligence shouldn't just be studied in isolation, but experimented with, broken, and reconstructed through pure collective curiosity. We bridge the gap between academic depth and open-source execution, empowering every student to become a pioneer in the next cognitive epoch."
+                </blockquote>
+              </div>
+
+              {/* Founder info footer */}
+              <div className="pt-6 border-t border-white/5 flex flex-wrap gap-4 items-center justify-between text-xs text-gray-500">
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    "Deep Learning",
+                    "Large Language Models",
+                    "Multi-Agent Systems"
+                  ].map((interest, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Zap size={10} className="text-indigo-500" />
+                      <span className="text-[8px] font-mono text-gray-600 uppercase tracking-widest">
+                        {interest}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-[8px] font-mono text-gray-600 uppercase tracking-widest">
+                  Est. 2026 // Bengaluru
+                </div>
+              </div>
+            </div>
+          </m.div>
         </section>
 
         {/* Global Footer Decoration */}

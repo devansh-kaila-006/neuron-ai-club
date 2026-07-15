@@ -70,6 +70,18 @@ const Blog: React.FC = () => {
     }
   }, [posts]);
 
+  useEffect(() => {
+    const hasModalOpen = !!(selectedPost || showAuth || showEditor || showProfile);
+    if (hasModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedPost, showAuth, showEditor, showProfile]);
+
   const fetchPosts = async () => {
     setLoading(true);
     const data = await blogService.getPosts(category === 'All' ? undefined : category);

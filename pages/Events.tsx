@@ -160,6 +160,17 @@ const Events: React.FC = () => {
     setActiveImage(event.featuredImage);
   };
 
+  React.useEffect(() => {
+    if (selectedEvent) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedEvent]);
+
   const filteredEvents = activeTab === 'All' 
     ? eventsData 
     : eventsData.filter(e => e.category === activeTab);
