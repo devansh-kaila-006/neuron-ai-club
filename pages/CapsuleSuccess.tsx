@@ -1,11 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 // @ts-ignore - Fixing react-router-dom exports false positive
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  CheckCircle2, Printer, ArrowLeft, ArrowRight, ShieldCheck, Clock, QrCode, Sparkles, AlertCircle, Mail, Loader2
+  CheckCircle2, ArrowLeft, ArrowRight, ShieldCheck, Clock, Sparkles, AlertCircle, Mail, Loader2
 } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
 import { useToast } from '../context/ToastContext.tsx';
 import { commsService } from '../services/comms.ts';
 
@@ -14,7 +13,6 @@ const CapsuleSuccess: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const toast = useToast();
-  const printRef = useRef<HTMLDivElement>(null);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   // Extract capsule details from location state
@@ -42,41 +40,11 @@ const CapsuleSuccess: React.FC = () => {
   // e.g. http://localhost:3000/#/capsule?code=NRNCAP-2026-0001
   const lookupUrl = `${window.location.origin}${window.location.pathname}#/capsule?code=${capsule.capsule_code}`;
 
-  const handlePrint = () => {
-    window.print();
-    toast.success("Passport queue initialized.");
-  };
-
   return (
     <div className="pt-28 min-h-screen pb-24 relative overflow-hidden bg-transparent text-white">
       {/* Background visual overlays */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.04),transparent)] pointer-events-none" />
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none opacity-40" />
-
-      {/* Printing style overrides */}
-      <style>{`
-        @media print {
-          body * {
-            visibility: hidden;
-            background: #000 !important;
-          }
-          #print-area, #print-area * {
-            visibility: visible;
-          }
-          #print-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 20px !important;
-          }
-          .no-print {
-            display: none !important;
-          }
-        }
-      `}</style>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
         
@@ -132,13 +100,11 @@ const CapsuleSuccess: React.FC = () => {
             </div>
           </div>
 
-          {/* Ticket Card and QR Code */}
+          {/* Ticket Card */}
           <div className="md:col-span-5 space-y-6">
             
-            {/* The Print-Optimized Cyber Ticket */}
+            {/* The Sealed Cyber Ticket */}
             <div 
-              id="print-area" 
-              ref={printRef}
               className="glass p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border-indigo-500/30 bg-[#080808] relative overflow-hidden shadow-[0_0_50px_rgba(79,70,229,0.15)] text-center space-y-6"
             >
               {/* Corner Cyber Accents */}
@@ -154,19 +120,9 @@ const CapsuleSuccess: React.FC = () => {
                 <p className="text-[9px] font-mono text-gray-500">DIGITALLY SEALED AND VERIFIED</p>
               </div>
 
-              {/* QR Code Container */}
-              <div className="mx-auto w-48 h-48 bg-white p-4 rounded-3xl relative flex items-center justify-center shadow-lg group">
-                <QRCodeSVG 
-                  value={lookupUrl} 
-                  size={160} 
-                  level="H" 
-                  includeMargin={false}
-                />
-              </div>
-
-              <div className="space-y-1">
+              <div className="space-y-1 pt-4 pb-4">
                 <p className="text-[10px] font-mono text-gray-600 uppercase">CAPSULE CODE</p>
-                <h2 className="text-xl font-bold font-mono text-indigo-400">{capsule.capsule_code}</h2>
+                <h2 className="text-2xl font-bold font-mono text-indigo-400 tracking-wider">{capsule.capsule_code}</h2>
               </div>
 
               <div className="border-t border-dashed border-white/10 pt-4 text-xs font-mono space-y-2 text-left">
@@ -194,18 +150,11 @@ const CapsuleSuccess: React.FC = () => {
               </div>
             </div>
 
-            {/* Print/Download Button Group */}
-            <div className="no-print flex flex-col sm:flex-row gap-3">
-              <button 
-                onClick={handlePrint}
-                className="w-full sm:flex-1 py-4 bg-white/5 border border-white/10 text-xs font-bold font-mono uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 hover:bg-white/10 hover:text-indigo-400 transition-all text-gray-300"
-              >
-                <Printer size={14} /> Print Passport
-              </button>
-
+            {/* Action Group */}
+            <div className="no-print">
               <Link 
                 to="/capsule"
-                className="w-full sm:flex-1 py-4 bg-indigo-600 text-xs font-bold font-mono uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 hover:bg-indigo-500 transition-all shadow-lg text-white text-center"
+                className="w-full py-4 bg-indigo-600 text-xs font-bold font-mono uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 hover:bg-indigo-500 transition-all shadow-lg text-white text-center"
               >
                 Go Back <ArrowRight size={14} />
               </Link>
