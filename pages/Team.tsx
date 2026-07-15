@@ -147,8 +147,21 @@ const Team: React.FC = () => {
           ))}
         </section>
 
-        {/* FOUNDER'S VISION SECTION */}
-        <section className="mt-32 max-w-4xl mx-auto">
+        {/* LEADERSHIP GRID */}
+        <section className="mt-32 max-w-4xl mx-auto space-y-12">
+          <div className="text-center md:text-left space-y-2">
+            <div className="flex items-center justify-center md:justify-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+              <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-[0.4em] font-bold">
+                Executive Leadership
+              </span>
+            </div>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tight">
+              Founders & Directorate
+            </h2>
+          </div>
+
+          {/* Hem Srimanvith Pedda (Founder & President) */}
           <m.div
             initial={{ opacity: 0, y: 35 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -223,6 +236,326 @@ const Team: React.FC = () => {
               </div>
             </div>
           </m.div>
+
+          {/* Co-Founders & Technical Directorate Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+            {/* Rohit Praveen Nair */}
+            <m.div
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+              className="glass rounded-[2rem] overflow-hidden flex flex-col border-white/5 hover:border-indigo-500/20 transition-all duration-700 shadow-2xl relative bg-black/40"
+            >
+              <div className="absolute top-0 right-0 w-60 h-60 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 blur-3xl rounded-full pointer-events-none" />
+              
+              <div className="p-8 flex flex-col justify-between flex-1 space-y-6">
+                <div className="flex flex-col sm:flex-row lg:flex-col sm:items-center lg:items-start justify-between gap-4 border-b border-white/5 pb-6">
+                  <div className="space-y-1.5">
+                    <span className="text-indigo-400 font-black uppercase tracking-[0.4em] text-[8px] font-mono block">
+                      Co-Founder
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight">
+                      Rohit Praveen Nair
+                    </h3>
+                    <p className="text-gray-500 text-[9px] font-mono uppercase tracking-widest">
+                      Co-Founder, NEURØN
+                    </p>
+                  </div>
+
+                  {/* Premium Large Portrait */}
+                  <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border border-white/10 shadow-xl relative group/portrait self-start sm:self-center lg:self-start shrink-0">
+                    <img
+                      src="https://lh3.googleusercontent.com/d/1dJaWKmPxkOD2kgNygMs7NnB2Snlvwdam"
+                      alt="Rohit Praveen Nair"
+                      className="w-full h-full object-cover scale-120 group-hover/portrait:scale-130 grayscale group-hover/portrait:grayscale-0 transition-all duration-700"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-indigo-500/10 mix-blend-color opacity-100 group-hover/portrait:opacity-0 transition-opacity" />
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute -top-4 -left-2 text-indigo-500/5 select-none pointer-events-none">
+                    <Quote size={40} />
+                  </div>
+                  <blockquote className="text-gray-300 text-xs md:text-sm leading-relaxed font-light italic relative z-10 pl-4 border-l border-indigo-500/20">
+                    "We aim to cultivate a culture where theoretical concepts materialize into scalable open-source intelligence. NEURØN represents the nexus of raw engineering talent and unrestricted creative exploration."
+                  </blockquote>
+                </div>
+
+                <div className="pt-4 border-t border-white/5 flex flex-wrap gap-2 justify-between items-center text-[8px] font-mono text-gray-500">
+                  <div className="flex flex-wrap gap-2">
+                    {["MLOps & Infra", "Computer Vision", "Distributed Train"].map((interest, i) => (
+                      <div key={i} className="flex items-center gap-1">
+                        <Zap size={8} className="text-indigo-500" />
+                        <span>{interest}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </m.div>
+
+            {/* Tanay Ashish */}
+            <m.div
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="glass rounded-[2rem] overflow-hidden flex flex-col border-white/5 hover:border-indigo-500/20 transition-all duration-700 shadow-2xl relative bg-black/40"
+            >
+              <div className="absolute top-0 right-0 w-60 h-60 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 blur-3xl rounded-full pointer-events-none" />
+              
+              <div className="p-8 flex flex-col justify-between flex-1 space-y-6">
+                <div className="flex flex-col sm:flex-row lg:flex-col sm:items-center lg:items-start justify-between gap-4 border-b border-white/5 pb-6">
+                  <div className="space-y-1.5">
+                    <span className="text-indigo-400 font-black uppercase tracking-[0.4em] text-[8px] font-mono block">
+                      Co-Founder & VP
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight">
+                      Tanay Ashish
+                    </h3>
+                    <p className="text-gray-500 text-[9px] font-mono uppercase tracking-widest">
+                      Co-Founder / Vice President, NEURØN
+                    </p>
+                  </div>
+
+                  {/* Premium Large Portrait */}
+                  <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border border-white/10 shadow-xl relative group/portrait self-start sm:self-center lg:self-start shrink-0">
+                    <img
+                      src="https://lh3.googleusercontent.com/d/1fLU1Djldt657I02XDldvSqJCkUP2nYDe"
+                      alt="Tanay Ashish"
+                      className="w-full h-full object-cover scale-120 group-hover/portrait:scale-130 grayscale group-hover/portrait:grayscale-0 transition-all duration-700"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-indigo-500/10 mix-blend-color opacity-100 group-hover/portrait:opacity-0 transition-opacity" />
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute -top-4 -left-2 text-indigo-500/5 select-none pointer-events-none">
+                    <Quote size={40} />
+                  </div>
+                  <blockquote className="text-gray-300 text-xs md:text-sm leading-relaxed font-light italic relative z-10 pl-4 border-l border-indigo-500/20">
+                    "Collaboration and relentless execution are at the core of NEURØN. By establishing robust technical frameworks and interactive platforms, we enable our members to push the absolute limits of computational creativity."
+                  </blockquote>
+                </div>
+
+                <div className="pt-4 border-t border-white/5 flex flex-wrap gap-2 justify-between items-center text-[8px] font-mono text-gray-500">
+                  <div className="flex flex-wrap gap-2">
+                    {["RLHF", "Neural Architectures", "Product Strategy"].map((interest, i) => (
+                      <div key={i} className="flex items-center gap-1">
+                        <Zap size={8} className="text-indigo-500" />
+                        <span>{interest}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </m.div>
+
+            {/* Devansh Kaila */}
+            <m.div
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="glass rounded-[2rem] overflow-hidden flex flex-col border-white/5 hover:border-indigo-500/20 transition-all duration-700 shadow-2xl relative bg-black/40"
+            >
+              <div className="absolute top-0 right-0 w-60 h-60 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 blur-3xl rounded-full pointer-events-none" />
+              
+              <div className="p-8 flex flex-col justify-between flex-1 space-y-6">
+                <div className="flex flex-col sm:flex-row lg:flex-col sm:items-center lg:items-start justify-between gap-4 border-b border-white/5 pb-6">
+                  <div className="space-y-1.5">
+                    <span className="text-indigo-400 font-black uppercase tracking-[0.4em] text-[8px] font-mono block">
+                      Tech Lead & Architect
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight">
+                      Devansh Kaila
+                    </h3>
+                    <p className="text-gray-500 text-[9px] font-mono uppercase tracking-widest">
+                      Tech Lead // Web & Infra Developer
+                    </p>
+                  </div>
+
+                  {/* Premium Large Portrait */}
+                  <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border border-white/10 shadow-xl relative group/portrait self-start sm:self-center lg:self-start shrink-0">
+                    <img
+                      src="https://lh3.googleusercontent.com/d/1INCcP8aZDlVXGmPNWUiUiCey5InA4CqD"
+                      alt="Devansh Kaila"
+                      className="w-full h-full object-cover scale-120 group-hover/portrait:scale-130 grayscale group-hover/portrait:grayscale-0 transition-all duration-700"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-indigo-500/10 mix-blend-color opacity-100 group-hover/portrait:opacity-0 transition-opacity" />
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute -top-4 -left-2 text-indigo-500/5 select-none pointer-events-none">
+                    <Quote size={40} />
+                  </div>
+                  <blockquote className="text-gray-300 text-xs md:text-sm leading-relaxed font-light italic relative z-10 pl-4 border-l border-indigo-500/20">
+                    "From bare-metal container routing to building custom interactive platforms like this website, we build the technological spine of NEURØN. Great engineering should feel invisible, yet support absolute, unbounded scale."
+                  </blockquote>
+                </div>
+
+                <div className="pt-4 border-t border-white/5 flex flex-wrap gap-2 justify-between items-center text-[8px] font-mono text-gray-500">
+                  <div className="flex flex-wrap gap-2">
+                    {["Fullstack Systems", "Cloud Infrastructure", "Reactive UI/UX"].map((interest, i) => (
+                      <div key={i} className="flex items-center gap-1">
+                        <Zap size={8} className="text-indigo-500" />
+                        <span>{interest}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </m.div>
+          </div>
+        </section>
+
+        {/* OFFICE BEARERS GRID */}
+        <section className="mt-24 max-w-4xl mx-auto space-y-12">
+          <div className="text-center md:text-left space-y-2">
+            <div className="flex items-center justify-center md:justify-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+              <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-[0.4em] font-bold">
+                Club Administration
+              </span>
+            </div>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tight">
+              Office Bearers
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Pavithra S (Vice President) */}
+            <m.div
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+              className="glass rounded-[2rem] overflow-hidden flex flex-col border-white/5 hover:border-indigo-500/20 transition-all duration-700 shadow-2xl relative bg-black/40"
+            >
+              <div className="absolute top-0 right-0 w-60 h-60 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 blur-3xl rounded-full pointer-events-none" />
+              
+              <div className="p-8 flex flex-col justify-between flex-1 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
+                  <div className="space-y-1.5">
+                    <span className="text-indigo-400 font-black uppercase tracking-[0.4em] text-[8px] font-mono block">
+                      Vice President
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight">
+                      Pavithra S
+                    </h3>
+                    <p className="text-gray-500 text-[9px] font-mono uppercase tracking-widest">
+                      Vice President, NEURØN
+                    </p>
+                  </div>
+
+                  {/* Premium Large Portrait */}
+                  <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border border-white/10 shadow-xl relative group/portrait self-start sm:self-center shrink-0">
+                    <img
+                      src="https://lh3.googleusercontent.com/d/1GvT2vP7eBBO6PrGNlCxRzF3C3cpYV08Y"
+                      alt="Pavithra S"
+                      className="w-full h-full object-cover scale-120 group-hover/portrait:scale-130 grayscale group-hover/portrait:grayscale-0 transition-all duration-700"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-indigo-500/10 mix-blend-color opacity-100 group-hover/portrait:opacity-0 transition-opacity" />
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute -top-4 -left-2 text-indigo-500/5 select-none pointer-events-none">
+                    <Quote size={40} />
+                  </div>
+                  <blockquote className="text-gray-300 text-xs md:text-sm leading-relaxed font-light italic relative z-10 pl-4 border-l border-indigo-500/20">
+                    "Empowering our community of innovators to transform bold concepts into actionable solutions. Through strategic partnerships and streamlined execution, we are shaping the future of AI co-creation."
+                  </blockquote>
+                </div>
+
+                <div className="pt-4 border-t border-white/5 flex flex-wrap gap-2 justify-between items-center text-[8px] font-mono text-gray-500">
+                  <div className="flex flex-wrap gap-2">
+                    {["Strategic Operations", "AI Integration", "Leadership"].map((interest, i) => (
+                      <div key={i} className="flex items-center gap-1">
+                        <Zap size={8} className="text-indigo-500" />
+                        <span>{interest}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </m.div>
+
+            {/* Prajukta (Treasurer) */}
+            <m.div
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="glass rounded-[2rem] overflow-hidden flex flex-col border-white/5 hover:border-indigo-500/20 transition-all duration-700 shadow-2xl relative bg-black/40"
+            >
+              <div className="absolute top-0 right-0 w-60 h-60 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 blur-3xl rounded-full pointer-events-none" />
+              
+              <div className="p-8 flex flex-col justify-between flex-1 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
+                  <div className="space-y-1.5">
+                    <span className="text-indigo-400 font-black uppercase tracking-[0.4em] text-[8px] font-mono block">
+                      Treasurer
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight">
+                      Prajukta
+                    </h3>
+                    <p className="text-gray-500 text-[9px] font-mono uppercase tracking-widest">
+                      Treasurer, NEURØN
+                    </p>
+                  </div>
+
+                  {/* Premium Large Portrait */}
+                  <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border border-white/10 shadow-xl relative group/portrait self-start sm:self-center shrink-0">
+                    <img
+                      src="https://lh3.googleusercontent.com/d/1x_Fp6QcbqbQaLvK0BqUTMvkLTLt1gGM-"
+                      alt="Prajukta"
+                      className="w-full h-full object-cover scale-120 group-hover/portrait:scale-130 grayscale group-hover/portrait:grayscale-0 transition-all duration-700"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-indigo-500/10 mix-blend-color opacity-100 group-hover/portrait:opacity-0 transition-opacity" />
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute -top-4 -left-2 text-indigo-500/5 select-none pointer-events-none">
+                    <Quote size={40} />
+                  </div>
+                  <blockquote className="text-gray-300 text-xs md:text-sm leading-relaxed font-light italic relative z-10 pl-4 border-l border-indigo-500/20">
+                    "Ensuring the sustainable expansion of NEURØN's technological ambitions. Strategic resource management allows us to fund complex research, high-impact events, and build deep engineering reserves."
+                  </blockquote>
+                </div>
+
+                <div className="pt-4 border-t border-white/5 flex flex-wrap gap-2 justify-between items-center text-[8px] font-mono text-gray-500">
+                  <div className="flex flex-wrap gap-2">
+                    {["Financial Strategy", "Resource Planning", "Project Audits"].map((interest, i) => (
+                      <div key={i} className="flex items-center gap-1">
+                        <Zap size={8} className="text-indigo-500" />
+                        <span>{interest}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </m.div>
+          </div>
         </section>
 
         {/* Global Footer Decoration */}
