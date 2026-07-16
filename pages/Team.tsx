@@ -603,7 +603,7 @@ const Team: React.FC = () => {
         </section>
 
         {/* HEADS SECTION */}
-        <section className="mt-24 max-w-4xl mx-auto space-y-12">
+        <section className="mt-24 max-w-6xl mx-auto space-y-12">
           <div className="text-center md:text-left space-y-2">
             <div className="flex items-center justify-center md:justify-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
@@ -693,7 +693,7 @@ const Team: React.FC = () => {
                     <span className="text-indigo-400 font-black uppercase tracking-[0.4em] text-[8px] font-mono block">
                       Design Head
                     </span>
-                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight font-sans">
+                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight">
                       Avinash Pala
                     </h3>
                     <p className="text-gray-500 text-[9px] font-mono uppercase tracking-widest">
@@ -753,7 +753,7 @@ const Team: React.FC = () => {
                     <span className="text-indigo-400 font-black uppercase tracking-[0.4em] text-[8px] font-mono block">
                       R&D Head
                     </span>
-                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight font-sans">
+                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight">
                       Penumarthi Hima Varshini
                     </h3>
                     <p className="text-gray-500 text-[9px] font-mono uppercase tracking-widest">
