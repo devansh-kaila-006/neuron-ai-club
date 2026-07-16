@@ -616,14 +616,14 @@ const Team: React.FC = () => {
             </h2>
           </div>
 
-          <div className="flex justify-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Devansh Kaila */}
             <m.div
               initial={{ opacity: 0, y: 35 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.1 }}
-              className="glass rounded-[2rem] overflow-hidden flex flex-col border-white/5 hover:border-indigo-500/20 transition-all duration-700 shadow-2xl relative bg-black/40 max-w-md w-full"
+              className="glass rounded-[2rem] overflow-hidden flex flex-col border-white/5 hover:border-indigo-500/20 transition-all duration-700 shadow-2xl relative bg-black/40 max-w-md w-full mx-auto"
             >
               <div className="absolute top-0 right-0 w-60 h-60 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 blur-3xl rounded-full pointer-events-none" />
               
@@ -667,6 +667,126 @@ const Team: React.FC = () => {
                 <div className="pt-4 border-t border-white/5 flex flex-wrap gap-2 justify-between items-center text-[8px] font-mono text-gray-500">
                   <div className="flex flex-wrap gap-2">
                     {["Fullstack Systems", "Cloud Infrastructure", "Reactive UI/UX"].map((interest, i) => (
+                      <div key={i} className="flex items-center gap-1">
+                        <Zap size={8} className="text-indigo-500" />
+                        <span>{interest}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </m.div>
+
+            {/* Avinash Pala */}
+            <m.div
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="glass rounded-[2rem] overflow-hidden flex flex-col border-white/5 hover:border-indigo-500/20 transition-all duration-700 shadow-2xl relative bg-black/40 max-w-md w-full mx-auto"
+            >
+              <div className="absolute top-0 right-0 w-60 h-60 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 blur-3xl rounded-full pointer-events-none" />
+              
+              <div className="p-8 flex flex-col justify-between flex-1 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
+                  <div className="space-y-1.5">
+                    <span className="text-indigo-400 font-black uppercase tracking-[0.4em] text-[8px] font-mono block">
+                      Design Head
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight font-sans">
+                      Avinash Pala
+                    </h3>
+                    <p className="text-gray-500 text-[9px] font-mono uppercase tracking-widest">
+                      Design Head // Creative Director
+                    </p>
+                  </div>
+
+                  {/* Premium Large Portrait */}
+                  <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border border-white/10 shadow-xl relative group/portrait self-start sm:self-center shrink-0">
+                    <img
+                      src="https://lh3.googleusercontent.com/d/1L4hKKo_QDtaU3tD5lrneNtCXla7fTmNW"
+                      alt="Avinash Pala"
+                      className="w-full h-full object-cover scale-120 group-hover/portrait:scale-130 grayscale group-hover/portrait:grayscale-0 transition-all duration-700"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-indigo-500/10 mix-blend-color opacity-100 group-hover/portrait:opacity-0 transition-opacity" />
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute -top-4 -left-2 text-indigo-500/5 select-none pointer-events-none">
+                    <Quote size={40} />
+                  </div>
+                  <blockquote className="text-gray-300 text-xs md:text-sm leading-relaxed font-light italic relative z-10 pl-4 border-l border-indigo-500/20">
+                    "Design isn't just about aesthetics; it's about translating complex neural interactions into intuitive visual interfaces that feel natural and immersive."
+                  </blockquote>
+                </div>
+
+                <div className="pt-4 border-t border-white/5 flex flex-wrap gap-2 justify-between items-center text-[8px] font-mono text-gray-500">
+                  <div className="flex flex-wrap gap-2">
+                    {["UI/UX Design", "Creative Direction", "Visual Identity"].map((interest, i) => (
+                      <div key={i} className="flex items-center gap-1">
+                        <Zap size={8} className="text-indigo-500" />
+                        <span>{interest}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </m.div>
+
+            {/* Penumarthi Hima Varshini */}
+            <m.div
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="glass rounded-[2rem] overflow-hidden flex flex-col border-white/5 hover:border-indigo-500/20 transition-all duration-700 shadow-2xl relative bg-black/40 max-w-md w-full mx-auto"
+            >
+              <div className="absolute top-0 right-0 w-60 h-60 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 blur-3xl rounded-full pointer-events-none" />
+              
+              <div className="p-8 flex flex-col justify-between flex-1 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
+                  <div className="space-y-1.5">
+                    <span className="text-indigo-400 font-black uppercase tracking-[0.4em] text-[8px] font-mono block">
+                      R&D Head
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight font-sans">
+                      Penumarthi Hima Varshini
+                    </h3>
+                    <p className="text-gray-500 text-[9px] font-mono uppercase tracking-widest">
+                      R&D Head // Machine Learning Researcher
+                    </p>
+                  </div>
+
+                  {/* Premium Large Portrait */}
+                  <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border border-white/10 shadow-xl relative group/portrait self-start sm:self-center shrink-0">
+                    <img
+                      src="https://lh3.googleusercontent.com/d/15ThPe_d6YnEjzvBCzy4otq2GSrONLBzh"
+                      alt="Penumarthi Hima Varshini"
+                      className="w-full h-full object-cover scale-120 group-hover/portrait:scale-130 grayscale group-hover/portrait:grayscale-0 transition-all duration-700"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-indigo-500/10 mix-blend-color opacity-100 group-hover/portrait:opacity-0 transition-opacity" />
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute -top-4 -left-2 text-indigo-500/5 select-none pointer-events-none">
+                    <Quote size={40} />
+                  </div>
+                  <blockquote className="text-gray-300 text-xs md:text-sm leading-relaxed font-light italic relative z-10 pl-4 border-l border-indigo-500/20">
+                    "Pushing the frontiers of cognitive science requires a perfect balance of disciplined academic research and wild, iterative experimentation."
+                  </blockquote>
+                </div>
+
+                <div className="pt-4 border-t border-white/5 flex flex-wrap gap-2 justify-between items-center text-[8px] font-mono text-gray-500">
+                  <div className="flex flex-wrap gap-2">
+                    {["ML Research", "Cognitive Science", "Algorithms"].map((interest, i) => (
                       <div key={i} className="flex items-center gap-1">
                         <Zap size={8} className="text-indigo-500" />
                         <span>{interest}</span>
