@@ -156,20 +156,88 @@ export const capsuleService = {
   },
 
   /**
-   * Submit a new AI Time Capsule entry
+   * Submit a new AI Time Capsule entry with concurrency safety
    */
   async submitCapsule(entry: Omit<Capsule, 'id' | 'capsule_code' | 'status' | 'created_at'>): Promise<Capsule> {
     this.initLocalStorage();
-    const localData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    
-    // Calculate new index and generate capsule code
     const cohortYear = entry.cohort_year || new Date().getFullYear();
+
+    // 1. If connected to Supabase, query live count and use optimistic retry loop for code collisions
+    if (supabase && !this.isUsingMock) {
+      try {
+        // Query live count for this cohort year directly from database
+        const { count, error: countError } = await supabase
+          .from('capsules')
+          .select('*', { count: 'exact', head: true })
+          .eq('cohort_year', cohortYear);
+
+        let nextIndex = (count !== null && count !== undefined && !countError) ? count + 1 : 1;
+        let attempts = 0;
+        let insertedData: Capsule | null = null;
+
+        // Retry loop to handle concurrent duplicate code collisions gracefully
+        while (attempts < 5 && !insertedData) {
+          attempts++;
+          const capsuleCode = `NRNCAP-${cohortYear}-${String(nextIndex).padStart(4, '0')}`;
+          
+          const payload = {
+            ...entry,
+            cohort_year: cohortYear,
+            capsule_code: capsuleCode,
+            status: CapsuleStatus.SEALED,
+            date_sealed: new Date().toISOString(),
+            created_at: new Date().toISOString()
+          };
+
+          const { data, error } = await supabase
+            .from('capsules')
+            .insert([payload])
+            .select()
+            .single();
+
+          if (!error && data) {
+            insertedData = data as Capsule;
+          } else if (error && (error.code === '23505' || error.message?.toLowerCase().includes('unique') || error.message?.toLowerCase().includes('duplicate'))) {
+            // Collision on capsule_code caused by concurrent submission from another user! Increment and retry.
+            nextIndex++;
+          } else {
+            throw error;
+          }
+        }
+
+        if (insertedData) {
+          // Sync local storage cache
+          const localData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          const idx = localData.findIndex((c: Capsule) => c.id === insertedData!.id || c.capsule_code === insertedData!.capsule_code);
+          if (idx !== -1) {
+            localData[idx] = insertedData;
+          } else {
+            localData.push(insertedData);
+          }
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(localData));
+          return insertedData;
+        }
+      } catch (err: any) {
+        console.warn('Supabase concurrent insert fallback to client storage:', err?.message || err);
+        this.isUsingMock = true;
+      }
+    }
+
+    // 2. Fallback / Local Storage Mode (with collision safety)
+    const localData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     const cohortCapsulesCount = localData.filter((c: Capsule) => c.cohort_year === cohortYear).length;
-    const capsuleIndex = cohortCapsulesCount + 1;
-    const capsuleCode = `NRNCAP-${cohortYear}-${String(capsuleIndex).padStart(4, '0')}`;
-    
+    let capsuleIndex = cohortCapsulesCount + 1;
+    let capsuleCode = `NRNCAP-${cohortYear}-${String(capsuleIndex).padStart(4, '0')}`;
+
+    // Guarantee uniqueness even in local storage
+    if (localData.some((c: Capsule) => c.capsule_code === capsuleCode)) {
+      const randSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+      capsuleCode = `NRNCAP-${cohortYear}-${String(capsuleIndex).padStart(4, '0')}-${randSuffix}`;
+    }
+
     const newCapsule: Capsule = {
       ...entry,
+      cohort_year: cohortYear,
       id: `capsule-${Math.random().toString(36).substring(2, 11)}`,
       capsule_code: capsuleCode,
       status: CapsuleStatus.SEALED,
@@ -177,48 +245,9 @@ export const capsuleService = {
       created_at: new Date().toISOString()
     };
 
-    // Always update local storage as a cache/fallback
     localData.push(newCapsule);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(localData));
-
-    if (!supabase || this.isUsingMock) {
-      return newCapsule;
-    }
-
-    try {
-      // Attempt db insertion without ID to let Postgres generate standard UUID
-      const { id, ...dbPayload } = newCapsule;
-      const { data, error } = await supabase
-        .from('capsules')
-        .insert([{
-          ...dbPayload,
-          capsule_code: capsuleCode // Let database generate id, but use calculated code
-        }])
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(`Database submission failure: ${error.message}`);
-      }
-
-      const dbRecord = data as Capsule;
-      // Sync local storage cache with the correct UUID from database
-      const cachedData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      const tempIndex = cachedData.findIndex((c: Capsule) => c.capsule_code === dbRecord.capsule_code);
-      if (tempIndex !== -1) {
-        cachedData[tempIndex] = dbRecord;
-      } else {
-        cachedData.push(dbRecord);
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cachedData));
-
-      return dbRecord;
-    } catch (err: any) {
-      console.warn('Supabase insert failed, using local storage cache:', err.message);
-      // Mark as using mock for this session since database was write-blocked
-      this.isUsingMock = true;
-      return newCapsule;
-    }
+    return newCapsule;
   },
 
   /**
