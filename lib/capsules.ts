@@ -98,6 +98,8 @@ export const capsuleService = {
       }
 
       this.isUsingMock = false;
+      // Background sync any user entries saved locally during past offline/fallback states
+      this.syncLocalCapsulesToSupabase().catch(() => {});
       return data as Capsule[];
     } catch (err) {
       console.error('Failed to fetch capsules from database, using mock:', err);
@@ -339,6 +341,43 @@ export const capsuleService = {
       if (error) throw error;
     } catch (err) {
       console.error('Supabase deletion error:', err);
+    }
+  },
+
+  /**
+   * Sync any locally cached capsules to Supabase automatically
+   */
+  async syncLocalCapsulesToSupabase(): Promise<void> {
+    if (!supabase) return;
+    this.initLocalStorage();
+    const localData: Capsule[] = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const mockCodes = new Set(DEFAULT_MOCK_CAPSULES.map(m => m.capsule_code));
+
+    // Find custom entries created locally (ignoring standard default mock seeds)
+    const customLocal = localData.filter(c => !mockCodes.has(c.capsule_code));
+    if (customLocal.length === 0) return;
+
+    for (const capsule of customLocal) {
+      try {
+        // Check if exists in Supabase
+        const { data: existing } = await supabase
+          .from('capsules')
+          .select('id')
+          .or(`id.eq.${capsule.id},capsule_code.eq.${capsule.capsule_code}`)
+          .maybeSingle();
+
+        if (!existing) {
+          // Attempt to upload missing capsule to Supabase
+          const payload = { ...capsule };
+          // If ID is local format, let database auto-generate UUID or insert
+          if (payload.id && payload.id.startsWith('capsule-')) {
+            delete (payload as any).id;
+          }
+          await supabase.from('capsules').insert([payload]);
+        }
+      } catch (e) {
+        // Continue attempting other items quietly
+      }
     }
   }
 };
