@@ -5,13 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Users, Activity, Loader2, RefreshCw, ShieldCheck, Download, 
   CheckCircle2, TrendingUp, LogOut, Scan, X, Flame, ArrowRight,
-  AlertCircle, ShieldAlert, Check, Mail, Clock, Key, Lock, Eye, Trash2, Sparkles, Database
+  AlertCircle, ShieldAlert, Check, Mail, Clock, Key, Lock, Eye, Trash2, Sparkles, Database,
+  Award, Star
 } from 'lucide-react';
 import jsQR from 'jsqr';
 import { storage } from '../lib/storage.ts';
 import { authService } from '../services/auth.ts';
-import { Team, PaymentStatus, Capsule, CapsuleStatus } from '../lib/types.ts';
+import { Team, PaymentStatus, Capsule, CapsuleStatus, TeamPassport, StampTier } from '../lib/types.ts';
 import { capsuleService } from '../lib/capsules.ts';
+import { passportService, OFFICIAL_PASSPORT_TASKS } from '../lib/passports.ts';
+import { GoldStampBadge, SilverStampBadge, BronzeStampBadge } from '../components/StampBadges.tsx';
 import { commsService } from '../services/comms.ts';
 import Skeleton from '../components/Skeleton.tsx';
 import { useToast } from '../context/ToastContext.tsx';
@@ -36,8 +39,8 @@ const Admin: React.FC = () => {
   const [manualID, setManualID] = useState('');
   const [logs, setLogs] = useState<{msg: string, time: string, type: 'info' | 'warn' | 'success'}[]>([]);
 
-  // Capsule States
-  const [activeTab, setActiveTab] = useState<'squads' | 'capsules'>('squads');
+  // Capsule & Passport States
+  const [activeTab, setActiveTab] = useState<'squads' | 'capsules' | 'passports'>('squads');
   const [capsules, setCapsules] = useState<Capsule[]>([]);
   const [capsuleSearchTerm, setCapsuleSearchTerm] = useState('');
   const [capsuleFilter, setCapsuleFilter] = useState<CapsuleStatus | 'all'>('all');
@@ -46,6 +49,12 @@ const Admin: React.FC = () => {
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
   const [isCapsuleActionLoading, setIsCapsuleActionLoading] = useState<string | null>(null);
   const [isProcessingUnseal, setIsProcessingUnseal] = useState(false);
+
+  // Passport States
+  const [passports, setPassports] = useState<TeamPassport[]>([]);
+  const [passportSearchTerm, setPassportSearchTerm] = useState('');
+  const [selectedPassportForStamps, setSelectedPassportForStamps] = useState<TeamPassport | null>(null);
+  const [isPassportActionLoading, setIsPassportActionLoading] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -86,6 +95,12 @@ const Admin: React.FC = () => {
       
       const caps = await capsuleService.getCapsules();
       setCapsules(caps);
+
+      const passList = await passportService.getPassports();
+      setPassports(passList);
+      if (passList.length > 0 && !selectedPassportForStamps) {
+        setSelectedPassportForStamps(passList[0]);
+      }
     } catch (err: any) {
       if (err.status !== 401) {
         addLog("Grid uplink unstable", 'warn');
@@ -94,7 +109,30 @@ const Admin: React.FC = () => {
       setIsLoading(false);
       setIsPolling(false);
     }
-  }, [addLog]);
+  }, [addLog, selectedPassportForStamps]);
+
+  const handleStampAllocation = async (passportId: string, taskId: string, tier: StampTier) => {
+    setIsPassportActionLoading(passportId);
+    try {
+      const target = passports.find(p => p.id === passportId);
+      if (!target) return;
+
+      const updatedStamps = { ...(target.stamps || {}), [taskId]: tier };
+      const updatedPassport = await passportService.updateTeamStamps(passportId, updatedStamps);
+
+      setPassports(prev => prev.map(p => p.id === passportId ? updatedPassport : p));
+      if (selectedPassportForStamps?.id === passportId) {
+        setSelectedPassportForStamps(updatedPassport);
+      }
+
+      toast.success(`Assigned ${tier ? tier.toUpperCase() : 'NONE'} stamp to ${target.team_name}`);
+      addLog(`Stamp allocated for ${target.team_name}`, 'success');
+    } catch (err: any) {
+      toast.error('Stamp allocation failed.');
+    } finally {
+      setIsPassportActionLoading(null);
+    }
+  };
 
   const handleCheckIn = useCallback(async (id: string, status: boolean) => {
     // 1. Optimistic UI update for instant feedback
@@ -489,7 +527,7 @@ const Admin: React.FC = () => {
         </div>
 
         {/* Tab Selection */}
-        <div className="flex gap-4 mb-8 border-b border-white/5 pb-4 no-print">
+        <div className="flex flex-wrap gap-4 mb-8 border-b border-white/5 pb-4 no-print">
           <button 
             onClick={() => { setActiveTab('squads'); setFilter('all'); }}
             className={`px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider font-mono transition-all flex items-center gap-2 ${
@@ -509,6 +547,16 @@ const Admin: React.FC = () => {
             }`}
           >
             <Sparkles size={16} /> AI Time Capsule
+          </button>
+          <button 
+            onClick={() => { setActiveTab('passports'); }}
+            className={`px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider font-mono transition-all flex items-center gap-2 ${
+              activeTab === 'passports' 
+                ? 'bg-amber-500 text-black font-black shadow-[0_0_15px_rgba(245,158,11,0.3)]' 
+                : 'glass text-gray-400 hover:text-white border-white/5 hover:bg-white/5'
+            }`}
+          >
+            <Award size={16} /> Digital Passports & Stamps
           </button>
         </div>
 
@@ -552,12 +600,28 @@ const Admin: React.FC = () => {
               </div>
             ))}
           </div>
-        ) : (
+        ) : activeTab === 'capsules' ? (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {[
               { icon: <Database />, label: "Submissions", val: capsules.length },
               { icon: <Lock className="text-indigo-400" />, label: "Sealed & Archived", val: capsules.filter(c => c.status === CapsuleStatus.SEALED).length },
               { icon: <Clock />, label: "Active Cohort", val: `2026` },
+            ].map((s_stat, i) => (
+              <div key={i} className="glass p-6 rounded-3xl border-white/5">
+                <div className="flex items-center gap-3 mb-2 opacity-50">
+                  <div className="p-1">{s_stat.icon}</div>
+                  <p className="text-[10px] uppercase tracking-widest font-bold">{s_stat.label}</p>
+                </div>
+                <p className="text-2xl font-bold">{isLoading ? '...' : s_stat.val}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {[
+              { icon: <Users />, label: "Squad Passports", val: passports.length },
+              { icon: <Award className="text-amber-400" />, label: "Total Stamps Awarded", val: passports.reduce((acc, p) => acc + Object.keys(p.stamps || {}).length, 0) },
+              { icon: <Flame className="text-amber-400" />, label: "Top Team Points", val: `${Math.max(0, ...passports.map(p => p.total_points || 0))} PTS` },
             ].map((s_stat, i) => (
               <div key={i} className="glass p-6 rounded-3xl border-white/5">
                 <div className="flex items-center gap-3 mb-2 opacity-50">
@@ -621,7 +685,7 @@ const Admin: React.FC = () => {
                   </table>
                 </div>
               </div>
-            ) : (
+            ) : activeTab === 'capsules' ? (
               <div className="glass rounded-[2rem] border-white/5 overflow-hidden">
                 <div className="p-6 border-b border-white/5 flex flex-col md:flex-row gap-4 justify-between items-center">
                   <div className="relative flex-1 w-full">
@@ -717,6 +781,184 @@ const Admin: React.FC = () => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            ) : (
+              <div className="glass rounded-[2rem] border-white/5 p-6 md:p-8 space-y-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/10 pb-6">
+                  <div>
+                    <h2 className="text-xl font-bold uppercase tracking-wider font-sans text-amber-400 flex items-center gap-2">
+                      <Award size={20} /> STAMP ASSIGNMENT & SQUAD PASSPORTS CONTROL
+                    </h2>
+                    <p className="text-xs text-gray-400 font-light mt-1">
+                      Select a squad below to award Gold (+30), Silver (+20), or Bronze (+10) stamps for each of the 6 official tasks.
+                    </p>
+                  </div>
+
+                  <div className="relative w-full md:w-72">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" size={14} />
+                    <input
+                      type="text"
+                      placeholder="Filter squads..."
+                      value={passportSearchTerm}
+                      onChange={(e) => setPassportSearchTerm(e.target.value)}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-xs font-mono text-white outline-none focus:border-amber-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Squad Selector list */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Squad List Column */}
+                  <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                    <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest font-bold mb-2">Registered Squads</div>
+                    {passports
+                      .filter(p => p.team_name.toLowerCase().includes(passportSearchTerm.toLowerCase()) || p.passport_code.toLowerCase().includes(passportSearchTerm.toLowerCase()))
+                      .map((p) => {
+                        const isSelected = selectedPassportForStamps?.id === p.id;
+                        return (
+                          <button
+                            key={p.id}
+                            onClick={() => setSelectedPassportForStamps(p)}
+                            className={`w-full text-left p-4 rounded-xl border transition-all ${
+                              isSelected
+                                ? 'bg-amber-500/15 border-amber-400 text-white shadow-lg shadow-amber-500/10'
+                                : 'bg-black/30 border-white/5 text-gray-400 hover:text-white hover:border-white/20'
+                            }`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="font-bold text-sm text-white">{p.team_name}</div>
+                              <span className="text-xs font-mono font-black text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">
+                                {p.total_points} PTS
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-[11px] font-mono text-gray-500 mt-2">
+                              <span>{p.passport_code}</span>
+                              <span>{p.members.length} Members</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                  </div>
+
+                  {/* Stamp Allocation Panel */}
+                  <div className="md:col-span-2 glass p-6 rounded-2xl border border-white/10 bg-black/40 space-y-6">
+                    {selectedPassportForStamps ? (
+                      <div>
+                        <div className="flex justify-between items-start border-b border-white/10 pb-4 mb-6">
+                          <div>
+                            <span className="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-widest">SELECTED PASSPORT</span>
+                            <h3 className="text-2xl font-black text-white uppercase font-sans">{selectedPassportForStamps.team_name}</h3>
+                            <div className="text-xs font-mono text-gray-400 mt-1">CODE: {selectedPassportForStamps.passport_code}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-[10px] font-mono text-gray-500 uppercase">CURRENT TOTAL SCORE</div>
+                            <div className="text-3xl font-black font-mono text-amber-400">{selectedPassportForStamps.total_points} PTS</div>
+                          </div>
+                        </div>
+
+                        {/* Squad Members preview */}
+                        <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/5">
+                          <div className="text-[10px] font-mono text-gray-400 uppercase tracking-widest mb-2 font-bold">
+                            Squad Members ({selectedPassportForStamps.members.length})
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedPassportForStamps.members.map((m, idx) => (
+                              <span key={idx} className="px-2.5 py-1 bg-black/50 border border-white/10 rounded-lg text-xs font-mono text-indigo-300">
+                                {m.name} {m.enrollment_no ? <span className="text-[10px] text-gray-400 font-normal">({m.enrollment_no})</span> : null}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 6 TASKS STAMP CONTROLLER */}
+                        <div className="space-y-4">
+                          <h4 className="text-xs font-mono uppercase tracking-widest text-white font-bold flex items-center gap-2">
+                            <Star size={14} className="text-amber-400" /> AWARD STAMPS (6 TASKS)
+                          </h4>
+
+                          <div className="grid grid-cols-1 gap-4">
+                            {OFFICIAL_PASSPORT_TASKS.map((task, idx) => {
+                              const currentStamp = selectedPassportForStamps.stamps?.[task.id];
+                              const isLoadingThis = isPassportActionLoading === selectedPassportForStamps.id;
+
+                              return (
+                                <div key={task.id} className="p-4 bg-black/60 border border-white/10 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-mono font-bold text-indigo-400 uppercase">TASK 0{idx + 1}</span>
+                                      <span className="text-[10px] font-mono text-gray-500">[{task.category}]</span>
+                                    </div>
+                                    <div className="text-sm font-bold text-white mt-0.5">{task.title}</div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    {/* Gold */}
+                                    <button
+                                      disabled={isLoadingThis}
+                                      onClick={() => handleStampAllocation(selectedPassportForStamps.id, task.id, 'gold')}
+                                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 border ${
+                                        currentStamp === 'gold'
+                                          ? 'bg-amber-500 text-black border-amber-300 shadow-lg shadow-amber-500/30'
+                                          : 'bg-white/5 text-amber-400 border-amber-400/20 hover:bg-amber-500/20'
+                                      }`}
+                                    >
+                                      <GoldStampBadge size={16} />
+                                      <span>Gold (+30)</span>
+                                    </button>
+
+                                    {/* Silver */}
+                                    <button
+                                      disabled={isLoadingThis}
+                                      onClick={() => handleStampAllocation(selectedPassportForStamps.id, task.id, 'silver')}
+                                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 border ${
+                                        currentStamp === 'silver'
+                                          ? 'bg-slate-300 text-black border-white shadow-lg shadow-slate-300/30'
+                                          : 'bg-white/5 text-slate-300 border-slate-300/20 hover:bg-slate-300/20'
+                                      }`}
+                                    >
+                                      <SilverStampBadge size={16} />
+                                      <span>Silver (+20)</span>
+                                    </button>
+
+                                    {/* Bronze */}
+                                    <button
+                                      disabled={isLoadingThis}
+                                      onClick={() => handleStampAllocation(selectedPassportForStamps.id, task.id, 'bronze')}
+                                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 border ${
+                                        currentStamp === 'bronze'
+                                          ? 'bg-amber-800 text-amber-100 border-amber-600 shadow-lg shadow-amber-800/30'
+                                          : 'bg-white/5 text-amber-600 border-amber-600/20 hover:bg-amber-800/20'
+                                      }`}
+                                    >
+                                      <BronzeStampBadge size={16} />
+                                      <span>Bronze (+10)</span>
+                                    </button>
+
+                                    {/* Clear */}
+                                    {currentStamp && (
+                                      <button
+                                        disabled={isLoadingThis}
+                                        onClick={() => handleStampAllocation(selectedPassportForStamps.id, task.id, null)}
+                                        className="p-1.5 text-gray-500 hover:text-red-400 transition-colors"
+                                        title="Clear stamp"
+                                      >
+                                        <X size={14} />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="py-12 text-center text-gray-500 font-mono text-xs">
+                        Select a team passport from the left list to allocate stamps.
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

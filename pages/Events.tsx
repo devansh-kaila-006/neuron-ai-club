@@ -58,7 +58,7 @@ const eventsData: EventType[] = [
     tagline: 'Fostering a Community of Practice for Artificial Intelligence',
     category: 'Tech Talk',
     date: '4th February 2026',
-    time: 'Flagship Inauguration Program',
+    time: 'Official Inauguration Program',
     venue: 'Amrita Vishwa Vidyapeetham, Bengaluru Campus',
     featuredImage: event1_1,
     gallery: [
@@ -87,7 +87,7 @@ const eventsData: EventType[] = [
     tagline: 'Interactive panel discussion on innovation, sovereign systems, and emerging technologies',
     category: 'Tech Talk',
     date: '26th March 2026',
-    time: 'Flagship Interactive Panel Session',
+    time: 'Interactive Panel Session',
     venue: 'Amrita Vishwa Vidyapeetham, Bengaluru Campus',
     featuredImage: event2_3,
     gallery: [

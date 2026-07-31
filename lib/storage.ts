@@ -4,6 +4,7 @@ import { Team, PaymentStatus } from './types.ts';
 import { z } from 'zod';
 import { getEnv } from './env.ts';
 import { authService } from '../services/auth.ts';
+import { registrationMutex, adminActionMutex } from './concurrency.ts';
 
 const STORAGE_KEY = 'neuron_teams_vault_session';
 
@@ -69,62 +70,68 @@ export const storage = {
   },
 
   async saveTeam(team: Team): Promise<void> {
-    const validation = teamValidator.safeParse(team);
-    if (!validation.success) {
-      throw new Error("Neural Corrupt: Manifest failed integrity check.");
-    }
+    return registrationMutex.runExclusive(async () => {
+      const validation = teamValidator.safeParse(team);
+      if (!validation.success) {
+        throw new Error("Neural Corrupt: Manifest failed integrity check.");
+      }
 
-    const teams = await this.getTeams();
-    const index = teams.findIndex(t => t.id === team.id);
-    if (index >= 0) teams[index] = team;
-    else teams.push(team);
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
+      const teams = await this.getTeams();
+      const index = teams.findIndex(t => t.id === team.id);
+      if (index >= 0) teams[index] = team;
+      else teams.push(team);
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
 
-    if (!supabase) return;
+      if (!supabase) return;
 
-    // Use Edge Function proxy to handle Admin bypass of RLS
-    const sessionHash = authService.getStoredHash();
-    const { error } = await supabase.functions.invoke('admin-action', {
-      body: { action: 'SAVE_TEAM', payload: team },
-      headers: { 'x-neural-auth': sessionHash || '' }
+      // Use Edge Function proxy to handle Admin bypass of RLS
+      const sessionHash = authService.getStoredHash();
+      const { error } = await supabase.functions.invoke('admin-action', {
+        body: { action: 'SAVE_TEAM', payload: team },
+        headers: { 'x-neural-auth': sessionHash || '' }
+      });
+
+      if (error) throw new Error("Cloud Sync Failure: Save operation rejected.");
     });
-
-    if (error) throw new Error("Cloud Sync Failure: Save operation rejected.");
   },
 
   async updateCheckIn(id: string, status: boolean): Promise<void> {
-    const teams = await this.getTeams();
-    const team = teams.find(t => t.id === id);
-    if (team) {
-      team.checkedin = status;
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
-    }
+    return adminActionMutex.runExclusive(async () => {
+      const teams = await this.getTeams();
+      const team = teams.find(t => t.id === id);
+      if (team) {
+        team.checkedin = status;
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
+      }
 
-    if (!supabase) return;
+      if (!supabase) return;
 
-    // Use Edge Function proxy to handle Admin bypass of RLS
-    const sessionHash = authService.getStoredHash();
-    const { error } = await supabase.functions.invoke('admin-action', {
-      body: { action: 'UPDATE_CHECKIN', payload: { id, status } },
-      headers: { 'x-neural-auth': sessionHash || '' }
+      // Use Edge Function proxy to handle Admin bypass of RLS
+      const sessionHash = authService.getStoredHash();
+      const { error } = await supabase.functions.invoke('admin-action', {
+        body: { action: 'UPDATE_CHECKIN', payload: { id, status } },
+        headers: { 'x-neural-auth': sessionHash || '' }
+      });
+
+      if (error) throw new Error("Cloud Sync Failure: Check-in rejected.");
     });
-
-    if (error) throw new Error("Cloud Sync Failure: Check-in rejected.");
   },
 
   async deleteTeam(id: string): Promise<void> {
-    const teams = await this.getTeams();
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(teams.filter(t => t.id !== id)));
+    return adminActionMutex.runExclusive(async () => {
+      const teams = await this.getTeams();
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(teams.filter(t => t.id !== id)));
 
-    if (!supabase) return;
+      if (!supabase) return;
 
-    const sessionHash = authService.getStoredHash();
-    const { error } = await supabase.functions.invoke('admin-action', {
-      body: { action: 'DELETE_TEAM', payload: { id } },
-      headers: { 'x-neural-auth': sessionHash || '' }
+      const sessionHash = authService.getStoredHash();
+      const { error } = await supabase.functions.invoke('admin-action', {
+        body: { action: 'DELETE_TEAM', payload: { id } },
+        headers: { 'x-neural-auth': sessionHash || '' }
+      });
+
+      if (error) throw new Error("Cloud Sync Failure: Deletion rejected.");
     });
-
-    if (error) throw new Error("Cloud Sync Failure: Deletion rejected.");
   },
 
   async clearAllData(): Promise<void> {

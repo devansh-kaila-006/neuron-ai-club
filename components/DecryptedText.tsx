@@ -83,7 +83,7 @@ const DecryptedText: React.FC<DecryptedTextProps> = ({
   return (
     <span 
       ref={ref} 
-      className={`${className} inline-block transition-colors duration-500 max-w-full`}
+      className={`inline-block transition-colors duration-500 max-w-full pr-[0.15em] ${className || ''}`}
       style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
     >
       {displayText.split('').map((char, i) => {

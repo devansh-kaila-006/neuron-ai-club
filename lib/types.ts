@@ -65,6 +65,36 @@ export enum CapsuleStatus {
   DELIVERED = 'delivered'
 }
 
+export type StampTier = 'gold' | 'silver' | 'bronze' | null;
+
+export interface PassportTask {
+  id: string; // e.g. 'task-1', 'task-2', ..., 'task-6'
+  title: string;
+  description: string;
+  category: string;
+  iconName?: string;
+}
+
+export interface PassportMember {
+  id: string;
+  name: string;
+  enrollment_no?: string;
+  email?: string;
+  role?: string;
+}
+
+export interface TeamPassport {
+  id: string;
+  passport_code: string; // e.g., 'NRNPASS-2026-0001'
+  team_name: string;
+  cohort_year: number;
+  members: PassportMember[];
+  stamps: Record<string, StampTier>; // e.g., { 'task-1': 'gold', 'task-2': 'silver', ... }
+  total_points: number;
+  created_at: string;
+  updated_at?: string;
+}
+
 export interface Capsule {
   id: string;
   capsule_code: string;
