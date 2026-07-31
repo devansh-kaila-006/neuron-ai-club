@@ -134,6 +134,30 @@ const Admin: React.FC = () => {
     }
   };
 
+  const handleDeletePassport = async (passportId: string, teamName: string) => {
+    if (!window.confirm(`Are you sure you want to delete squad passport "${teamName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setIsPassportActionLoading(passportId);
+    try {
+      await passportService.deleteTeamPassport(passportId);
+      setPassports(prev => {
+        const remaining = prev.filter(p => p.id !== passportId);
+        if (selectedPassportForStamps?.id === passportId) {
+          setSelectedPassportForStamps(remaining.length > 0 ? remaining[0] : null);
+        }
+        return remaining;
+      });
+      toast.success(`Squad passport "${teamName}" deleted.`);
+      addLog(`Deleted squad passport: ${teamName}`, 'warn');
+    } catch (err: any) {
+      toast.error('Failed to delete squad passport.');
+    } finally {
+      setIsPassportActionLoading(null);
+    }
+  };
+
   const handleCheckIn = useCallback(async (id: string, status: boolean) => {
     // 1. Optimistic UI update for instant feedback
     setTeams(prev => prev.map(t => t.id === id ? { ...t, checkedin: status } : t));
@@ -852,26 +876,37 @@ const Admin: React.FC = () => {
                       .map((p) => {
                         const isSelected = selectedPassportForStamps?.id === p.id;
                         return (
-                          <button
-                            key={p.id}
-                            onClick={() => setSelectedPassportForStamps(p)}
-                            className={`w-full text-left p-4 rounded-xl border transition-all ${
-                              isSelected
-                                ? 'bg-amber-500/15 border-amber-400 text-white shadow-lg shadow-amber-500/10'
-                                : 'bg-black/30 border-white/5 text-gray-400 hover:text-white hover:border-white/20'
-                            }`}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div className="font-bold text-sm text-white">{p.team_name}</div>
-                              <span className="text-xs font-mono font-black text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">
-                                {p.total_points} PTS
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between text-[11px] font-mono text-gray-500 mt-2">
-                              <span>{p.passport_code}</span>
-                              <span className="text-amber-400/80 font-bold">ACTIVE</span>
-                            </div>
-                          </button>
+                          <div key={p.id} className="relative group">
+                            <button
+                              onClick={() => setSelectedPassportForStamps(p)}
+                              className={`w-full text-left p-4 rounded-xl border transition-all ${
+                                isSelected
+                                  ? 'bg-amber-500/15 border-amber-400 text-white shadow-lg shadow-amber-500/10'
+                                  : 'bg-black/30 border-white/5 text-gray-400 hover:text-white hover:border-white/20'
+                              }`}
+                            >
+                              <div className="flex justify-between items-start pr-6">
+                                <div className="font-bold text-sm text-white">{p.team_name}</div>
+                                <span className="text-xs font-mono font-black text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">
+                                  {p.total_points} PTS
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between text-[11px] font-mono text-gray-500 mt-2">
+                                <span>{p.passport_code}</span>
+                                <span className="text-amber-400/80 font-bold">ACTIVE</span>
+                              </div>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeletePassport(p.id, p.team_name);
+                              }}
+                              title="Delete Squad Passport"
+                              className="absolute top-3.5 right-3 p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         );
                       })}
                   </div>
@@ -880,15 +915,26 @@ const Admin: React.FC = () => {
                   <div className="md:col-span-2 glass p-6 rounded-2xl border border-white/10 bg-black/40 space-y-6">
                     {selectedPassportForStamps ? (
                       <div>
-                        <div className="flex justify-between items-start border-b border-white/10 pb-4 mb-6">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-4 mb-6">
                           <div>
                             <span className="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-widest">SELECTED PASSPORT</span>
                             <h3 className="text-2xl font-black text-white uppercase font-sans">{selectedPassportForStamps.team_name}</h3>
                             <div className="text-xs font-mono text-gray-400 mt-1">CODE: {selectedPassportForStamps.passport_code}</div>
                           </div>
-                          <div className="text-right">
-                            <div className="text-[10px] font-mono text-gray-500 uppercase">CURRENT TOTAL SCORE</div>
-                            <div className="text-3xl font-black font-mono text-amber-400">{selectedPassportForStamps.total_points} PTS</div>
+                          <div className="flex items-center gap-4 text-right">
+                            <div>
+                              <div className="text-[10px] font-mono text-gray-500 uppercase">CURRENT TOTAL SCORE</div>
+                              <div className="text-3xl font-black font-mono text-amber-400">{selectedPassportForStamps.total_points} PTS</div>
+                            </div>
+                            <button
+                              onClick={() => handleDeletePassport(selectedPassportForStamps.id, selectedPassportForStamps.team_name)}
+                              disabled={isPassportActionLoading === selectedPassportForStamps.id}
+                              className="px-3.5 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 hover:text-red-300 font-mono text-xs font-bold rounded-xl transition-all flex items-center gap-2 shrink-0 ml-2"
+                              title="Delete Squad Passport"
+                            >
+                              <Trash2 size={16} />
+                              <span className="hidden sm:inline">DELETE SQUAD</span>
+                            </button>
                           </div>
                         </div>
 
