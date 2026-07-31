@@ -295,10 +295,10 @@ const PassportPage: React.FC = () => {
         </p>
 
         {/* Navigation Tabs */}
-        <div className="flex flex-wrap justify-center items-center gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row flex-wrap justify-center items-stretch sm:items-center gap-3 pt-4">
           <button
             onClick={() => setActiveTab('view')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+            className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all min-h-[44px] w-full sm:w-auto ${
               activeTab === 'view'
                 ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25 border border-indigo-400/30'
                 : 'glass text-gray-400 hover:text-white border border-white/5'
@@ -310,7 +310,7 @@ const PassportPage: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('register')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+            className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all min-h-[44px] w-full sm:w-auto ${
               activeTab === 'register'
                 ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25 border border-indigo-400/30'
                 : 'glass text-gray-400 hover:text-white border border-white/5'
@@ -322,7 +322,7 @@ const PassportPage: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('leaderboard')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+            className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all min-h-[44px] w-full sm:w-auto ${
               activeTab === 'leaderboard'
                 ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-lg shadow-amber-500/25 border border-amber-400/30'
                 : 'glass text-gray-400 hover:text-white border border-white/5'
@@ -498,16 +498,9 @@ const PassportPage: React.FC = () => {
                       <Award size={18} className="text-amber-400" /> DIGITAL PASSPORT STAMPS (6 TASKS)
                     </h3>
                     <p className="text-xs text-gray-400 font-light">
-                      Each completed task earns a Gold (+30 pts), Silver (+20 pts), or Bronze (+10 pts) stamp assigned by NEURØN admins.
+                      Each completed task earns a Gold (+30 pts), Silver (+20 pts), or Bronze (+10 pts) stamp assigned by NEURØN organizers.
                     </p>
                   </div>
-                  <Link
-                    to="/admin"
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 text-xs font-mono font-bold rounded-xl transition-all"
-                  >
-                    <span>Manage Stamps in Admin</span>
-                    <ChevronRight size={14} />
-                  </Link>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -638,20 +631,22 @@ const PassportPage: React.FC = () => {
 
             {/* Members Section Header */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
                 <div>
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
-                    <Users size={16} className="text-indigo-400" /> SQUAD MEMBERS ({regMembers.length} / 6)
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-white font-mono flex flex-wrap items-center gap-2">
+                    <Users size={16} className="text-indigo-400 shrink-0" />
+                    <span>SQUAD MEMBERS</span>
+                    <span className="text-indigo-400">({regMembers.length} / 6)</span>
                   </h3>
-                  <span className="text-[11px] text-gray-400 font-light">Constraint: Minimum 3 members, Maximum 6 members</span>
+                  <p className="text-[11px] text-gray-400 font-light mt-0.5">Constraint: Minimum 3 members, Maximum 6 members</p>
                 </div>
                 {regMembers.length < 6 && (
                   <button
                     type="button"
                     onClick={handleAddMember}
-                    className="px-3 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 font-mono text-xs font-bold rounded-lg transition-all flex items-center gap-1.5"
+                    className="self-start sm:self-auto px-3.5 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 font-mono text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap"
                   >
-                    <Plus size={14} /> Add Member #{regMembers.length + 1}
+                    <Plus size={14} className="shrink-0" /> Add Member #{regMembers.length + 1}
                   </button>
                 )}
               </div>
@@ -720,17 +715,17 @@ const PassportPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting || regMembers.length < 3}
-              className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-4 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-2 text-center min-h-[52px]"
             >
               {isSubmitting ? (
                 <>
-                  <RefreshCw size={16} className="animate-spin" />
-                  Generating Squad Digital Passport...
+                  <RefreshCw size={16} className="animate-spin shrink-0" />
+                  <span>Generating Squad Digital Passport...</span>
                 </>
               ) : (
                 <>
-                  <ShieldCheck size={18} />
-                  Issue Team Digital Passport ({regMembers.length} Members)
+                  <ShieldCheck size={18} className="shrink-0" />
+                  <span>Issue Team Digital Passport ({regMembers.length} Members)</span>
                 </>
               )}
             </button>

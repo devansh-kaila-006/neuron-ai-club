@@ -516,10 +516,10 @@ const Admin: React.FC = () => {
         </div>
 
         {/* Tab Selection */}
-        <div className="flex flex-wrap gap-4 mb-8 border-b border-white/5 pb-4 no-print">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-8 border-b border-white/5 pb-4 no-print">
           <button 
             onClick={() => { setActiveTab('squads'); setFilter('all'); }}
-            className={`px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider font-mono transition-all flex items-center gap-2 ${
+            className={`px-5 sm:px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider font-mono transition-all flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto ${
               activeTab === 'squads' 
                 ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.3)]' 
                 : 'glass text-gray-400 hover:text-white border-white/5 hover:bg-white/5'
@@ -529,7 +529,7 @@ const Admin: React.FC = () => {
           </button>
           <button 
             onClick={() => { setActiveTab('capsules'); setCapsuleFilter('all'); }}
-            className={`px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider font-mono transition-all flex items-center gap-2 ${
+            className={`px-5 sm:px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider font-mono transition-all flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto ${
               activeTab === 'capsules' 
                 ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.3)]' 
                 : 'glass text-gray-400 hover:text-white border-white/5 hover:bg-white/5'
