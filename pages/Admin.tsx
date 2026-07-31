@@ -826,7 +826,7 @@ const Admin: React.FC = () => {
                       <Award size={20} /> STAMP ASSIGNMENT & SQUAD PASSPORTS CONTROL
                     </h2>
                     <p className="text-xs text-gray-400 font-light mt-1">
-                      Select a squad below to award Gold (+30), Silver (+20), or Bronze (+10) stamps for each of the 6 official tasks.
+                      Select a squad below to award Gold (+10), Silver (+7), or Bronze (+5) stamps for each of the 6 official tasks.
                     </p>
                   </div>
 
@@ -939,7 +939,7 @@ const Admin: React.FC = () => {
                                       }`}
                                     >
                                       <GoldStampBadge size={16} />
-                                      <span>Gold (+30)</span>
+                                      <span>Gold (+10)</span>
                                     </button>
 
                                     {/* Silver */}
@@ -953,7 +953,7 @@ const Admin: React.FC = () => {
                                       }`}
                                     >
                                       <SilverStampBadge size={16} />
-                                      <span>Silver (+20)</span>
+                                      <span>Silver (+7)</span>
                                     </button>
 
                                     {/* Bronze */}
@@ -967,7 +967,7 @@ const Admin: React.FC = () => {
                                       }`}
                                     >
                                       <BronzeStampBadge size={16} />
-                                      <span>Bronze (+10)</span>
+                                      <span>Bronze (+5)</span>
                                     </button>
 
                                     {/* Clear */}

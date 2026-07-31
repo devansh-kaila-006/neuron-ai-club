@@ -8,52 +8,52 @@ const STORAGE_KEY = 'neuron_team_passports_v1';
 export const OFFICIAL_PASSPORT_TASKS: PassportTask[] = [
   {
     id: 'task-1',
-    title: 'System Architecture & Neural Blueprint',
-    description: 'Design the end-to-end multi-agent framework, component layout, and data flow schema.',
-    category: 'Architecture',
+    title: 'Morse Code',
+    description: 'Decode and transmit cyber signal patterns using Morse code sequences.',
+    category: 'Communication',
     iconName: 'Cpu'
   },
   {
     id: 'task-2',
-    title: 'AI Core & Engine Implementation',
-    description: 'Integrate LLMs, prompt pipelines, vector indexes, or neural reasoning loops.',
-    category: 'AI / Backend',
+    title: 'AI vs Human',
+    description: 'Compete in live cognitive and prompt challenge rounds testing human vs synthetic intelligence.',
+    category: 'Cognitive',
     iconName: 'Sparkles'
   },
   {
     id: 'task-3',
-    title: 'UI/UX & Interactive Cyber Design',
-    description: 'Craft an intuitive visual interface with responsive animations and glassmorphism styling.',
-    category: 'Design',
+    title: 'Chits Make an Image',
+    description: 'Assemble physical/digital prompt chits and tokens to re-create exact target visual art.',
+    category: 'Creativity',
     iconName: 'Palette'
   },
   {
     id: 'task-4',
-    title: 'Database & Pipeline Integration',
-    description: 'Connect persistent cloud databases, storage buckets, and realtime synchronization.',
-    category: 'Infrastructure',
+    title: 'Quiz',
+    description: 'Rapid-fire technical and neural intelligence challenge covering AI, cybernetics, and computer science.',
+    category: 'Trivia',
     iconName: 'Database'
   },
   {
     id: 'task-5',
-    title: 'Cyber Security & Ethics Audit',
-    description: 'Implement authorization layers, input sanitization, and safety alignment guardrails.',
-    category: 'Security',
+    title: 'Chinese Whisper',
+    description: 'Pass complex algorithmic prompts down a chain of participants to test message integrity.',
+    category: 'Transmission',
     iconName: 'ShieldCheck'
   },
   {
     id: 'task-6',
-    title: 'Grand Pitch & Live Demonstration',
-    description: 'Pitch the prototype to judges, demonstrating real-world utility and execution.',
-    category: 'Presentation',
+    title: 'Human Intelligence Test',
+    description: 'Solve high-order logic puzzles, spatial reasoning tasks, and multi-layered cyber paradoxes.',
+    category: 'Logic',
     iconName: 'Trophy'
   }
 ];
 
 export const STAMP_POINTS: Record<string, number> = {
-  gold: 30,
-  silver: 20,
-  bronze: 10
+  gold: 10,
+  silver: 7,
+  bronze: 5
 };
 
 // Helper for input sanitization against XSS and injection attacks

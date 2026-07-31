@@ -498,7 +498,7 @@ const PassportPage: React.FC = () => {
                       <Award size={18} className="text-amber-400" /> DIGITAL PASSPORT STAMPS (6 TASKS)
                     </h3>
                     <p className="text-xs text-gray-400 font-light">
-                      Each completed task earns a Gold (+30 pts), Silver (+20 pts), or Bronze (+10 pts) stamp assigned by NEURØN organizers.
+                      Each completed task earns a Gold (+10 pts), Silver (+7 pts), or Bronze (+5 pts) stamp assigned by NEURØN organizers.
                     </p>
                   </div>
                 </div>
@@ -547,7 +547,7 @@ const PassportPage: React.FC = () => {
                               className="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-600 text-black font-black text-xs font-mono uppercase tracking-widest rounded-xl shadow-lg shadow-amber-500/30 flex items-center gap-2 border border-yellow-300"
                             >
                               <GoldStampBadge size={20} />
-                              <span>GOLD STAMP (+30)</span>
+                              <span>GOLD STAMP (+10)</span>
                             </m.div>
                           )}
 
@@ -557,7 +557,7 @@ const PassportPage: React.FC = () => {
                               className="px-4 py-2 bg-gradient-to-r from-slate-300 to-gray-400 text-black font-black text-xs font-mono uppercase tracking-widest rounded-xl shadow-lg shadow-slate-400/30 flex items-center gap-2 border border-white"
                             >
                               <SilverStampBadge size={20} />
-                              <span>SILVER STAMP (+20)</span>
+                              <span>SILVER STAMP (+7)</span>
                             </m.div>
                           )}
 
@@ -567,7 +567,7 @@ const PassportPage: React.FC = () => {
                               className="px-4 py-2 bg-gradient-to-r from-amber-700 to-amber-800 text-amber-100 font-black text-xs font-mono uppercase tracking-widest rounded-xl shadow-lg shadow-amber-800/30 flex items-center gap-2 border border-amber-500/40"
                             >
                               <BronzeStampBadge size={20} />
-                              <span>BRONZE STAMP (+10)</span>
+                              <span>BRONZE STAMP (+5)</span>
                             </m.div>
                           )}
 
