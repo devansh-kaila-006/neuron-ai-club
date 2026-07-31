@@ -869,7 +869,7 @@ const Admin: React.FC = () => {
                             </div>
                             <div className="flex items-center justify-between text-[11px] font-mono text-gray-500 mt-2">
                               <span>{p.passport_code}</span>
-                              <span>{p.members.length} Members</span>
+                              <span className="text-amber-400/80 font-bold">ACTIVE</span>
                             </div>
                           </button>
                         );
@@ -892,19 +892,21 @@ const Admin: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Squad Members preview */}
-                        <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/5">
-                          <div className="text-[10px] font-mono text-gray-400 uppercase tracking-widest mb-2 font-bold">
-                            Squad Members ({selectedPassportForStamps.members.length})
+                        {/* Squad Members preview (Optional) */}
+                        {selectedPassportForStamps.members && selectedPassportForStamps.members.length > 0 && (
+                          <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/5">
+                            <div className="text-[10px] font-mono text-gray-400 uppercase tracking-widest mb-2 font-bold">
+                              Squad Members ({selectedPassportForStamps.members.length})
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedPassportForStamps.members.map((m, idx) => (
+                                <span key={idx} className="px-2.5 py-1 bg-black/50 border border-white/10 rounded-lg text-xs font-mono text-indigo-300">
+                                  {m.name} {m.enrollment_no ? <span className="text-[10px] text-gray-400 font-normal">({m.enrollment_no})</span> : null}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                          <div className="flex flex-wrap gap-2">
-                            {selectedPassportForStamps.members.map((m, idx) => (
-                              <span key={idx} className="px-2.5 py-1 bg-black/50 border border-white/10 rounded-lg text-xs font-mono text-indigo-300">
-                                {m.name} {m.enrollment_no ? <span className="text-[10px] text-gray-400 font-normal">({m.enrollment_no})</span> : null}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
+                        )}
 
                         {/* 6 TASKS STAMP CONTROLLER */}
                         <div className="space-y-4">

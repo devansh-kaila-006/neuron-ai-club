@@ -42,11 +42,6 @@ const PassportPage: React.FC = () => {
 
   // Registration state
   const [regTeamName, setRegTeamName] = useState('');
-  const [regMembers, setRegMembers] = useState<Omit<PassportMember, 'id'>[]>([
-    { name: '', enrollment_no: '' },
-    { name: '', enrollment_no: '' },
-    { name: '', enrollment_no: '' }
-  ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Toggle saving my team code
@@ -184,31 +179,6 @@ const PassportPage: React.FC = () => {
     }
   };
 
-  // Member manipulation for team registration
-  const handleAddMember = () => {
-    if (regMembers.length >= 6) {
-      toast.error('Teams can have a maximum of 6 members.');
-      return;
-    }
-    setRegMembers(prev => [...prev, { name: '', enrollment_no: '' }]);
-  };
-
-  const handleRemoveMember = (index: number) => {
-    if (regMembers.length <= 3) {
-      toast.error('A team must have at least 3 members.');
-      return;
-    }
-    setRegMembers(prev => prev.filter((_, idx) => idx !== index));
-  };
-
-  const handleMemberChange = (index: number, field: keyof Omit<PassportMember, 'id'>, value: string) => {
-    setRegMembers(prev => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
-      return updated;
-    });
-  };
-
   // Register Team Passport
   const handleRegisterTeam = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -217,22 +187,9 @@ const PassportPage: React.FC = () => {
       return;
     }
 
-    if (regMembers.length < 3 || regMembers.length > 6) {
-      toast.error('Team size must be between 3 and 6 members.');
-      return;
-    }
-
-    // Validate members
-    for (let i = 0; i < regMembers.length; i++) {
-      if (!regMembers[i].name.trim()) {
-        toast.error(`Please enter Full Name for Member #${i + 1}`);
-        return;
-      }
-    }
-
     setIsSubmitting(true);
     try {
-      const created = await passportService.createTeamPassport(regTeamName, regMembers);
+      const created = await passportService.createTeamPassport(regTeamName, []);
       toast.success(`Team Passport created successfully! Passport Code: ${created.passport_code}`);
       
       // Auto save as current squad
@@ -248,11 +205,6 @@ const PassportPage: React.FC = () => {
 
       // Reset form
       setRegTeamName('');
-      setRegMembers([
-        { name: '', enrollment_no: '' },
-        { name: '', enrollment_no: '' },
-        { name: '', enrollment_no: '' }
-      ]);
     } catch (err: any) {
       toast.error(err.message || 'Error registering team passport.');
     } finally {
@@ -317,7 +269,7 @@ const PassportPage: React.FC = () => {
             }`}
           >
             <Users size={16} />
-            + Register Squad (3-6 Members)
+            Register Squad
           </button>
 
           <button
@@ -461,34 +413,36 @@ const PassportPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* MEMBERS ROSTER (3 - 6 members) */}
-              <div className="my-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xs font-mono uppercase tracking-widest text-indigo-400 font-bold flex items-center gap-2">
-                    <Users size={14} /> SQUAD MEMBERS ROSTER ({selectedPassport.members.length} VERIFIED)
-                  </h3>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {selectedPassport.members.map((member, idx) => (
-                    <div
-                      key={member.id || idx}
-                      className="p-4 glass rounded-xl border border-white/5 bg-black/40 hover:border-indigo-500/40 transition-all flex items-start gap-3"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center font-mono font-bold text-xs text-indigo-300 shrink-0">
-                        0{idx + 1}
+              {/* MEMBERS ROSTER (Optional if present) */}
+              {selectedPassport.members && selectedPassport.members.length > 0 && (
+                <div className="my-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xs font-mono uppercase tracking-widest text-indigo-400 font-bold flex items-center gap-2">
+                      <Users size={14} /> SQUAD MEMBERS ROSTER ({selectedPassport.members.length} VERIFIED)
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {selectedPassport.members.map((member, idx) => (
+                      <div
+                        key={member.id || idx}
+                        className="p-4 glass rounded-xl border border-white/5 bg-black/40 hover:border-indigo-500/40 transition-all flex items-start gap-3"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center font-mono font-bold text-xs text-indigo-300 shrink-0">
+                          0{idx + 1}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-bold text-white truncate">{member.name}</div>
+                          {member.enrollment_no && (
+                            <div className="text-[10px] text-indigo-300 font-mono mt-0.5 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-md inline-block">
+                              {member.enrollment_no}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-bold text-white truncate">{member.name}</div>
-                        {member.enrollment_no && (
-                          <div className="text-[10px] text-indigo-300 font-mono mt-0.5 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-md inline-block">
-                            {member.enrollment_no}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* 6 TASKS DIGITAL PASSPORT STAMPS GRID */}
               <div className="mt-10">
@@ -594,26 +548,26 @@ const PassportPage: React.FC = () => {
         </div>
       )}
 
-      {/* REGISTER TEAM TAB (3 - 6 Members) */}
+      {/* REGISTER TEAM TAB */}
       {activeTab === 'register' && (
         <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass p-8 md:p-12 rounded-[2.5rem] border border-indigo-500/30 max-w-3xl mx-auto space-y-8 bg-gradient-to-b from-[#0a0c1a]/90 to-[#04050d]/90 shadow-2xl"
+          className="glass p-8 md:p-12 rounded-[2.5rem] border border-indigo-500/30 max-w-xl mx-auto space-y-8 bg-gradient-to-b from-[#0a0c1a]/90 to-[#04050d]/90 shadow-2xl"
         >
-          <div className="border-b border-white/10 pb-6">
+          <div className="border-b border-white/10 pb-6 text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-400 font-mono text-[10px] font-bold uppercase tracking-widest mb-3 border border-indigo-500/30">
-              <Users size={12} /> SQUAD PASSPORT INITIATION
+              <Users size={12} /> PASSPORT INITIATION
             </div>
             <h2 className="text-2xl md:text-3xl font-black uppercase text-white tracking-tight">
-              REGISTER NEW TEAM & MEMBERS
+              REGISTER TEAM
             </h2>
             <p className="text-xs text-gray-400 font-light mt-1">
-              Add between 3 to 6 members per team to generate your official NEURØN Digital Passport and unlock task stamps.
+              Enter your Team Name to issue your official NEURØN Digital Passport and unlock task stamps.
             </p>
           </div>
 
-          <form onSubmit={handleRegisterTeam} className="space-y-8">
+          <form onSubmit={handleRegisterTeam} className="space-y-6">
             {/* Team Name */}
             <div className="space-y-2">
               <label className="text-xs font-mono uppercase tracking-wider text-indigo-400 font-bold block">
@@ -629,103 +583,21 @@ const PassportPage: React.FC = () => {
               />
             </div>
 
-            {/* Members Section Header */}
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
-                <div>
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-white font-mono flex flex-wrap items-center gap-2">
-                    <Users size={16} className="text-indigo-400 shrink-0" />
-                    <span>SQUAD MEMBERS</span>
-                    <span className="text-indigo-400">({regMembers.length} / 6)</span>
-                  </h3>
-                  <p className="text-[11px] text-gray-400 font-light mt-0.5">Constraint: Minimum 3 members, Maximum 6 members</p>
-                </div>
-                {regMembers.length < 6 && (
-                  <button
-                    type="button"
-                    onClick={handleAddMember}
-                    className="self-start sm:self-auto px-3.5 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 font-mono text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap"
-                  >
-                    <Plus size={14} className="shrink-0" /> Add Member #{regMembers.length + 1}
-                  </button>
-                )}
-              </div>
-
-              {/* Members Inputs List */}
-              <div className="space-y-4">
-                {regMembers.map((member, idx) => (
-                  <div
-                    key={idx}
-                    className="p-5 glass rounded-2xl border border-white/10 bg-black/40 space-y-4 relative group"
-                  >
-                    <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-md bg-indigo-500/20 text-indigo-400 font-mono font-bold text-xs flex items-center justify-center">
-                          {idx + 1}
-                        </span>
-                        <span className="text-xs font-bold uppercase tracking-wider text-white font-mono">
-                          MEMBER #{idx + 1} {idx === 0 ? '(LEAD)' : ''}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {regMembers.length > 3 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveMember(idx)}
-                            className="p-1 text-gray-500 hover:text-red-400 transition-colors"
-                            title="Remove Member"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider block mb-1">Full Name *</label>
-                        <input
-                          type="text"
-                          required
-                          value={member.name}
-                          onChange={(e) => handleMemberChange(idx, 'name', e.target.value)}
-                          placeholder="Full Name"
-                          className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider block mb-1">Enrollment / Roll No.</label>
-                        <input
-                          type="text"
-                          value={member.enrollment_no || ''}
-                          onChange={(e) => handleMemberChange(idx, 'enrollment_no', e.target.value)}
-                          placeholder="e.g. AM.EN.U4CSE23..."
-                          className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 font-mono"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting || regMembers.length < 3}
+              disabled={isSubmitting || !regTeamName.trim()}
               className="w-full py-4 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-2 text-center min-h-[52px]"
             >
               {isSubmitting ? (
                 <>
                   <RefreshCw size={16} className="animate-spin shrink-0" />
-                  <span>Generating Squad Digital Passport...</span>
+                  <span>Generating Team Digital Passport...</span>
                 </>
               ) : (
                 <>
                   <ShieldCheck size={18} className="shrink-0" />
-                  <span>Issue Team Digital Passport ({regMembers.length} Members)</span>
+                  <span>Issue Team Digital Passport</span>
                 </>
               )}
             </button>
@@ -862,7 +734,6 @@ const PassportPage: React.FC = () => {
                     <th className="py-3 px-4">Rank</th>
                     <th className="py-3 px-4">Team Name</th>
                     <th className="py-3 px-4">Passport Code</th>
-                    <th className="py-3 px-4">Squad Size</th>
                     <th className="py-3 px-4 text-center">Stamps Breakdown</th>
                     <th className="py-3 px-4 text-right">Total Score</th>
                     <th className="py-3 px-4 text-right">Action</th>
@@ -925,7 +796,6 @@ const PassportPage: React.FC = () => {
                           </div>
                         </td>
                         <td className="py-4 px-4 font-mono text-xs text-indigo-400">{team.passport_code}</td>
-                        <td className="py-4 px-4 text-xs text-gray-400">{team.members.length} members</td>
                         <td className="py-4 px-4 text-center">
                           <div className="flex items-center justify-center gap-1 font-mono text-[10px]">
                             <span className="px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold">{goldCount} G</span>

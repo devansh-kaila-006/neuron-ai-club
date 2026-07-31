@@ -159,15 +159,11 @@ export const passportService = {
     ) || null;
   },
 
-  async createTeamPassport(teamName: string, members: Omit<PassportMember, 'id'>[]): Promise<TeamPassport> {
+  async createTeamPassport(teamName: string, members: Omit<PassportMember, 'id'>[] = []): Promise<TeamPassport> {
     return registrationMutex.runExclusive(async () => {
       const cleanTeamName = sanitizeText(teamName, 60);
       if (!cleanTeamName || cleanTeamName.length < 2) {
         throw new Error('Please enter a valid Team Name (at least 2 characters).');
-      }
-
-      if (members.length < 3 || members.length > 6) {
-        throw new Error('A team must consist of between 3 and 6 members.');
       }
 
       const formattedMembers: PassportMember[] = members.map((m, idx) => {
