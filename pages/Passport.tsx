@@ -224,64 +224,64 @@ const PassportPage: React.FC = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-gradient-to-b from-indigo-600/15 via-purple-600/5 to-transparent blur-[120px] pointer-events-none -z-10" />
 
       {/* HEADER SECTION */}
-      <div className="text-center space-y-4 mb-12 relative">
+      <div className="text-center space-y-3 sm:space-y-4 mb-8 sm:mb-12 relative">
         <m.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-3 px-4 py-1.5 mb-2 bg-white/[0.03] border border-white/10 rounded-full backdrop-blur-md"
+          className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 mb-1 sm:mb-2 bg-white/[0.03] border border-white/10 rounded-full backdrop-blur-md"
         >
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
           </span>
-          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.4em] font-mono">
+          <span className="text-[8px] sm:text-[9px] font-bold text-gray-400 uppercase tracking-[0.25em] sm:tracking-[0.4em] font-mono">
             NEURØN EVENT • PASSPORT EXPLORER
           </span>
         </m.div>
 
-        <h1 className="text-4xl md:text-7xl font-black tracking-tighter font-sans uppercase leading-tight">
-          PASSPORT <DecryptedText text="EXPLORER" className="bg-gradient-to-r from-indigo-400 via-purple-400 to-amber-400 bg-clip-text text-transparent italic pr-4" />
+        <h1 className="text-3xl sm:text-5xl md:text-7xl font-black tracking-tighter font-sans uppercase leading-tight break-words px-2">
+          PASSPORT <DecryptedText text="EXPLORER" className="bg-gradient-to-r from-indigo-400 via-purple-400 to-amber-400 bg-clip-text text-transparent italic pr-2 sm:pr-4" />
         </h1>
-        <p className="max-w-2xl mx-auto text-sm md:text-base text-gray-400 font-light leading-relaxed">
+        <p className="max-w-2xl mx-auto text-xs sm:text-sm md:text-base text-gray-400 font-light leading-relaxed px-2">
           The official digital passport & squad tracking system for Passport Explorer! Register your squad, unlock the 6 Core Neural Tasks, receive Gold, Silver, or Bronze stamps, and conquer the leaderboard!
         </p>
 
-        {/* Navigation Tabs */}
-        <div className="flex flex-col sm:flex-row flex-wrap justify-center items-stretch sm:items-center gap-3 pt-4">
+        {/* Navigation Tabs - Optimized Mobile Grid / Touch Bar */}
+        <div className="grid grid-cols-1 sm:flex sm:flex-row flex-wrap justify-center items-stretch sm:items-center gap-2 sm:gap-3 pt-3 sm:pt-4 max-w-xl mx-auto">
           <button
             onClick={() => setActiveTab('view')}
-            className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all min-h-[44px] w-full sm:w-auto ${
+            className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all min-h-[44px] ${
               activeTab === 'view'
                 ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25 border border-indigo-400/30'
                 : 'glass text-gray-400 hover:text-white border border-white/5'
             }`}
           >
-            <Shield size={16} />
-            {selectedPassport ? `My Passport (${selectedPassport.team_name})` : 'My Squad Passport'}
+            <Shield size={16} className="shrink-0" />
+            <span className="truncate">{selectedPassport ? `My Passport (${selectedPassport.team_name})` : 'My Squad Passport'}</span>
           </button>
 
           <button
             onClick={() => setActiveTab('register')}
-            className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all min-h-[44px] w-full sm:w-auto ${
+            className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all min-h-[44px] ${
               activeTab === 'register'
                 ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25 border border-indigo-400/30'
                 : 'glass text-gray-400 hover:text-white border border-white/5'
             }`}
           >
-            <Users size={16} />
-            Register Squad
+            <Users size={16} className="shrink-0" />
+            <span>Register Squad</span>
           </button>
 
           <button
             onClick={() => setActiveTab('leaderboard')}
-            className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all min-h-[44px] w-full sm:w-auto ${
+            className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all min-h-[44px] ${
               activeTab === 'leaderboard'
                 ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-lg shadow-amber-500/25 border border-amber-400/30'
                 : 'glass text-gray-400 hover:text-white border border-white/5'
             }`}
           >
-            <Trophy size={16} />
-            Leaderboard Standings
+            <Trophy size={16} className="shrink-0" />
+            <span>Leaderboard Standings</span>
           </button>
         </div>
       </div>
