@@ -243,7 +243,7 @@ const PassportPage: React.FC = () => {
           PASSPORT <DecryptedText text="EXPLORER" className="bg-gradient-to-r from-indigo-400 via-purple-400 to-amber-400 bg-clip-text text-transparent italic pr-4" />
         </h1>
         <p className="max-w-2xl mx-auto text-sm md:text-base text-gray-400 font-light leading-relaxed">
-          The official digital passport & squad tracking system for Passport Explorer! Register your squad (3 to 6 members), unlock the 6 Core Neural Tasks, receive Gold, Silver, or Bronze stamps, and conquer the leaderboard!
+          The official digital passport & squad tracking system for Passport Explorer! Register your squad, unlock the 6 Core Neural Tasks, receive Gold, Silver, or Bronze stamps, and conquer the leaderboard!
         </p>
 
         {/* Navigation Tabs */}
