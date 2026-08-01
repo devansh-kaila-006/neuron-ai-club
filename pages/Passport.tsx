@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy, Shield, Award, Users, Search, Plus, Trash2, Check, Sparkles,
   AlertCircle, ChevronRight, Cpu, Database, Palette, ShieldCheck, Lock, CheckCircle2,
-  Copy, ExternalLink, QrCode, UserCheck, Flame, Star, RefreshCw
+  Copy, ExternalLink, QrCode, UserCheck, Flame, Star, RefreshCw, Mic, Clock, Play, Pause, RotateCcw, Sliders, Send
 } from 'lucide-react';
 import { passportService, OFFICIAL_PASSPORT_TASKS, STAMP_POINTS, calculatePassportPoints, sanitizeText, validateEnrollmentNo } from '../lib/passports.ts';
 import { supabase } from '../lib/storage.ts';
@@ -20,7 +20,9 @@ const TASK_ICONS: Record<string, React.ComponentType<{ className?: string; size?
   Palette,
   Database,
   ShieldCheck,
-  Trophy
+  Trophy,
+  Mic,
+  Flame
 };
 
 const PassportPage: React.FC = () => {
@@ -29,11 +31,29 @@ const PassportPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState<'view' | 'register' | 'leaderboard'>('register');
+  const [activeTab, setActiveTab] = useState<'view' | 'register' | 'leaderboard' | 'phase2'>('register');
   const [passports, setPassports] = useState<TeamPassport[]>([]);
   const [selectedPassport, setSelectedPassport] = useState<TeamPassport | null>(null);
   const [searchCode, setSearchCode] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+
+  // Phase 2: Neuron's Got Latent Pitch Timer State
+  const [pitchTimeLeft, setPitchTimeLeft] = useState<number>(90);
+  const [isPitchRunning, setIsPitchRunning] = useState<boolean>(false);
+
+  // Pitch Timer Countdown logic
+  useEffect(() => {
+    let interval: any = null;
+    if (isPitchRunning && pitchTimeLeft > 0) {
+      interval = setInterval(() => {
+        setPitchTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (pitchTimeLeft === 0 && isPitchRunning) {
+      setIsPitchRunning(false);
+      toast.info("Time's up! 90-second pitch duration concluded.");
+    }
+    return () => clearInterval(interval);
+  }, [isPitchRunning, pitchTimeLeft]);
 
   // Saved Team Passport in local storage
   const [myTeamCode, setMyTeamCode] = useState<string>(() => {
@@ -243,11 +263,11 @@ const PassportPage: React.FC = () => {
           PASSPORT <DecryptedText text="EXPLORER" className="bg-gradient-to-r from-indigo-400 via-purple-400 to-amber-400 bg-clip-text text-transparent italic pr-2 sm:pr-4" />
         </h1>
         <p className="max-w-2xl mx-auto text-xs sm:text-sm md:text-base text-gray-400 font-light leading-relaxed px-2">
-          The official digital passport & squad tracking system for Passport Explorer! Register your squad, unlock the 5 Core Neural Tasks, receive Gold, Silver, or Bronze stamps, and conquer the leaderboard!
+          The official digital passport & squad tracking system for Passport Explorer! Register your squad, unlock the 6 Core Neural Tasks (including Phase 2: Neuron's Got Latent), receive Gold, Silver, or Bronze stamps, and conquer the leaderboard!
         </p>
 
         {/* Navigation Tabs - Optimized Mobile Grid / Touch Bar */}
-        <div className="grid grid-cols-1 sm:flex sm:flex-row flex-wrap justify-center items-stretch sm:items-center gap-2 sm:gap-3 pt-3 sm:pt-4 max-w-xl mx-auto">
+        <div className="grid grid-cols-1 sm:flex sm:flex-row flex-wrap justify-center items-stretch sm:items-center gap-2 sm:gap-3 pt-3 sm:pt-4 max-w-2xl mx-auto">
           <button
             onClick={() => setActiveTab('view')}
             className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all min-h-[44px] ${
@@ -258,6 +278,18 @@ const PassportPage: React.FC = () => {
           >
             <Shield size={16} className="shrink-0" />
             <span className="truncate">{selectedPassport ? `My Passport (${selectedPassport.team_name})` : 'My Squad Passport'}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('phase2')}
+            className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all min-h-[44px] ${
+              activeTab === 'phase2'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25 border border-purple-400/30'
+                : 'glass text-amber-400 hover:text-white border border-amber-400/30 bg-amber-500/10'
+            }`}
+          >
+            <Mic size={16} className="shrink-0 text-amber-400 animate-pulse" />
+            <span>Neuron's Got Latent (Phase 2)</span>
           </button>
 
           <button
@@ -444,12 +476,12 @@ const PassportPage: React.FC = () => {
                 </div>
               )}
 
-              {/* 5 TASKS DIGITAL PASSPORT STAMPS GRID */}
+              {/* 6 TASKS DIGITAL PASSPORT STAMPS GRID */}
               <div className="mt-10">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-bold uppercase tracking-wider text-white font-sans flex items-center gap-2">
-                      <Award size={18} className="text-amber-400" /> DIGITAL PASSPORT STAMPS (5 TASKS)
+                      <Award size={18} className="text-amber-400" /> DIGITAL PASSPORT STAMPS (6 TASKS • INCL. PHASE 2)
                     </h3>
                     <p className="text-xs text-gray-400 font-light">
                       Each completed task earns a Gold (+10 pts), Silver (+7 pts), or Bronze (+5 pts) stamp assigned by NEURØN organizers.
@@ -830,6 +862,115 @@ const PassportPage: React.FC = () => {
                   })}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PHASE 2: NEURON'S GOT LATENT TAB */}
+      {activeTab === 'phase2' && (
+        <div className="space-y-8 max-w-5xl mx-auto">
+          {/* Hero Banner */}
+          <div className="glass p-8 rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-950/60 via-black to-pink-950/40 relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10 pointer-events-none" />
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 font-mono text-xs font-bold uppercase tracking-widest mb-3">
+                  <Flame size={14} className="text-amber-400 animate-bounce" /> NEURØN PHASE 2 • PITCH ARENA
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-black text-white font-sans uppercase tracking-tight">
+                  NEURON'S GOT LATENT
+                </h2>
+                <p className="text-sm text-gray-300 font-light max-w-xl mt-2 leading-relaxed">
+                  Welcome to Phase 2 of Passport Explorer! Each participant gets <span className="text-amber-400 font-bold">90 seconds</span> to pitch their project and present live in front of the official judging panel to claim their Phase 2 Neural Stamp.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap md:flex-col gap-2 shrink-0">
+                <span className="px-3.5 py-1.5 bg-black/60 border border-amber-400/30 rounded-xl text-amber-300 font-mono text-xs font-bold flex items-center gap-2">
+                  <Clock size={14} /> 90 Seconds / Pitch
+                </span>
+                <span className="px-3.5 py-1.5 bg-black/60 border border-purple-400/30 rounded-xl text-purple-300 font-mono text-xs font-bold flex items-center gap-2">
+                  <Award size={14} /> Panel Presentation
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 90-SECOND LIVE PITCH TIMER */}
+          <div className="max-w-2xl mx-auto glass p-6 md:p-8 rounded-3xl border border-white/10 bg-black/60 shadow-xl">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
+              <div>
+                <h3 className="text-lg font-bold text-white font-sans uppercase flex items-center gap-2">
+                  <Clock size={20} className="text-amber-400" /> 90-SECOND PITCH TIMER
+                </h3>
+                <p className="text-xs text-gray-400">
+                  Official presentation countdown timer for live panel pitch.
+                </p>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest border ${
+                isPitchRunning
+                  ? 'bg-red-500/20 text-red-400 border-red-500/40 animate-pulse'
+                  : pitchTimeLeft === 0
+                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                  : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+              }`}>
+                {isPitchRunning ? 'LIVE PITCHING' : pitchTimeLeft === 0 ? 'TIME EXPIRED' : 'READY'}
+              </span>
+            </div>
+
+            {/* Big Digital Timer Display */}
+            <div className="my-6 text-center relative py-8 bg-gradient-to-b from-purple-950/40 to-black rounded-2xl border border-purple-500/25 shadow-inner">
+              <div className="text-7xl sm:text-8xl font-black font-mono tracking-wider text-white drop-shadow-lg">
+                00:{String(pitchTimeLeft).padStart(2, '0')}
+              </div>
+              <div className="text-xs font-mono text-gray-400 uppercase tracking-widest mt-3">
+                {pitchTimeLeft > 15 ? 'REMAINING PITCH TIME' : pitchTimeLeft > 0 ? '⚠️ FINAL SECONDS! WRAP UP!' : 'PITCH CONCLUDED'}
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full bg-white/10 h-3.5 rounded-full overflow-hidden mt-6 px-1 max-w-md mx-auto">
+                <div
+                  className={`h-full transition-all duration-1000 rounded-full ${
+                    pitchTimeLeft < 15
+                      ? 'bg-gradient-to-r from-red-500 to-amber-500 animate-pulse'
+                      : 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500'
+                  }`}
+                  style={{ width: `${(pitchTimeLeft / 90) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Timer Controls */}
+            <div className="flex items-center justify-center gap-4 pt-2">
+              {!isPitchRunning ? (
+                <button
+                  onClick={() => {
+                    if (pitchTimeLeft === 0) setPitchTimeLeft(90);
+                    setIsPitchRunning(true);
+                  }}
+                  className="px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-black font-bold font-mono text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all"
+                >
+                  <Play size={18} /> Start 90s Pitch
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsPitchRunning(false)}
+                  className="px-8 py-4 rounded-2xl bg-amber-500 text-black font-bold font-mono text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-500/20 hover:scale-105 transition-all"
+                >
+                  <Pause size={18} /> Pause Timer
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  setIsPitchRunning(false);
+                  setPitchTimeLeft(90);
+                }}
+                className="px-6 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold font-mono text-xs uppercase tracking-wider flex items-center gap-2 transition-all border border-white/10"
+              >
+                <RotateCcw size={18} /> Reset
+              </button>
             </div>
           </div>
         </div>

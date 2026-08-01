@@ -40,6 +40,13 @@ export const OFFICIAL_PASSPORT_TASKS: PassportTask[] = [
     description: 'Pass complex algorithmic prompts down a chain of participants to test message integrity.',
     category: 'Transmission',
     iconName: 'ShieldCheck'
+  },
+  {
+    id: 'task-6',
+    title: "Neuron's Got Latent (Phase 2)",
+    description: 'Each participant gets 90 seconds to make a pitch, score yourself, and present in front of the judging panel.',
+    category: 'Phase 2 Pitch',
+    iconName: 'Mic'
   }
 ];
 
@@ -203,7 +210,8 @@ export const passportService = {
         'task-2': null,
         'task-3': null,
         'task-4': null,
-        'task-5': null
+        'task-5': null,
+        'task-6': null
       };
 
       // Retry loop to handle concurrent code collisions
