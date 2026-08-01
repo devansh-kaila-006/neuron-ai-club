@@ -850,7 +850,7 @@ const Admin: React.FC = () => {
                       <Award size={20} /> STAMP ASSIGNMENT & SQUAD PASSPORTS CONTROL
                     </h2>
                     <p className="text-xs text-gray-400 font-light mt-1">
-                      Select a squad below to award Gold (+10), Silver (+7), or Bronze (+5) stamps for each of the 6 official tasks.
+                      Select a squad below to award Gold (+10), Silver (+7), or Bronze (+5) stamps for each of the 5 official tasks.
                     </p>
                   </div>
 
@@ -954,10 +954,10 @@ const Admin: React.FC = () => {
                           </div>
                         )}
 
-                        {/* 6 TASKS STAMP CONTROLLER */}
+                        {/* 5 TASKS STAMP CONTROLLER */}
                         <div className="space-y-4">
                           <h4 className="text-xs font-mono uppercase tracking-widest text-white font-bold flex items-center gap-2">
-                            <Star size={14} className="text-amber-400" /> AWARD STAMPS (6 TASKS)
+                            <Star size={14} className="text-amber-400" /> AWARD STAMPS (5 TASKS)
                           </h4>
 
                           <div className="grid grid-cols-1 gap-4">

@@ -4,7 +4,7 @@ import { registrationMutex, passportUpdateMutex } from './concurrency.ts';
 
 const STORAGE_KEY = 'neuron_team_passports_v1';
 
-// 6 Official Passport Tasks required for each team
+// 5 Official Passport Tasks required for each team
 export const OFFICIAL_PASSPORT_TASKS: PassportTask[] = [
   {
     id: 'task-1',
@@ -40,13 +40,6 @@ export const OFFICIAL_PASSPORT_TASKS: PassportTask[] = [
     description: 'Pass complex algorithmic prompts down a chain of participants to test message integrity.',
     category: 'Transmission',
     iconName: 'ShieldCheck'
-  },
-  {
-    id: 'task-6',
-    title: 'Human Intelligence Test',
-    description: 'Solve high-order logic puzzles, spatial reasoning tasks, and multi-layered cyber paradoxes.',
-    category: 'Logic',
-    iconName: 'Trophy'
   }
 ];
 
@@ -210,8 +203,7 @@ export const passportService = {
         'task-2': null,
         'task-3': null,
         'task-4': null,
-        'task-5': null,
-        'task-6': null
+        'task-5': null
       };
 
       // Retry loop to handle concurrent code collisions

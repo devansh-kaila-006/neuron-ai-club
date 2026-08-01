@@ -243,7 +243,7 @@ const PassportPage: React.FC = () => {
           PASSPORT <DecryptedText text="EXPLORER" className="bg-gradient-to-r from-indigo-400 via-purple-400 to-amber-400 bg-clip-text text-transparent italic pr-2 sm:pr-4" />
         </h1>
         <p className="max-w-2xl mx-auto text-xs sm:text-sm md:text-base text-gray-400 font-light leading-relaxed px-2">
-          The official digital passport & squad tracking system for Passport Explorer! Register your squad, unlock the 6 Core Neural Tasks, receive Gold, Silver, or Bronze stamps, and conquer the leaderboard!
+          The official digital passport & squad tracking system for Passport Explorer! Register your squad, unlock the 5 Core Neural Tasks, receive Gold, Silver, or Bronze stamps, and conquer the leaderboard!
         </p>
 
         {/* Navigation Tabs - Optimized Mobile Grid / Touch Bar */}
@@ -444,12 +444,12 @@ const PassportPage: React.FC = () => {
                 </div>
               )}
 
-              {/* 6 TASKS DIGITAL PASSPORT STAMPS GRID */}
+              {/* 5 TASKS DIGITAL PASSPORT STAMPS GRID */}
               <div className="mt-10">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-bold uppercase tracking-wider text-white font-sans flex items-center gap-2">
-                      <Award size={18} className="text-amber-400" /> DIGITAL PASSPORT STAMPS (6 TASKS)
+                      <Award size={18} className="text-amber-400" /> DIGITAL PASSPORT STAMPS (5 TASKS)
                     </h3>
                     <p className="text-xs text-gray-400 font-light">
                       Each completed task earns a Gold (+10 pts), Silver (+7 pts), or Bronze (+5 pts) stamp assigned by NEURØN organizers.
@@ -614,7 +614,7 @@ const PassportPage: React.FC = () => {
               NEURØN CHAMPIONS <span className="bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text text-transparent">PODIUM</span>
             </h2>
             <p className="text-xs text-gray-400 font-light">
-              Declared based on aggregate stamp points earned across all 6 core tasks.
+              Declared based on aggregate stamp points earned across all 5 core tasks.
             </p>
           </div>
 
