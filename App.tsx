@@ -28,6 +28,7 @@ const Events = lazy(() => import('./pages/Events.tsx'));
 const CapsuleLanding = lazy(() => import('./pages/CapsuleLanding.tsx'));
 const CapsuleSuccess = lazy(() => import('./pages/CapsuleSuccess.tsx'));
 const Passport = lazy(() => import('./pages/Passport.tsx'));
+const Forms = lazy(() => import('./pages/Forms.tsx'));
 
 /**
  * ScrollToTop: Logic component that resets scroll position on route changes.
@@ -75,6 +76,7 @@ const AnimatedRoutes: React.FC = () => {
             <Route path="/capsule" element={<CapsuleLanding />} />
             <Route path="/capsule/success" element={<CapsuleSuccess />} />
             <Route path="/passport" element={<Passport />} />
+            <Route path="/forms" element={<Forms />} />
           </Routes>
         </Suspense>
       </m.div>
@@ -131,6 +133,7 @@ const App: React.FC = () => {
                       <p className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-1">Grid Navigation</p>
                       <Link to="/" className="text-xs text-gray-600 hover:text-indigo-400">Hub Hub</Link>
                       <Link to="/passport" className="text-xs text-amber-400 hover:text-amber-300 font-bold">Passport Explorer</Link>
+                      <Link to="/forms" className="text-xs text-indigo-400 hover:text-indigo-300 font-medium">Forms & Intake</Link>
                       <Link to="/departments" className="text-xs text-gray-600 hover:text-indigo-400">Squad Divisions</Link>
                       <Link to="/team" className="text-xs text-gray-600 hover:text-indigo-400">The Core Council</Link>
                       <Link to="/events" className="text-xs text-gray-600 hover:text-indigo-400">Neural Actions</Link>
